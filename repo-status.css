@@ -1,0 +1,53 @@
+body
+{
+	color: #000;
+	background: #fff;
+}
+
+table
+{
+	margin: 1em auto;
+}
+
+td
+{
+	border: 1px solid #000;
+	text-align: center;
+
+	padding: .5em;
+}
+
+a
+{
+	display: block;
+}
+
+.GOOD
+{
+	color: #000;
+	background: #aea;
+}
+
+.BAD_CACHE
+{
+	color: #000;
+	background: #eb7;
+}
+
+.INVALID_METADATA, .SYNC_FAIL
+{
+	color: #000;
+	background: #eaa;
+}
+
+.EMPTY, .REMOVED
+{
+	color: #000;
+	background: #eee;
+}
+
+.UNSUPPORTED
+{
+	color: #000;
+	background: #bbb;
+}
