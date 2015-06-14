@@ -28,8 +28,8 @@ status_mapping = {
 }
 
 for r, s in repos.items():
-    if os.path.isfile('%s.log' % r):
-        r = '<a href="%s.log">%s</a>' % (r, r)
+    if os.path.isfile('%s.txt' % r):
+        r = '<a href="%s.txt">%s</a>' % (r, r)
     print('        <tr class="%s"><td>%s</td><td>%s</td>\n'
             % (s, r, status_mapping[s]))
 

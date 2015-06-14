@@ -108,7 +108,7 @@ def can_pmaint(repos_conf, r):
 
 class LoggerProxy(object):
     def __init__(self, logdir, key):
-        self._path = os.path.join(logdir, key + '.log')
+        self._path = os.path.join(logdir, key + '.txt')
         self._key = key
 
     def status(self, msg):
