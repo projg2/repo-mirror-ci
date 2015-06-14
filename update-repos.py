@@ -9,6 +9,7 @@ except ImportError:
     import ConfigParser as configparser
 
 import datetime
+import glob
 import json
 import os
 import os.path
@@ -46,6 +47,8 @@ class State(object):
     UNSUPPORTED = 'UNSUPPORTED'
     # unable to sync
     SYNC_FAIL = 'SYNC_FAIL'
+    # empty repository (no files at all)
+    EMPTY = 'EMPTY'
     # invalid metadata (repo_name, masters...)
     INVALID_METADATA = 'INVALID_METADATA'
     # bad cache
@@ -342,8 +345,12 @@ def main():
                     raise Exception('repo_name mismatch ("%s" in repo_name, "%s" on list)'
                             % (p_repo_id, r))
         except Exception as e:
-            log[r].status('Invalid metadata, removing: %s' % str(e))
-            states[r] = State.INVALID_METADATA
+            if not glob.glob(os.path.join(reposdir, r, '*')):
+                log[r].status('Empty repository, removing')
+                states[r] = State.EMPTY
+            else:
+                log[r].status('Invalid metadata, removing: %s' % str(e))
+                states[r] = State.INVALID_METADATA
             shutil.rmtree(os.path.join(reposdir, r))
             repos_conf.remove_section(r)
 
