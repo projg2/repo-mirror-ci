@@ -27,7 +27,7 @@ status_mapping = {
     'REMOVED': 'repository removed',
 }
 
-for r, s in repos.items():
+for r, s in sorted(repos.items()):
     if os.path.isfile('%s.txt' % r):
         r = '<a href="%s.txt">%s</a>' % (r, r)
     print('        <tr class="%s"><td>%s</td><td>%s</td>\n'
