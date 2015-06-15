@@ -237,11 +237,14 @@ def main():
     srcmap = SourceMapping()
     existing_repos = []
     for r, data in sorted(remote_info.items()):
-        src_uri, src_type, src_branch = data['sources'][0]
-        try:
-            vals = getattr(srcmap, src_type)(src_uri, src_branch)
-        except SkipRepo as e:
-            log[r].status('Skipping: ' + str(e))
+        for src_uri, src_type, src_branch in data['sources']:
+            try:
+                vals = getattr(srcmap, src_type)(src_uri, src_branch)
+            except SkipRepo as e:
+                log[r].status('Skipping %s: %s' % (src_uri, str(e)))
+            else:
+                break
+        else:
             states[r] = State.UNSUPPORTED
             if repos_conf.has_section(r):
                 repos_conf.remove_section(r)
