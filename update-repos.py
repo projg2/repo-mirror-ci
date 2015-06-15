@@ -261,7 +261,7 @@ def main():
         if os.path.exists(repo_path):
             # check whether sync params changed
             for k, v in vals.items():
-                if repos_conf.get(r, k) != v:
+                if not repos_conf.has_option(r, k) or repos_conf.get(r, k) != v:
                     log[r].status('Resetting, sync parameters changed')
                     to_remove.append(r)
                     break
