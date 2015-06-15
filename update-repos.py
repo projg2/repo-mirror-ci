@@ -288,7 +288,7 @@ def main():
         if can_pmaint(repos_conf, r):
             syncman.add(r, ['pmaint', 'sync', r])
         else:
-            syncman.add(r, ['emaint', 'sync', '-r', r])
+            syncman.add(r, ['portage-sync.py', r])
 
     # 5. check for sync failures
     to_readd = []
@@ -309,7 +309,7 @@ def main():
 
     # 6. remove local checkouts and sync again
     for r in sorted(to_readd):
-        syncman.add(r, ['emaint', 'sync', '-r', r])
+        syncman.add(r, ['portage-sync.py', r])
 
     for r, st in syncman.wait():
         if st == 0:
