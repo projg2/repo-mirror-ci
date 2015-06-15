@@ -288,6 +288,8 @@ def main():
         if can_pmaint(repos_conf, r):
             syncman.add(r, ['pmaint', 'sync', r])
         else:
+            if not os.path.exists(os.path.join(reposdir, r)):
+                os.mkdir(os.path.join(reposdir, r))
             syncman.add(r, ['portage-sync.py', r])
 
     # 5. check for sync failures
@@ -302,6 +304,7 @@ def main():
                 log[r].status('Will try to re-create')
                 if os.path.exists(os.path.join(reposdir, r)):
                     shutil.rmtree(os.path.join(reposdir, r))
+                    os.mkdir(os.path.join(reposdir, r))
                 to_readd.append(r)
             else:
                 states[r] = State.SYNC_FAIL
