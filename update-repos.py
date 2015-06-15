@@ -77,6 +77,7 @@ class SourceMapping(object):
         raise SkipRepo('Mercurial not supported')
 
     def Rsync(self, uri, branch):
+        raise SkipRepo('RSync is broken in emaint sync (works with Gentoo repo only)')
         if branch:
             raise SkipRepo('Branches in rsync, wtf?!')
         return {
