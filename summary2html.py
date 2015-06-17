@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import json
 import os.path
 
@@ -11,6 +12,7 @@ print('''
 <head>
     <meta charset='utf-8'/>
     <link rel='stylesheet' type='text/css' href='repo-status.css'/>
+    <title>Repository QA check results</title>
 </head>
 <body>
     <table>
@@ -35,6 +37,8 @@ for r, s in sorted(repos.items()):
 
 print('''
     </table>
+
+    <address>Generated on %s</address>
 </body>
 </html>
-''')
+''' % datetime.datetime.utcnow().strftime('%F %T UTC'))
