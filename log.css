@@ -1,0 +1,61 @@
+body
+{
+	font-family: monospace;
+
+	background: #fff;
+	color: #000;
+}
+
+h1
+{
+	font-size: 100%;
+	text-align: center;
+	border-bottom: 1px solid #000;
+}
+
+table
+{
+	width: 100%;
+	counter-reset: line;
+}
+
+tr.warn
+{
+	background: #ffa;
+}
+
+tr.err
+{
+	background: #faa;
+}
+
+tr:target
+{
+	background: #afa;
+}
+
+td:first-child
+{
+	text-align: right;
+	padding-right: 1ch;
+	min-width: 5ch;
+}
+	
+td:first-child a:before
+{
+	counter-increment: line;
+	content: counter(line);
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+td:first-child a span
+{
+	display: none;
+}
+
+pre
+{
+	white-space: pre-wrap;
+}

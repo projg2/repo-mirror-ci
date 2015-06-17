@@ -30,7 +30,9 @@ status_mapping = {
 }
 
 for r, s in sorted(repos.items()):
-    if os.path.isfile('%s.txt' % r):
+    if os.path.isfile('%s.html' % r):
+        r = '<a href="%s.html">%s</a>' % (r, r)
+    elif os.path.isfile('%s.txt' % r):
         r = '<a href="%s.txt">%s</a>' % (r, r)
     print('        <tr class="%s"><td>%s</td><td>%s</td>\n'
             % (s, r, status_mapping[s]))
