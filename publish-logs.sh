@@ -12,7 +12,7 @@ date=${logdir##*/}
 
 rm -f "${target}"/*
 cp "${logdir}"/* "${target}"/
-cp "${datadir}"/repo-status.css "${target}"/
+cp "${datadir}"/{log,repo-status}.css "${target}"/
 
 cd "${target}"
 "${bindir}"/txt2html.py *.txt
