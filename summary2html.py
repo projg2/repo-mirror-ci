@@ -2,45 +2,58 @@
 
 import datetime
 import json
+import os
 import os.path
+import sys
 
-with open('summary.json') as f:
-    repos = json.load(f)
 
-print('''
-<html>
-<head>
-    <meta charset='utf-8'/>
-    <link rel='stylesheet' type='text/css' href='repo-status.css'/>
-    <title>Repository QA check results</title>
-</head>
-<body>
-    <table>
-        <tr><th>Repository</th><th>Status</th></tr>
-''')
+def main(summary_path, output_path = None):
+    with open(summary_path) as f:
+        repos = json.load(f)
+        st_res = os.fstat(f.fileno())
+    if output_path is None:
+        output_path = os.path.join(os.path.dirname(summary_path), 'index.html')
+    res_dir = os.path.dirname(output_path)
 
-status_mapping = {
-    'GOOD': 'all good!',
-    'BAD_CACHE': 'cache regen failed',
-    'INVALID_METADATA': 'invalid repository metadata (wrong masters= most likely)',
-    'EMPTY': 'repository empty',
-    'SYNC_FAIL': 'sync failed for repository',
-    'UNSUPPORTED': 'repository VCS unsupported',
-    'REMOVED': 'repository removed',
-}
+    with open(output_path, 'w') as outf:
+        outf.write('''
+        <html>
+        <head>
+            <meta charset='utf-8'/>
+            <link rel='stylesheet' type='text/css' href='repo-status.css'/>
+            <title>Repository QA check results</title>
+        </head>
+        <body>
+            <table>
+                <tr><th>Repository</th><th>Status</th></tr>
+        ''')
 
-for r, s in sorted(repos.items()):
-    if os.path.isfile('%s.html' % r):
-        r = '<a href="%s.html">%s</a>' % (r, r)
-    elif os.path.isfile('%s.txt' % r):
-        r = '<a href="%s.txt">%s</a>' % (r, r)
-    print('        <tr class="%s"><td>%s</td><td>%s</td>\n'
-            % (s, r, status_mapping[s]))
+        status_mapping = {
+            'GOOD': 'all good!',
+            'BAD_CACHE': 'cache regen failed',
+            'INVALID_METADATA': 'invalid repository metadata (wrong masters= most likely)',
+            'EMPTY': 'repository empty',
+            'SYNC_FAIL': 'sync failed for repository',
+            'UNSUPPORTED': 'repository VCS unsupported',
+            'REMOVED': 'repository removed',
+        }
 
-print('''
-    </table>
+        for r, s in sorted(repos.items()):
+            if os.path.isfile(os.path.join(res_dir, '%s.html' % r)):
+                r = '<a href="%s.html">%s</a>' % (r, r)
+            elif os.path.isfile(os.path.join(res_dir, '%s.txt' % r)):
+                r = '<a href="%s.txt">%s</a>' % (r, r)
+            outf.write('        <tr class="%s"><td>%s</td><td>%s</td>\n'
+                    % (s, r, status_mapping[s]))
 
-    <address>Generated on %s</address>
-</body>
-</html>
-''' % datetime.datetime.utcnow().strftime('%F %T UTC'))
+        outf.write('''
+            </table>
+
+            <address>Generated based on results from %s</address>
+        </body>
+        </html>
+        ''' % datetime.datetime.utcfromtimestamp(st_res.st_mtime).strftime('%F %T UTC'))
+
+
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv[1:]))

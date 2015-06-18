@@ -16,7 +16,7 @@ cp "${datadir}"/{log,repo-status}.css "${target}"/
 
 cd "${target}"
 "${bindir}"/txt2html.py *.txt
-"${bindir}"/summary2html.py > index.html
+"${bindir}"/summary2html.py summary.json
 git add *
 git commit -a -m "${date}"
 git push
