@@ -40,15 +40,17 @@ td:first-child
 	padding-right: 1ch;
 	min-width: 5ch;
 	vertical-align: top;
+
+	/* meaningless but aesthetics */
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 }
 	
 td:first-child a:before
 {
 	counter-increment: line;
 	content: counter(line);
-	-moz-user-select: none;
-	-webkit-user-select: none;
-	user-select: none;
 }
 
 td:first-child a span
