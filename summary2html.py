@@ -31,9 +31,11 @@ def main(summary_path, output_path = None):
         status_mapping = {
             'GOOD': 'all good!',
             'BAD_CACHE': 'cache regen failed',
-            'INVALID_METADATA': 'invalid repository metadata (wrong masters=?)',
+            'INVALID_METADATA': 'invalid repository metadata',
             'MISSING_REPO_NAME': 'missing repo_name',
             'CONFLICTING_REPO_NAME': 'mismatched repo_name',
+            'MISSING_MASTERS': 'missing masters= spec',
+            'INVALID_MASTERS': 'masters= references unavailable repo',
             'EMPTY': 'repository empty',
             'SYNC_FAIL': 'sync failed for repository',
             'UNSUPPORTED': 'repository VCS unsupported',

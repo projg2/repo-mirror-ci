@@ -9,7 +9,6 @@ except ImportError:
     import ConfigParser as configparser
 
 import datetime
-import glob
 import json
 import os
 import os.path
@@ -53,7 +52,11 @@ class State(object):
     MISSING_REPO_NAME = 'MISSING_REPO_NAME'
     # conflicting repo_name
     CONFLICTING_REPO_NAME = 'CONFLICTING_REPO_NAME'
-    # invalid metadata (masters...)
+    # missing masters
+    MISSING_MASTERS = 'MISSING_MASTERS'
+    # invalid masters
+    INVALID_MASTERS = 'INVALID_MASTERS'
+    # invalid metadata (?)
     INVALID_METADATA = 'INVALID_METADATA'
     # bad cache
     BAD_CACHE = 'BAD_CACHE'
@@ -345,25 +348,38 @@ def main():
     pkgcore_config = pkgcore.config.load_config()
     for r in sorted(local_repos):
         repo_path = os.path.join(reposdir, r)
-        if not glob.glob(os.path.join(repo_path, '*')):
+        config_sect = pkgcore_config.collapse_named_section(repo_path)
+        raw_repo = config_sect.config['raw_repo'].instantiate()
+
+        p_repo_id = raw_repo.repo_id
+        p_masters = raw_repo.masters
+        if raw_repo.is_empty:
             log[r].status('Empty repository, removing')
             states[r]['x-state'] = State.EMPTY
+        elif not p_repo_id:
+            log[r].status('Missing repo_name, removing')
+            states[r]['x-state'] = State.MISSING_REPO_NAME
+        elif p_repo_id != r:
+            log[r].status('Conflicting repo_name, removing ("%s" in repo_name, "%s" on list)' % (p_repo_id, r))
+            states[r]['x-state'] = State.CONFLICTING_REPO_NAME
+            states[r]['x-repo-name'] = p_repo_id
+        elif p_masters is None:
+            log[r].status('Missing masters, removing')
+            states[r]['x-state'] = State.MISSING_MASTERS
         else:
-            config_sect = pkgcore_config.collapse_named_section(repo_path)
+            for m in p_masters:
+                if m not in remote_repos:
+                    log[r].status('Invalid/unavailable master = %s, removing' % m)
+                    states[r]['x-state'] = State.INVALID_MASTERS
+
+        if states[r]['x-state'] == State.GOOD:
+            # we check this since failure to instantiate a repo will
+            # prevent pkgcore from operating further
             try:
                 pkgcore_repo = config_sect.instantiate()
             except Exception:
                 log[r].status('Invalid metadata, removing: %s' % str(e))
                 states[r] = State.INVALID_METADATA
-            else:
-                p_repo_id = pkgcore_repo.config.repo_id
-                if not p_repo_id:
-                    log[r].status('Missing repo_name, removing')
-                    states[r]['x-state'] = State.MISSING_REPO_NAME
-                elif p_repo_id != r:
-                    log[r].status('Conflicting repo_name, removing ("%s" in repo_name, "%s" on list)' % (p_repo_id, r))
-                    states[r]['x-state'] = State.CONFLICTING_REPO_NAME
-                    states[r]['x-repo-name'] = p_repo_id
 
         if states[r]['x-state'] != State.GOOD:
             shutil.rmtree(os.path.join(reposdir, r))
