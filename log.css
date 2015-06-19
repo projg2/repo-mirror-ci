@@ -19,22 +19,38 @@ table
 	counter-reset: line;
 }
 
-tr.warn
+pre
+{
+	margin: 0;
+}
+
+.menu
+{
+	margin: 1em 0;
+}
+
+.menu td
+{
+	text-align: center;
+	min-width: 2.5em;
+}
+
+.warn
 {
 	background: #ffa;
 }
 
-tr.err
+.err
 {
 	background: #faa;
 }
 
-tr:target
+.log tr:target, .good
 {
 	background: #afa;
 }
 
-td:first-child
+.log td:first-child
 {
 	text-align: right;
 	padding-right: 1ch;
@@ -46,19 +62,19 @@ td:first-child
 	-webkit-user-select: none;
 	user-select: none;
 }
-	
-td:first-child a:before
+
+.log td:first-child a:before
 {
 	counter-increment: line;
 	content: counter(line);
 }
 
-td:first-child a span
+.log td:first-child a span
 {
 	display: none;
 }
 
-pre
+.log pre
 {
 	white-space: pre-wrap;
 }
