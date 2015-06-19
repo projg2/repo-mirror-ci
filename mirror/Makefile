@@ -10,8 +10,7 @@ clean: $(patsubst %,clean-%,$(DELETED_REPOS))
 
 update-%: $(MIRRORDIR)/% rsync-%
 	cd $< && git add -A
-	cd $< && { git diff --cached --quiet --exit-code || git commit --quiet -m "$(shell date -u '+%F %T UTC')"; }
-	cd $< && git push
+	cd $< && { git diff --cached --quiet --exit-code || { git commit --quiet -m "$(shell date -u '+%F %T UTC')"; git push; }; }
 
 rsync-%: $(REPOSDIR)/% $(MIRRORDIR)/%
 	rsync -rlpt --delete --exclude=.git --exclude=.svn $< $(MIRRORDIR)
