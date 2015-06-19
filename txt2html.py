@@ -12,6 +12,10 @@ common_patterns = (
     (" [*] Sync failed with", 'err'),
     ("!!! ERROR: .* failed.", 'err'),
     ("!!! The die message:", 'err'),
+    ("NonsolvableDeps", 'err'),
+    ("IUSEMetadataReport", 'err'),
+    ("LicenseMetadataReport", 'err'),
+    ("VisibilityReport", 'err'),
 )
 
 
@@ -24,7 +28,7 @@ class Highlighter(object):
 
     def get_class(self, l):
         for regexp, cl in self.regexps:
-            if regexp.match(l):
+            if regexp.search(l):
                 return cl
         return ''
 
@@ -52,8 +56,15 @@ def main(*files):
                 h = Highlighter(repo_name)
 
                 for n, l in enumerate(f):
-                    outf.write('            <tr class="%s" id="l%d"><td><a href="#l%d"><span>%d</span></a></td><td><pre>%s</pre></td></tr>\n'
-                            % (h.get_class(l), n+1, n+1, n+1, cgi.escape(l)))
+                    cl = h.get_class(l)
+                    if 'warn' in cl.split():
+                        wtag = '<td>[WARN]</td>'
+                    elif 'err' in cl.split():
+                        wtag = '<td>[FATAL]</td>'
+                    else:
+                        wtag = ''
+                    outf.write('            <tr class="%s" id="l%d"><td><a href="#l%d"><span>%d</span></a></td><td><pre>%s</pre></td>%s</tr>\n'
+                            % (cl, n+1, n+1, n+1, cgi.escape(l), wtag))
 
                 outf.write('''
         </table>
