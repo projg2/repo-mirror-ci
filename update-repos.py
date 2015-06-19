@@ -364,7 +364,7 @@ def main():
             states[r]['x-state'] = State.CONFLICTING_REPO_NAME
             states[r]['x-repo-name'] = p_repo_id
         elif p_masters is None:
-            log[r].status('Missing masters, removing')
+            log[r].status('Missing masters!')
             states[r]['x-state'] = State.MISSING_MASTERS
         else:
             for m in p_masters:
@@ -372,7 +372,7 @@ def main():
                     log[r].status('Invalid/unavailable master = %s, removing' % m)
                     states[r]['x-state'] = State.INVALID_MASTERS
 
-        if states[r]['x-state'] == State.GOOD:
+        if states[r]['x-state'] in (State.GOOD, State.MISSING_MASTERS):
             # we check this since failure to instantiate a repo will
             # prevent pkgcore from operating further
             try:
@@ -381,7 +381,7 @@ def main():
                 log[r].status('Invalid metadata, removing: %s' % str(e))
                 states[r] = State.INVALID_METADATA
 
-        if states[r]['x-state'] != State.GOOD:
+        if states[r]['x-state'] not in (State.GOOD, State.MISSING_MASTERS):
             shutil.rmtree(os.path.join(reposdir, r))
             repos_conf.remove_section(r)
 
@@ -399,7 +399,9 @@ def main():
             log[r].status('Cache regenerated successfully')
         else:
             log[r].status('Cache regen failed with %d' % st)
-            states[r]['x-state'] = State.BAD_CACHE
+            # don't override higher priority issues here
+            if states[r]['x-state'] == State.GOOD:
+                states[r]['x-state'] = State.BAD_CACHE
 
     log.write_summary(states)
 
