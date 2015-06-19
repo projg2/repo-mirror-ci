@@ -327,6 +327,7 @@ def main():
     for r, st in syncman.wait():
         if st == 0:
             log[r].status('Sync succeeded after re-adding')
+            states[r]['x-state'] = State.GOOD
         else:
             log[r].status('Sync failed again with %d, removing' % st)
             states[r]['x-state'] = State.SYNC_FAIL
