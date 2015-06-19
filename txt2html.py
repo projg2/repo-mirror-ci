@@ -40,7 +40,8 @@ def main(*files):
 
         with open(fn) as f:
             with open(fn[:-4] + '.html', 'w') as outf:
-                outf.write('''<html>
+                outf.write('''<!DOCTYPE html>
+<html>
     <head>
         <meta charset='utf-8'/>
         <link rel="stylesheet" type="text/css" href="log.css"/>

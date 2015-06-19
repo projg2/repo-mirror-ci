@@ -16,16 +16,16 @@ def main(summary_path, output_path = None):
     res_dir = os.path.dirname(output_path)
 
     with open(output_path, 'w') as outf:
-        outf.write('''
-        <html>
-        <head>
-            <meta charset='utf-8'/>
-            <link rel='stylesheet' type='text/css' href='repo-status.css'/>
-            <title>Repository QA check results</title>
-        </head>
-        <body>
-            <table>
-                <tr><th>Repository</th><th>Status</th></tr>
+        outf.write('''<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'/>
+        <link rel='stylesheet' type='text/css' href='repo-status.css'/>
+        <title>Repository QA check results</title>
+    </head>
+    <body>
+        <table>
+            <tr><th>Repository</th><th>Status</th></tr>
         ''')
 
         status_mapping = {
@@ -51,11 +51,11 @@ def main(summary_path, output_path = None):
                     % (data['x-state'], r, status_mapping[data['x-state']]))
 
         outf.write('''
-            </table>
+        </table>
 
-            <address>Generated based on results from %s</address>
-        </body>
-        </html>
+        <address>Generated based on results from %s</address>
+    </body>
+</html>
         ''' % datetime.datetime.utcfromtimestamp(st_res.st_mtime).strftime('%F %T UTC'))
 
 
