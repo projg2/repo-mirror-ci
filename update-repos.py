@@ -49,7 +49,11 @@ class State(object):
     SYNC_FAIL = 'SYNC_FAIL'
     # empty repository (no files at all)
     EMPTY = 'EMPTY'
-    # invalid metadata (repo_name, masters...)
+    # missing repo_name
+    MISSING_REPO_NAME = 'MISSING_REPO_NAME'
+    # conflicting repo_name
+    CONFLICTING_REPO_NAME = 'CONFLICTING_REPO_NAME'
+    # invalid metadata (masters...)
     INVALID_METADATA = 'INVALID_METADATA'
     # bad cache
     BAD_CACHE = 'BAD_CACHE'
@@ -230,7 +234,7 @@ def main():
     # 1. remove repos that no longer exist
     to_remove = list(local_repos.difference(remote_repos))
     for r in sorted(to_remove):
-        states[r] = State.REMOVED
+        states[r] = {'x-state': State.REMOVED}
         log[r].status('Removing, no longer on remote list')
         repos_conf.remove_section(r)
 
@@ -238,6 +242,9 @@ def main():
     srcmap = SourceMapping()
     existing_repos = []
     for r, data in sorted(remote_info.items()):
+        states[r] = dict(data)
+        del states[r]['src_types']
+        del states[r]['src_uris']
         for src_uri, src_type, src_branch in data['sources']:
             try:
                 vals = getattr(srcmap, src_type)(src_uri, src_branch)
@@ -246,7 +253,7 @@ def main():
             else:
                 break
         else:
-            states[r] = State.UNSUPPORTED
+            states[r]['x-state'] = State.UNSUPPORTED
             if repos_conf.has_section(r):
                 repos_conf.remove_section(r)
                 to_remove.append(r)
@@ -297,7 +304,7 @@ def main():
     for r, st in syncman.wait():
         if st == 0:
             log[r].status('Sync succeeded')
-            states[r] = State.GOOD
+            states[r]['x-state'] = State.GOOD
         else:
             log[r].status('Sync failed with %d' % st)
             if r in existing_repos:
@@ -307,7 +314,7 @@ def main():
                     os.mkdir(os.path.join(reposdir, r))
                 to_readd.append(r)
             else:
-                states[r] = State.SYNC_FAIL
+                states[r]['x-state'] = State.SYNC_FAIL
                 repos_conf.remove_section(r)
 
     # 6. remove local checkouts and sync again
@@ -319,7 +326,7 @@ def main():
             log[r].status('Sync succeeded after re-adding')
         else:
             log[r].status('Sync failed again with %d, removing' % st)
-            states[r] = State.SYNC_FAIL
+            states[r]['x-state'] = State.SYNC_FAIL
             if os.path.exists(os.path.join(reposdir, r)):
                 shutil.rmtree(os.path.join(reposdir, r))
             repos_conf.remove_section(r)
@@ -337,27 +344,28 @@ def main():
 
     pkgcore_config = pkgcore.config.load_config()
     for r in sorted(local_repos):
-        try:
-            repo_path = os.path.join(reposdir, r)
+        repo_path = os.path.join(reposdir, r)
+        if not glob.glob(os.path.join(repo_path, '*')):
+            log[r].status('Empty repository, removing')
+            states[r]['x-state'] = State.EMPTY
+        else:
             config_sect = pkgcore_config.collapse_named_section(repo_path)
             try:
                 pkgcore_repo = config_sect.instantiate()
             except Exception:
-                raise Exception('broken metadata (invalid masters?)')
+                log[r].status('Invalid metadata, removing: %s' % str(e))
+                states[r] = State.INVALID_METADATA
             else:
                 p_repo_id = pkgcore_repo.config.repo_id
                 if not p_repo_id:
-                    raise Exception('repo_name not found')
+                    log[r].status('Missing repo_name, removing')
+                    states[r]['x-state'] = State.MISSING_REPO_NAME
                 elif p_repo_id != r:
-                    raise Exception('repo_name mismatch ("%s" in repo_name, "%s" on list)'
-                            % (p_repo_id, r))
-        except Exception as e:
-            if not glob.glob(os.path.join(reposdir, r, '*')):
-                log[r].status('Empty repository, removing')
-                states[r] = State.EMPTY
-            else:
-                log[r].status('Invalid metadata, removing: %s' % str(e))
-                states[r] = State.INVALID_METADATA
+                    log[r].status('Conflicting repo_name, removing ("%s" in repo_name, "%s" on list)' % (p_repo_id, r))
+                    states[r]['x-state'] = State.CONFLICTING_REPO_NAME
+                    states[r]['x-repo-name'] = p_repo_id
+
+        if states[r]['x-state'] != State.GOOD:
             shutil.rmtree(os.path.join(reposdir, r))
             repos_conf.remove_section(r)
 
@@ -375,7 +383,7 @@ def main():
             log[r].status('Cache regenerated successfully')
         else:
             log[r].status('Cache regen failed with %d' % st)
-            states[r] = State.BAD_CACHE
+            states[r]['x-state'] = State.BAD_CACHE
 
     log.write_summary(states)
 

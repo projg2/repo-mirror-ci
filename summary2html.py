@@ -31,20 +31,22 @@ def main(summary_path, output_path = None):
         status_mapping = {
             'GOOD': 'all good!',
             'BAD_CACHE': 'cache regen failed',
-            'INVALID_METADATA': 'invalid repository metadata (wrong masters= most likely)',
+            'INVALID_METADATA': 'invalid repository metadata (wrong masters=?)',
+            'MISSING_REPO_NAME': 'missing repo_name',
+            'CONFLICTING_REPO_NAME': 'mismatched repo_name',
             'EMPTY': 'repository empty',
             'SYNC_FAIL': 'sync failed for repository',
             'UNSUPPORTED': 'repository VCS unsupported',
             'REMOVED': 'repository removed',
         }
 
-        for r, s in sorted(repos.items()):
+        for r, data in sorted(repos.items()):
             if os.path.isfile(os.path.join(res_dir, '%s.html' % r)):
                 r = '<a href="%s.html">%s</a>' % (r, r)
             elif os.path.isfile(os.path.join(res_dir, '%s.txt' % r)):
                 r = '<a href="%s.txt">%s</a>' % (r, r)
             outf.write('        <tr class="%s"><td>%s</td><td>%s</td>\n'
-                    % (s, r, status_mapping[s]))
+                    % (data['x-state'], r, status_mapping[data['x-state']]))
 
         outf.write('''
             </table>
