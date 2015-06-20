@@ -20,8 +20,7 @@ common_patterns = (
     ("CategoryMetadataXmlCheck:", 'warn'),
     ("PackageMetadataXmlCheck:", 'warn'),
     ("PkgDirReport:", 'warn'),
-    ("UnusedGlobalFlags:", 'warn'),
-    ("WhitespaceCheck:", 'warn'),
+    ("UnusedGlobalFlagsResult:", 'warn'),
 )
 
 
