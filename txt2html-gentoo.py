@@ -51,14 +51,34 @@ def main(repo_path, *files):
         assert(fn.endswith('.txt'))
 
         with open(fn) as f:
+            lines = {
+                'warn': [],
+                'err': [],
+            }
+            descs = {
+                'warn': 'Warnings',
+                'err': 'Errors',
+            }
             max_cl = 'good'
-            for l in f:
+            for i, l in enumerate(f):
                 cl = h.get_class(l)
-                if 'warn' in cl.split() and max_cl != 'err':
-                    max_cl = 'warn'
-                elif 'err' in cl.split():
-                    max_cl = 'err'
-                    break
+                for x in cl.split():
+                    lines[x].append(i + 1)
+                    if max_cl == 'good':
+                        max_cl = x
+                    elif max_cl == 'warn' and x == 'err':
+                        max_cl = x
+
+            data = ''
+            for k, v in lines.items():
+                if v:
+                    data += '        <div class="lines %s">\n            <p>%s:</p>\n            <ol>\n' % (k, descs[k])
+                    for l in v:
+                        data += '                <li><a href="#l%d">%d</a></li>\n' % (l, l)
+                    data += '            </ol>\n        </div>\n'
+
+            results[fn] = data
+
             menu += ('            <li class="%s"><a href="%s">%s</a></li>\n'
                     % (max_cl, fn[:-4] + '.html', fn[:-4]))
 
@@ -79,9 +99,11 @@ def main(repo_path, *files):
 %s
         </ol>
 
+        %s
+
         <table class="log">
 
-''' % (fn[:-4], menu))
+''' % (fn[:-4], menu, results[fn]))
 
                 for n, l in enumerate(f):
                     cl = h.get_class(l)
