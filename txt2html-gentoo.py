@@ -59,7 +59,7 @@ def main(repo_path, *files):
                 elif 'err' in cl.split():
                     max_cl = 'err'
                     break
-            menu += ('                <td class="%s"><a href="%s">%s</a></td>\n'
+            menu += ('            <li class="%s"><a href="%s">%s</a></li>\n'
                     % (max_cl, fn[:-4] + '.html', fn[:-4]))
 
     for fn in files:
@@ -75,11 +75,9 @@ def main(repo_path, *files):
         <title>QA check results for repository gentoo [%s]</title>
     </head>
     <body>
-        <table class="menu">
-            <tr>
+        <ol class="menu">
 %s
-            </tr>
-        </table>
+        </ol>
 
         <table class="log">
 
