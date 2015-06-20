@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import cgi
+import datetime
 import os.path
 import re
 import sys
@@ -37,11 +38,14 @@ def ci_key(x):
         return int(x) + 1
 
 
-def main(*files):
+def main(repo_path, *files):
     h = Highlighter()
     results = {}
 
     menu = ''
+
+    with open(os.path.join(repo_path, 'metadata', 'timestamp.x')) as f:
+        ts = int(f.read().split()[0])
 
     for fn in sorted(files, key=ci_key):
         assert(fn.endswith('.txt'))
@@ -94,8 +98,10 @@ def main(*files):
 
                 outf.write('''
         </table>
+
+        <address>Generated based on results from %s</address>
     </body>
-</html>''')
+</html>''' % datetime.datetime.utcfromtimestamp(ts).strftime('%F %T UTC'))
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv[1:]))

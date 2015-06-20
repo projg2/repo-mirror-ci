@@ -78,3 +78,10 @@ pre
 {
 	white-space: pre-wrap;
 }
+
+address
+{
+	margin-top: 1em;
+	font-size: 75%;
+	text-align: center;
+}
