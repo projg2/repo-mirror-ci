@@ -24,15 +24,47 @@ pre
 	margin: 0;
 }
 
-.menu
+ol.menu
 {
 	margin: 1em 0;
+	list-style: none;
+	text-align: center;
+	padding: 0;
 }
 
-.menu td
+.menu li
 {
+	display: inline-block;
 	text-align: center;
-	min-width: 2.5em;
+	min-width: 3em;
+}
+
+.lines
+{
+	margin: .5em 5ch 1em;
+}
+
+.lines p
+{
+	display: inline;
+}
+
+.lines ol
+{
+	display: inline-block;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.lines li
+{
+	display: inline;
+}
+
+.lines li + li:before
+{
+	content: '; ';
 }
 
 .warn
