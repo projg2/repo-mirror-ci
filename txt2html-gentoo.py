@@ -8,20 +8,20 @@ import sys
 
 
 common_patterns = (
-    ("NonsolvableDeps", 'err'),
-    ("IUSEMetadataReport", 'err'),
-    ("LicenseMetadataReport", 'err'),
-    ("VisibilityReport", 'err'),
-    ("MetadataError", 'warn'),
-    ("DroppedKeywordsReport", 'warn'),
-    ("TreeVulnerabilitiesReport", 'warn'),
-    ("DescriptionReport", 'warn'),
-    ("UnusedLocalFlagsReport", 'warn'),
-    ("CategoryMetadataXmlCheck", 'warn'),
-    ("PackageMetadataXmlCheck", 'warn'),
-    ("PkgDirReport", 'warn'),
-    ("UnusedGlobalFlags", 'warn'),
-    ("WhitespaceCheck", 'warn'),
+    ("NonsolvableDeps:", 'err'),
+    ("IUSEMetadataReport:", 'err'),
+    ("LicenseMetadataReport:", 'err'),
+    ("VisibilityReport:", 'err'),
+    ("MetadataError:", 'warn'),
+    ("DroppedKeywordsReport:", 'warn'),
+    ("TreeVulnerabilitiesReport:", 'warn'),
+    ("DescriptionReport:", 'warn'),
+    ("UnusedLocalFlagsReport:", 'warn'),
+    ("CategoryMetadataXmlCheck:", 'warn'),
+    ("PackageMetadataXmlCheck:", 'warn'),
+    ("PkgDirReport:", 'warn'),
+    ("UnusedGlobalFlags:", 'warn'),
+    ("WhitespaceCheck:", 'warn'),
 )
 
 
