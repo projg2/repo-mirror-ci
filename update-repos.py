@@ -368,7 +368,7 @@ def main():
                     log[r].status('Invalid/unavailable master = %s, removing' % m)
                     states[r]['x-state'] = State.INVALID_MASTERS
 
-        if states[r]['x-state'] in (State.GOOD, State.MISSING_MASTERS):
+        if states[r]['x-state'] in (State.GOOD,):
             # we check this since failure to instantiate a repo will
             # prevent pkgcore from operating further
             try:
@@ -378,7 +378,7 @@ def main():
                 if states[r]['x-state'] == State.GOOD:
                     states[r]['x-state'] = State.INVALID_METADATA
 
-        if states[r]['x-state'] not in (State.GOOD, State.MISSING_MASTERS):
+        if states[r]['x-state'] not in (State.GOOD,):
             shutil.rmtree(os.path.join(reposdir, r))
             repos_conf.remove_section(r)
 
