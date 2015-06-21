@@ -73,7 +73,7 @@ class SourceMapping(object):
 
     def Git(self, uri, branch):
         if branch:
-            raise SkipRepo('Git branches not supported')
+            raise SkipRepo('Branches are not supported')
         return {
             'sync-type': 'git',
             'sync-depth': '0',
@@ -81,10 +81,14 @@ class SourceMapping(object):
         }
 
     def Mercurial(self, uri, branch):
-        raise SkipRepo('Mercurial not supported')
+        if branch:
+            raise SkipRepo('Branches are not supported')
+        return {
+            'sync-type': 'hg',
+            'sync-uri': uri,
+        }
 
     def Rsync(self, uri, branch):
-        raise SkipRepo('RSync is broken in emaint sync (works with Gentoo repo only)')
         if branch:
             raise SkipRepo('Branches in rsync, wtf?!')
         return {
@@ -101,17 +105,12 @@ class SourceMapping(object):
         }
 
     def Bzr(self, uri, branch):
-        raise SkipRepo('Bzr not supported')
-
-
-def can_pmaint(repos_conf, r):
-    """ Check if repository can be synced using pmaint """
-    # initial clone? can't do
-    if not os.path.exists(repos_conf.get(r, 'location')):
-        return False
-    if repos_conf.get(r, 'sync-type') not in ('cvs', 'git', 'svn'):
-        return False
-    return True
+        if branch:
+            raise SkipRepo('Svn branches not supported')
+        return {
+            'sync-type': 'bzr',
+            'sync-uri': uri,
+        }
 
 
 class LoggerProxy(object):
@@ -294,13 +293,8 @@ def main():
     jobs = []
     syncman = TaskManager(MAX_SYNC_JOBS, log)
     for r in sorted(local_repos):
-        # pmaint is fast but fails most of the time...
-        if can_pmaint(repos_conf, r):
-            syncman.add(r, ['pmaint', 'sync', r])
-        else:
-            if not os.path.exists(os.path.join(reposdir, r)):
-                os.mkdir(os.path.join(reposdir, r))
-            syncman.add(r, ['portage-sync.py', r])
+        repo_path = os.path.join(reposdir, r)
+        syncman.add(r, ['pmaint', 'sync', repo_path])
 
     # 5. check for sync failures
     to_readd = []
@@ -322,7 +316,8 @@ def main():
 
     # 6. remove local checkouts and sync again
     for r in sorted(to_readd):
-        syncman.add(r, ['portage-sync.py', r])
+        repo_path = os.path.join(reposdir, r)
+        syncman.add(r, ['pmaint', 'sync', repo_path])
 
     for r, st in syncman.wait():
         if st == 0:
