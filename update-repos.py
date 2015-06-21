@@ -373,9 +373,9 @@ def main():
             # prevent pkgcore from operating further
             try:
                 pkgcore_repo = config_sect.instantiate()
-            except Exception:
+            except Exception as e:
                 log[r].status('Invalid metadata, removing: %s' % str(e))
-                states[r] = State.INVALID_METADATA
+                states[r]['x-state'] = State.INVALID_METADATA
 
         if states[r]['x-state'] not in (State.GOOD, State.MISSING_MASTERS):
             shutil.rmtree(os.path.join(reposdir, r))
