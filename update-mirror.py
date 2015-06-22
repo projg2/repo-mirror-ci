@@ -33,8 +33,12 @@ def main(summary_path):
         # 2. remove repos with unsupported VCS -- this means that
         # upstream has switched, and there's no point in keeping
         # an outdated mirror
+        #
+        # 3. we can't update repos which are broken to the point of
+        # being implicitly removed
 
         data['x-can-create'] = data['x-state'] in ('GOOD', 'BAD_CACHE')
+        data['x-can-update'] = data['x-can-create']
         data['x-should-remove'] = data['x-state'] in ('REMOVED', 'UNSUPPORTED')
 
     # 0. scan all repos
@@ -46,7 +50,8 @@ def main(summary_path):
             to_remove.append(r)
         else:
             gh_repos.add(r.name)
-            to_update.append(r)
+            if repos[r.name]['x-can-update']:
+                to_update.append(r)
     sys.stderr.write('\n')
 
     # 1. delete stale repos
