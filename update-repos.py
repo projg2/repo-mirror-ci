@@ -311,7 +311,6 @@ def main():
                 log[r].status('Will try to re-create')
                 if os.path.exists(os.path.join(reposdir, r)):
                     shutil.rmtree(os.path.join(reposdir, r))
-                    os.mkdir(os.path.join(reposdir, r))
                 to_readd.append(r)
             else:
                 states[r]['x-state'] = State.SYNC_FAIL
