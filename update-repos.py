@@ -13,6 +13,7 @@ import json
 import os
 import os.path
 import pickle
+import pprint
 import shutil
 import subprocess
 import sys
@@ -247,6 +248,8 @@ def main():
         states[r] = dict(data)
         del states[r]['src_types']
         del states[r]['src_uris']
+        with log[r].open() as f:
+            pprint.pprint(states[r], f)
         for src_uri, src_type, src_branch in data['sources']:
             try:
                 vals = getattr(srcmap, src_type)(src_uri, src_branch)
