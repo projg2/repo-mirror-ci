@@ -47,6 +47,19 @@ def ci_key(x):
         return int(x) + 1
 
 
+def ranges(l):
+    it = iter(l)
+    prev = next(it)
+    first = prev
+    for x in it:
+        assert(x > prev)
+        if x != prev + 1:
+            yield (first, prev)
+            first = x
+        prev = x
+    yield (first, prev)
+
+
 def main(repo_path, *files):
     h = Highlighter()
     results = {}
@@ -82,8 +95,8 @@ def main(repo_path, *files):
             for k, v in lines.items():
                 if v:
                     data += '        <div class="lines %s">\n            <p>%s:</p>\n            <ol>\n' % (k, descs[k])
-                    for l in v:
-                        data += '                <li><a href="#l%d">%d</a></li>\n' % (l, l)
+                    for first, last in ranges(v):
+                        data += '                <li><a href="#l%d">%s</a></li>\n' % (first, '%d-%d' % (first, last) if first != last else first)
                     data += '            </ol>\n        </div>\n'
 
             results[fn] = data
