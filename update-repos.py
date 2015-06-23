@@ -79,6 +79,7 @@ class SourceMapping(object):
             'sync-type': 'git',
             'sync-depth': '0',
             'sync-uri': uri,
+            'x-vcs-preference': 0,
         }
 
     def Mercurial(self, uri, branch):
@@ -87,6 +88,7 @@ class SourceMapping(object):
         return {
             'sync-type': 'hg',
             'sync-uri': uri,
+            'x-vcs-preference': 5,
         }
 
     def Rsync(self, uri, branch):
@@ -95,6 +97,7 @@ class SourceMapping(object):
         return {
             'sync-type': 'rsync',
             'sync-uri': uri,
+            'x-vcs-preference': 100,
         }
 
     def Subversion(self, uri, branch):
@@ -103,6 +106,7 @@ class SourceMapping(object):
         return {
             'sync-type': 'svn',
             'sync-uri': uri,
+            'x-vcs-preference': 10,
         }
 
     def Bzr(self, uri, branch):
@@ -111,6 +115,7 @@ class SourceMapping(object):
         return {
             'sync-type': 'bzr',
             'sync-uri': uri,
+            'x-vcs-preference': 5,
         }
 
 
@@ -250,19 +255,25 @@ def main():
         del states[r]['src_uris']
         with log[r].open() as f:
             pprint.pprint(states[r], f)
+
+        possible_configs = []
         for src_uri, src_type, src_branch in data['sources']:
             try:
-                vals = getattr(srcmap, src_type)(src_uri, src_branch)
+                possible_configs.append(
+                        getattr(srcmap, src_type)(src_uri, src_branch))
             except SkipRepo as e:
                 log[r].status('Skipping %s: %s' % (src_uri, str(e)))
-            else:
-                break
-        else:
+
+        if not possible_configs:
             states[r]['x-state'] = State.UNSUPPORTED
             if repos_conf.has_section(r):
                 repos_conf.remove_section(r)
                 to_remove.append(r)
             continue
+
+        # choose the first URI for most preferred protocol (stable sort)
+        vals = sorted(possible_configs, key=lambda x: x['x-vcs-preference'])[0]
+        del vals['x-vcs-preference']
 
         if not repos_conf.has_section(r):
             log[r].status('Adding new repository')
