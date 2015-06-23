@@ -405,22 +405,24 @@ def main():
     log.write_summary(states)
 
     # 9. run pkgcheck
-    pkgcheckman = TaskManager(MAX_PCHECK_JOBS, log)
-    for r in sorted(local_repos):
-        pkgcheckman.add(r, ['pkgcheck', '-r', repos_conf.get(r, 'location'),
-            '--reporter=FancyReporter',
-            '--color=yes',
-            '--profile-disable-dev',
-            '--profile-disable-deprecated',
-            '--profile-disable-exp',
-            '*/*'])
+    # disabled because pkgcheck does not support masters currently
+    if False:
+        pkgcheckman = TaskManager(MAX_PCHECK_JOBS, log)
+        for r in sorted(local_repos):
+            pkgcheckman.add(r, ['pkgcheck', '-r', repos_conf.get(r, 'location'),
+                '--reporter=FancyReporter',
+                '--color=yes',
+                '--profile-disable-dev',
+                '--profile-disable-deprecated',
+                '--profile-disable-exp',
+                '*/*'])
 
-    for r, st in pkgcheckman.wait():
-        if st == 0:
-            log[r].status('pkgcheck ran successfully')
-        else:
-            # shouldn't happen really
-            log[r].status('pkgcheck failed with %d' % st)
+        for r, st in pkgcheckman.wait():
+            if st == 0:
+                log[r].status('pkgcheck ran successfully')
+            else:
+                # shouldn't happen really
+                log[r].status('pkgcheck failed with %d' % st)
 
 
 if __name__ == '__main__':
