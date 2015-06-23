@@ -88,8 +88,50 @@ def main(bug_db_path, summary_path):
 
     sth = StateHandlers()
 
+    for r, v in bug_db.items():
+        if r not in summary:
+            summary[r] = {'x-state': 'REMOVED'}
+
     for r, v in sorted(summary.items()):
         issue = v['x-state']
+        if issue == 'REMOVED':
+            params = {
+                'Bugzilla_token': token,
+                'ids': list(bug_db.get(r, {}).values()),
+            }
+            if params['ids']:
+                ret = bz.Bug.get(params)
+                for b in ret['bugs']:
+                    # skip bugs that were already resolved
+                    if b['resolution']:
+                        params['ids'].remove(b['id'])
+
+                if params['ids']:
+                    params['status'] = 'RESOLVED'
+                    params['resolution'] = 'OBSOLETE'
+                    params['comment'] = {
+                        'body': 'The repository has been removed, rendering this bug obsolete.',
+                    }
+
+                    print('Bugs: %s' % params['ids'])
+                    print('Repository: %s' % r)
+                    print('Status: %s/%s' % (params['status'], params['resolution']))
+                    print()
+                    print(params['comment']['body'])
+                    print()
+                    resp = input('Update the bugs? [Y/n]')
+                    if resp.lower() in ('', 'y', 'yes'):
+                        ret = bz.Bug.update(params)
+                        print('Updated bugs %s' % [b['id'] for b in ret['bugs']])
+                        continue
+
+                del bug_db[r]
+
+                with open(bug_db_path + '.new', 'w') as f:
+                    json.dump(bug_db, f)
+                os.rename(bug_db_path + '.new', bug_db_path)
+            continue
+
         w = getattr(sth, issue)(r)
         if w is not None:
             if bug_db.get(r):
