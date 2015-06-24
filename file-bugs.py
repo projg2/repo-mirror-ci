@@ -95,6 +95,7 @@ def main(bug_db_path, summary_path):
         if r not in summary:
             summary[r] = {'x-state': 'REMOVED'}
 
+    expected_open_bugs = {}
     for r, v in sorted(summary.items()):
         issue = v['x-state']
         current_bugs = bug_db.get(r, {})
@@ -102,6 +103,7 @@ def main(bug_db_path, summary_path):
         if issue in current_bugs:
             print('%s: %s already filed as #%d'
                     % (r, issue, bug_db[r][issue]))
+            expected_open_bugs[bug_db[r][issue]] = (r, issue)
             continue
 
         w = getattr(sth, issue)(r)
@@ -207,6 +209,19 @@ Owner: %s
                     json.dump(bug_db, f)
                 os.rename(bug_db_path + '.new', bug_db_path)
             continue
+
+    params = {
+        'Bugzilla_token': token,
+        'ids': list(expected_open_bugs),
+    }
+    if params['ids']:
+        ret = bz.Bug.get(params)
+        for b in ret['bugs']:
+            # warn about bugs that were resolved (incorrectly?)
+            if b['resolution']:
+                print('Warning: #%d (%s) %s/%s'
+                        % (b['id'], ': '.join(expected_open_bugs[b['id']]),
+                            b['status'], b['resolution']))
 
     return 0
 
