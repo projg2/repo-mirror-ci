@@ -19,6 +19,9 @@ class BugDesc(object):
 
 
 class StateHandlers(object):
+    def DELETED(self, repo):
+        pass
+
     def GOOD(self, repo):
         pass
 
@@ -94,53 +97,17 @@ def main(bug_db_path, summary_path):
 
     for r, v in sorted(summary.items()):
         issue = v['x-state']
-        if issue == 'REMOVED':
-            params = {
-                'Bugzilla_token': token,
-                'ids': list(bug_db.get(r, {}).values()),
-            }
-            if params['ids']:
-                ret = bz.Bug.get(params)
-                for b in ret['bugs']:
-                    # skip bugs that were already resolved
-                    if b['resolution']:
-                        params['ids'].remove(b['id'])
+        current_bugs = bug_db.get(r, {})
 
-                if params['ids']:
-                    params['status'] = 'RESOLVED'
-                    params['resolution'] = 'OBSOLETE'
-                    params['comment'] = {
-                        'body': 'The repository has been removed, rendering this bug obsolete.',
-                    }
-
-                    print('Bugs: %s' % params['ids'])
-                    print('Repository: %s' % r)
-                    print('Status: %s/%s' % (params['status'], params['resolution']))
-                    print()
-                    print(params['comment']['body'])
-                    print()
-                    resp = input('Update the bugs? [Y/n]')
-                    if resp.lower() in ('', 'y', 'yes'):
-                        ret = bz.Bug.update(params)
-                        print('Updated bugs %s' % [b['id'] for b in ret['bugs']])
-                        continue
-
-                del bug_db[r]
-
-                with open(bug_db_path + '.new', 'w') as f:
-                    json.dump(bug_db, f)
-                os.rename(bug_db_path + '.new', bug_db_path)
+        if issue in current_bugs:
+            print('%s: %s already filed as #%d'
+                    % (r, issue, bug_db[r][issue]))
             continue
 
         w = getattr(sth, issue)(r)
         if w is not None:
-            if bug_db.get(r):
-                if issue in bug_db[r]:
-                    print('%s: %s already filed as #%d'
-                            % (r, issue, bug_db[r][issue]))
-                    continue
-                else:
-                    raise NotImplementedError('New issue with the same repository')
+            if current_bugs:
+                raise NotImplementedError('New issue with the same repository')
 
             # TODO: get all owners
             owners = (v['owner_email'],)
@@ -197,6 +164,49 @@ Owner: %s
                 with open(bug_db_path + '.new', 'w') as f:
                     json.dump(bug_db, f)
                 os.rename(bug_db_path + '.new', bug_db_path)
+        elif current_bugs: # update existing bugs
+            params = {
+                'Bugzilla_token': token,
+                'ids': list(current_bugs.values()),
+            }
+            if params['ids']:
+                ret = bz.Bug.get(params)
+                for b in ret['bugs']:
+                    # skip bugs that were already resolved
+                    if b['resolution']:
+                        params['ids'].remove(b['id'])
+
+                if params['ids']:
+                    params['status'] = 'RESOLVED'
+                    if issue == 'REMOVED':
+                        params['resolution'] = 'OBSOLETE'
+                        params['comment'] = {
+                            'body': 'The repository has been removed, rendering this bug obsolete.',
+                        }
+                    else:
+                        params['resolution'] = 'FIXED'
+                        params['comment'] = {
+                            'body': 'The bug seems to be fixed in the repository. Closing.',
+                        }
+
+                    print('Bugs: %s' % params['ids'])
+                    print('Repository: %s' % r)
+                    print('Status: %s/%s' % (params['status'], params['resolution']))
+                    print()
+                    print(params['comment']['body'])
+                    print()
+                    resp = input('Update the bugs? [Y/n]')
+                    if resp.lower() in ('', 'y', 'yes'):
+                        ret = bz.Bug.update(params)
+                        print('Updated bugs %s' % [b['id'] for b in ret['bugs']])
+                        continue
+
+                del bug_db[r]
+
+                with open(bug_db_path + '.new', 'w') as f:
+                    json.dump(bug_db, f)
+                os.rename(bug_db_path + '.new', bug_db_path)
+            continue
 
     return 0
 
