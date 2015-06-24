@@ -19,7 +19,7 @@ class BugDesc(object):
 
 
 class StateHandlers(object):
-    def DELETED(self, repo):
+    def REMOVED(self, repo):
         pass
 
     def GOOD(self, repo):
