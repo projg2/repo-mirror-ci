@@ -201,7 +201,6 @@ Owner: %s
                     if resp.lower() in ('', 'y', 'yes'):
                         ret = bz.Bug.update(params)
                         print('Updated bugs %s' % [b['id'] for b in ret['bugs']])
-                        continue
 
                 del bug_db[r]
 
