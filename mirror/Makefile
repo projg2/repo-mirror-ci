@@ -17,7 +17,7 @@ push-%: $(MIRRORDIR)/%
 	cd $< && git push
 
 rsync-%: $(REPOSDIR)/% $(MIRRORDIR)/%
-	rsync -rlpt --delete --exclude=.git --exclude=.svn $< $(MIRRORDIR)
+	rsync -rlpt --delete --exclude='.*/' $< $(MIRRORDIR)
 
 $(MIRRORDIR)/%: create-%
 	:
