@@ -307,8 +307,7 @@ def main():
     jobs = []
     syncman = TaskManager(MAX_SYNC_JOBS, log)
     for r in sorted(local_repos):
-        repo_path = os.path.join(reposdir, r)
-        syncman.add(r, ['pmaint', 'sync', repo_path])
+        syncman.add(r, ['pmaint', 'sync', r])
 
     # 5. check for sync failures
     to_readd = []
@@ -329,8 +328,7 @@ def main():
 
     # 6. remove local checkouts and sync again
     for r in sorted(to_readd):
-        repo_path = os.path.join(reposdir, r)
-        syncman.add(r, ['pmaint', 'sync', repo_path])
+        syncman.add(r, ['pmaint', 'sync', r])
 
     for r, st in syncman.wait():
         if st == 0:
@@ -356,8 +354,7 @@ def main():
 
     pkgcore_config = pkgcore.config.load_config()
     for r in sorted(local_repos):
-        repo_path = os.path.join(reposdir, r)
-        config_sect = pkgcore_config.collapse_named_section(repo_path)
+        config_sect = pkgcore_config.collapse_named_section(r)
         raw_repo = config_sect.config['raw_repo'].instantiate()
 
         p_repo_id = raw_repo.repo_id
