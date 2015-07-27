@@ -19,19 +19,19 @@ class BugDesc(object):
 
 
 class StateHandlers(object):
-    def REMOVED(self, repo):
+    def REMOVED(self, repo, data):
         pass
 
-    def GOOD(self, repo):
+    def GOOD(self, repo, data):
         pass
 
-    def BAD_CACHE(self, repo):
+    def BAD_CACHE(self, repo, data):
         pass
 
-    def SYNC_FAIL(self, repo):
+    def SYNC_FAIL(self, repo, data):
         pass
 
-    def MISSING_MASTERS(self, repo):
+    def MISSING_MASTERS(self, repo, data):
         summary = '[%s] Missing masters= specification' % repo
         msg = ('''
 Our automated repository checks [1] have detected that the '%s'
@@ -66,6 +66,34 @@ do not receive any reply within 2 weeks.
 ''' % repo).strip()
 
         return BugDesc(summary, msg)
+
+    def CONFLICTING_REPO_NAME(self, repo, data):
+        summary = '[%s] Conflicting repository name' % repo
+        msg = ('''
+Our automated repository checks [1] have detected that the repository
+registered as '%s' is using a different repo_name in profiles/repo_name
+file:
+
+    %s
+
+This is going to cause issues with various Package Managers and even may
+render the repository unusable to our users.
+
+Please either set profiles/repo_name to '%s', or let us know that you
+would like to have the repository renamed on the official repository
+list. However, please note that our tools provide no meaningful way of
+informing users that a repository has been renamed -- therefore it is no
+different from removing and re-adding the repository with a new name.
+
+Please fix the issue ASAP. It prevents our tools from working on the
+repository, and mirroring it. We reserve the right to remove it if we
+do not receive any reply within 2 weeks.
+
+[1]:https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI
+''' % (repo, data['x-repo-name'], repo)).strip()
+
+        return BugDesc(summary, msg)
+
 
 def main(bug_db_path, summary_path):
     if not os.path.exists(bug_db_path):
@@ -106,7 +134,7 @@ def main(bug_db_path, summary_path):
             expected_open_bugs[bug_db[r][issue]] = (r, issue)
             continue
 
-        w = getattr(sth, issue)(r)
+        w = getattr(sth, issue)(r, v)
         if w is not None:
             if current_bugs:
                 raise NotImplementedError('New issue with the same repository')
