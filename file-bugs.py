@@ -139,9 +139,7 @@ def main(bug_db_path, summary_path):
             if current_bugs:
                 raise NotImplementedError('New issue with the same repository')
 
-            # TODO: get all owners
-            owners = (v['owner_email'],)
-
+            owners = [o['email'] for o in v['owner']]
             params = {
                 'Bugzilla_token': token,
                 'product': 'Gentoo Infrastructure',

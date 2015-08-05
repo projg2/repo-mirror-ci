@@ -8,6 +8,13 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+try:
+    import urllib.request
+except ImportError:
+    import urllib as urllib_request
+    class urllib:
+        request = urllib_request
+
 import datetime
 import json
 import os
@@ -18,13 +25,13 @@ import shutil
 import subprocess
 import sys
 import time
+import xml.etree.ElementTree
 
-from layman.api import LaymanAPI
-from layman.config import BareConfig
+REPOSITORIES_XML = 'https://api.gentoo.org/overlays/repositories.xml'
 
 CONFIG_ROOT = '/home/mgorny/data'
-CONFIG_FILE = '/home/mgorny/config/layman.cfg'
 LOG_DIR = '/home/mgorny/log'
+REPOS_DIR = '/home/mgorny/repos'
 REPOS_CONF = os.path.join(CONFIG_ROOT, 'etc', 'portage', 'repos.conf')
 
 MAX_SYNC_JOBS = 32
@@ -72,7 +79,7 @@ class SkipRepo(Exception):
 class SourceMapping(object):
     """ Map layman repository info to repos.conf """
 
-    def Git(self, uri, branch):
+    def git(self, uri, branch):
         if branch:
             raise SkipRepo('Branches are not supported')
         return {
@@ -82,7 +89,7 @@ class SourceMapping(object):
             'x-vcs-preference': 0,
         }
 
-    def Mercurial(self, uri, branch):
+    def mercurial(self, uri, branch):
         if branch:
             raise SkipRepo('Branches are not supported')
         return {
@@ -91,7 +98,7 @@ class SourceMapping(object):
             'x-vcs-preference': 5,
         }
 
-    def Rsync(self, uri, branch):
+    def rsync(self, uri, branch):
         if branch:
             raise SkipRepo('Branches in rsync, wtf?!')
         return {
@@ -100,7 +107,7 @@ class SourceMapping(object):
             'x-vcs-preference': 100,
         }
 
-    def Subversion(self, uri, branch):
+    def svn(self, uri, branch):
         if branch:
             raise SkipRepo('Svn branches not supported')
         return {
@@ -109,7 +116,7 @@ class SourceMapping(object):
             'x-vcs-preference': 10,
         }
 
-    def Bzr(self, uri, branch):
+    def bzr(self, uri, branch):
         if branch:
             raise SkipRepo('Svn branches not supported')
         return {
@@ -219,19 +226,22 @@ class TaskManager(object):
 
 def main():
     log = Logger()
-    config = BareConfig(config=CONFIG_FILE, read_configfile=True)
-    reposdir = config['storage']
-    layman = LaymanAPI(config=config)
+    reposdir = REPOS_DIR
     states = {}
 
     os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT
 
     # collect all local and remote repositories
     print('* fetching repository list')
-    layman.fetch_remote_list()
-    remote_repos = frozenset(layman.get_available())
+    f = urllib.request.urlopen(REPOSITORIES_XML)
+    try:
+        repos_xml = xml.etree.ElementTree.parse(f).getroot()
+    finally:
+        f.close()
+
+    remote_repos = frozenset(
+            r.find('name').text for r in repos_xml)
     remote_repos = remote_repos.difference(BANNED_REPOS)
-    remote_info = layman.get_all_info(remote_repos)
 
     # collect local repository configuration
     print('* updating repos.conf')
@@ -249,20 +259,51 @@ def main():
     # 2. update URIs for local repos, add new repos
     srcmap = SourceMapping()
     existing_repos = []
-    for r, data in sorted(remote_info.items()):
-        states[r] = dict(data)
-        del states[r]['src_types']
-        del states[r]['src_uris']
+    for repo_el in sorted(repos_xml, key=lambda r: r.find('name').text):
+        r = repo_el.find('name').text
+
+        # construct data out of mixture of attributes and elements
+        data = {}
+        data.update(repo_el.items())
+        for el in repo_el:
+            if el.tag in ('description', 'longdescription'):
+                # multi-lingua
+                if el.tag not in data:
+                    data[el.tag] = {}
+                data[el.tag][el.get('lang', 'en')] = el.text
+            elif el.tag in ('owner', 'source', 'feed'):
+                # possibly multiple
+
+                if el.tag == 'owner':
+                    # nested
+                    val = {}
+                    val.update(el.items())
+                    val.update((x.tag, x.text) for x in el)
+                elif el.tag == 'source':
+                    # attributed
+                    val = {}
+                    val.update(el.items())
+                    val['uri'] = el.text
+                else:
+                    val = el.text
+
+                if el.tag not in data:
+                    data[el.tag] = []
+                data[el.tag].append(val)
+            else:
+                data[el.tag] = el.text
+
+        states[r] = data
         with log[r].open() as f:
             pprint.pprint(states[r], f)
 
         possible_configs = []
-        for src_uri, src_type, src_branch in data['sources']:
+        for s in data['source']:
             try:
                 possible_configs.append(
-                        getattr(srcmap, src_type)(src_uri, src_branch))
+                        getattr(srcmap, s['type'])(s['uri'], None))
             except SkipRepo as e:
-                log[r].status('Skipping %s: %s' % (src_uri, str(e)))
+                log[r].status('Skipping %s: %s' % (s['uri'], str(e)))
 
         if not possible_configs:
             states[r]['x-state'] = State.UNSUPPORTED
