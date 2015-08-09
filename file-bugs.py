@@ -29,7 +29,29 @@ class StateHandlers(object):
         pass
 
     def SYNC_FAIL(self, repo, data):
-        pass
+        summary = '[%s] Repository URI unaccessible' % repo
+        uris = '\n'.join(
+                '  [%8s] %s' % (r['type'], r['uri'])
+                for r in data['source'])
+        msg = ('''
+Our automated repository checks [1] have detected that the '%s'
+repository can not be synced for at least a few days.
+
+The following URIs are listed for the repository:
+
+%s
+
+Please verify that the server hosting the repository is working
+correctly. If the repository has been moved to a new location or removed
+altogether, please let us know to update the record appropriately.
+
+We reserve the right to remove the repository if we do not receive any
+reply within 2 weeks.
+
+[1]:https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI
+''' % (repo, uris)).strip()
+
+        return BugDesc(summary, msg)
 
     def MISSING_MASTERS(self, repo, data):
         summary = '[%s] Missing masters= specification' % repo
