@@ -10,7 +10,7 @@ clean: $(patsubst %,clean-%,$(DELETED_REPOS))
 force-push: $(patsubst %,push-%,$(REPOS))
 
 update-%: $(MIRRORDIR)/% rsync-%
-	cd $< && git add -A
+	cd $< && git add -A -f
 	cd $< && { git diff --cached --quiet --exit-code || { git commit --quiet -m "$(shell date -u '+%F %T UTC')"; git push; }; }
 
 push-%: $(MIRRORDIR)/%
