@@ -4,6 +4,7 @@ import cgi
 import datetime
 import os.path
 import re
+import subprocess
 import sys
 
 
@@ -66,8 +67,12 @@ def main(repo_path, *files):
 
     menu = ''
 
-    with open(os.path.join(repo_path, 'metadata', 'timestamp.x')) as f:
-        ts = int(f.read().split()[0])
+
+    s = subprocess.Popen(['git', 'log', '--pretty=%ct', '-1'],
+            cwd=repo_path, stdout=subprocess.PIPE)
+    stdout, stderr = s.communicate()
+    assert s.wait() == 0
+    ts = int(stdout)
 
     for fn in sorted(files, key=ci_key):
         assert(fn.endswith('.txt'))
