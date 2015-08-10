@@ -390,6 +390,7 @@ def main():
     # - correct & matching repo_name (otherwise mischief will happen)
     # - correct masters= (otherwise pkgcore will fail)
     # - possibly other stuff causing pkgcore to fail hard
+    # TODO: gracefully skip repos when masters failed to sync
 
     import pkgcore.config
 
@@ -438,6 +439,7 @@ def main():
     local_repos = frozenset(repos_conf.sections())
 
     # 8. regen caches for all repos
+    # TODO: respect masters when ordering jobs
     regenman = TaskManager(MAX_REGEN_JOBS, log)
     for r in sorted(local_repos):
         regenman.add(r, ['pmaint', 'regen', '-t', REGEN_THREADS, r])
