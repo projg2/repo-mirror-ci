@@ -111,8 +111,8 @@ class SourceMapping(object):
         if branch:
             raise SkipRepo('Svn branches not supported')
         return {
-            'sync-type': 'svn',
-            'sync-uri': uri,
+            'sync-type': 'git',
+            'sync-uri': uri if uri.startswith('svn://') else 'svn+' + uri,
             'x-vcs-preference': 10,
         }
 
