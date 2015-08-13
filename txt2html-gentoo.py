@@ -74,6 +74,7 @@ def main(repo_path, *files):
     assert s.wait() == 0
     ts = int(stdout)
 
+    borked = []
     for fn in sorted(files, key=ci_key):
         assert(fn.endswith('.txt'))
 
@@ -102,12 +103,18 @@ def main(repo_path, *files):
                     data += '        <div class="lines %s">\n            <p>%s:</p>\n            <ol>\n' % (k, descs[k])
                     for first, last in ranges(v):
                         data += '                <li><a href="#l%d">%s</a></li>\n' % (first, '%d-%d' % (first, last) if first != last else first)
+                        borked.append((fn[:-4], k, first, last))
                     data += '            </ol>\n        </div>\n'
 
             results[fn] = data
 
             menu += ('            <li class="%s"><a href="%s">%s</a></li>\n'
                     % (max_cl, fn[:-4] + '.html', fn[:-4]))
+
+    with open('borked.list', 'w') as outf:
+        for l in borked:
+            if l[1] == 'err':
+                outf.write('%s.html#l%d\n' % (l[0], l[2]))
 
     for fn in files:
         assert(fn.endswith('.txt'))
