@@ -442,7 +442,9 @@ def main():
     # TODO: respect masters when ordering jobs
     regenman = TaskManager(MAX_REGEN_JOBS, log)
     for r in sorted(local_repos):
-        regenman.add(r, ['pmaint', 'regen', '-t', REGEN_THREADS, r])
+        regenman.add(r, ['pmaint', 'regen',
+            '--use-local-desc', '--pkg-desc-index',
+            '-t', REGEN_THREADS, r])
 
     for r, st in regenman.wait():
         if st == 0:
