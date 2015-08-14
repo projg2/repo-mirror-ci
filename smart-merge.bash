@@ -15,6 +15,9 @@ git fetch "${repo}" "${branch}:refs/orig/${branch}"
 if git merge-base "${branch}" "refs/orig/${branch}" > /dev/null; then
 	# regular update
 	git merge -q -s recursive -X theirs -m "Merge updates from ${branch}" "refs/orig/${branch}"
+elif ! git rev-parse HEAD &>/dev/null; then
+	# empty repo
+	git merge -q --ff "refs/orig/${branch}"
 else
 	# repo rewrite
 	git checkout -q "refs/orig/${branch}"
