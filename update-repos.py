@@ -232,7 +232,7 @@ def main():
     os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT
 
     # collect all local and remote repositories
-    print('* fetching repository list')
+    sys.stderr.write('* fetching repository list\n')
     f = urllib.request.urlopen(REPOSITORIES_XML)
     try:
         repos_xml = xml.etree.ElementTree.parse(f).getroot()
@@ -244,7 +244,7 @@ def main():
     remote_repos = remote_repos.difference(BANNED_REPOS)
 
     # collect local repository configuration
-    print('* updating repos.conf')
+    sys.stderr.write('* updating repos.conf\n')
     repos_conf = configparser.ConfigParser()
     repos_conf.read([REPOS_CONF])
     local_repos = frozenset(repos_conf.sections())
@@ -344,7 +344,7 @@ def main():
     local_repos = frozenset(repos_conf.sections())
 
     # 4. sync all repos
-    print('* syncing repositories')
+    sys.stderr.write('* syncing repositories\n')
     sync_start = datetime.datetime.utcnow()
     jobs = []
     syncman = TaskManager(MAX_SYNC_JOBS, log)
@@ -369,7 +369,7 @@ def main():
                 repos_conf.remove_section(r)
 
     sync_finish = datetime.datetime.utcnow()
-    print('** total syncing time: %s' % (sync_finish - sync_start))
+    sys.stderr.write('** total syncing time: %s\n' % (sync_finish - sync_start))
 
     # 6. remove local checkouts and sync again
     for r in sorted(to_readd):
@@ -444,6 +444,7 @@ def main():
 
     # 8. regen caches for all repos
     # TODO: respect masters when ordering jobs
+    sys.stderr.write('* regenerating cache\n')
     regen_start = datetime.datetime.utcnow()
     regenman = TaskManager(MAX_REGEN_JOBS, log)
     for r in sorted(local_repos):
@@ -461,7 +462,7 @@ def main():
                 states[r]['x-state'] = State.BAD_CACHE
 
     regen_finish = datetime.datetime.utcnow()
-    print('** total regen time: %s' % (regen_finish - regen_start))
+    sys.stderr.write('** total regen time: %s\n' % (regen_finish - regen_start))
 
     log.write_summary(states)
 
