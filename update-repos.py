@@ -345,6 +345,7 @@ def main():
 
     # 4. sync all repos
     print('* syncing repositories')
+    sync_start = datetime.datetime.utcnow()
     jobs = []
     syncman = TaskManager(MAX_SYNC_JOBS, log)
     for r in sorted(local_repos):
@@ -366,6 +367,9 @@ def main():
             else:
                 states[r]['x-state'] = State.SYNC_FAIL
                 repos_conf.remove_section(r)
+
+    sync_finish = datetime.datetime.utcnow()
+    print('** total syncing time: %s' % (sync_finish - sync_start))
 
     # 6. remove local checkouts and sync again
     for r in sorted(to_readd):
@@ -440,6 +444,7 @@ def main():
 
     # 8. regen caches for all repos
     # TODO: respect masters when ordering jobs
+    regen_start = datetime.datetime.utcnow()
     regenman = TaskManager(MAX_REGEN_JOBS, log)
     for r in sorted(local_repos):
         regenman.add(r, ['pmaint', 'regen',
@@ -454,6 +459,9 @@ def main():
             # don't override higher priority issues here
             if states[r]['x-state'] == State.GOOD:
                 states[r]['x-state'] = State.BAD_CACHE
+
+    regen_finish = datetime.datetime.utcnow()
+    print('** total regen time: %s' % (regen_finish - regen_start))
 
     log.write_summary(states)
 
