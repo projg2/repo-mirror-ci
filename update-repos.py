@@ -27,6 +27,9 @@ import sys
 import time
 import xml.etree.ElementTree
 
+import pkgcore.config
+import snakeoil.formatters
+
 REPOSITORIES_XML = 'https://api.gentoo.org/overlays/repositories.xml'
 
 CONFIG_ROOT = '/home/mgorny/data'
@@ -35,9 +38,8 @@ REPOS_DIR = '/home/mgorny/repos'
 REPOS_CONF = os.path.join(CONFIG_ROOT, 'etc', 'portage', 'repos.conf')
 
 MAX_SYNC_JOBS = 32
-MAX_REGEN_JOBS = 16
 MAX_PCHECK_JOBS = 24
-REGEN_THREADS = '2'
+REGEN_THREADS = 16
 
 # repositories which are broken and take a lot of time to sync
 BANNED_REPOS = frozenset(['chromiumos', 'udev'])
@@ -46,6 +48,11 @@ try:
     DEVNULL = subprocess.DEVNULL
 except AttributeError:
     DEVNULL = open('/dev/null', 'r')
+
+class attrdict(dict):
+    """ dict supporting .key references """
+    def __getattr__(self, key):
+        return self[key]
 
 class State(object):
     # removed (no longer exists remotely)
@@ -396,9 +403,8 @@ def main():
     # - possibly other stuff causing pkgcore to fail hard
     # TODO: gracefully skip repos when masters failed to sync
 
-    import pkgcore.config
-
     pkgcore_config = pkgcore.config.load_config()
+    pkgcore_repos = {}
     for r in sorted(local_repos):
         config_sect = pkgcore_config.collapse_named_section(r)
         raw_repo = config_sect.config['raw_repo'].instantiate()
@@ -437,6 +443,8 @@ def main():
         if states[r]['x-state'] not in (State.GOOD,):
             shutil.rmtree(os.path.join(reposdir, r))
             repos_conf.remove_section(r)
+        else:
+            pkgcore_repos[r] = raw_repo
 
     with open(REPOS_CONF, 'w') as f:
         repos_conf.write(f)
@@ -445,20 +453,29 @@ def main():
     # 8. regen caches for all repos
     # TODO: respect masters when ordering jobs
     regen_start = datetime.datetime.utcnow()
-    regenman = TaskManager(MAX_REGEN_JOBS, log)
-    for r in sorted(local_repos):
-        regenman.add(r, ['pmaint', 'regen',
-            '--use-local-desc', '--pkg-desc-index',
-            '-t', REGEN_THREADS, r])
+    regen_options = attrdict({
+        'repos': None,
+        'threads': REGEN_THREADS,
+        'force': False,
+        'disable_eclass_caching': False,
+        'verbose': True,
+        'rsync': True,
+        'use_local_desc': True,
+        'pkg_desc_index': True,
+    })
 
-    for r, st in regenman.wait():
-        if st == 0:
-            log[r].status('Cache regenerated successfully')
-        else:
-            log[r].status('Cache regen failed with %d' % st)
-            # don't override higher priority issues here
-            if states[r]['x-state'] == State.GOOD:
-                states[r]['x-state'] = State.BAD_CACHE
+    for r in sorted(local_repos):
+        regen_options['repos'] = (pkgcore_repos[r],)
+        with log[r].open() as f:
+            pout = snakeoil.formatters.PlainTextFormatter(f)
+            st = pkgcore.scripts.pmaint.regen_main(regen_options, pout, pout)
+            if st == 0:
+                log[r].status('Cache regenerated successfully')
+            else:
+                log[r].status('Cache regen failed with %d' % st)
+                # don't override higher priority issues here
+                if states[r]['x-state'] == State.GOOD:
+                    states[r]['x-state'] = State.BAD_CACHE
 
     regen_finish = datetime.datetime.utcnow()
     print('** total regen time: %s' % (regen_finish - regen_start))
