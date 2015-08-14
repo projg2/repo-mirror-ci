@@ -8,8 +8,8 @@ uri_prefix=https://gentoo.github.io/gentoo-qa-results/
 mail_to=travis-ci@gentoo.org
 reply_to=mgorny@gentoo.org
 
-if [[ ! -f ${borked_list} ]]; then
-	if [[ -f ${borked_last} ]]; then
+if [[ ! -s ${borked_list} ]]; then
+	if [[ -s ${borked_last} ]]; then
 		subject="[gentoo-ci] FIXED: all failures have been fixed"
 		mail="
 Everything seems nice and cool now."
@@ -17,7 +17,7 @@ Everything seems nice and cool now."
 		exit 0
 	fi
 else
-	if [[ ! -f ${borked_last} ]]; then
+	if [[ ! -s ${borked_last} ]]; then
 		subject="[gentoo-ci] BROKEN: repository became broken!"
 		mail="
 Looks like someone just broke Gentoo! Please take a look
