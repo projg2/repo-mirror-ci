@@ -12,6 +12,7 @@ common_patterns = (
     (" [*] Sync failed with", 'err'),
     ("!!! ERROR: .* failed.", 'err'),
     ("!!! The die message:", 'err'),
+    ("caught exception", 'err'),
     ("NonsolvableDeps", 'err'),
     ("IUSEMetadataReport", 'err'),
     ("LicenseMetadataReport", 'err'),
