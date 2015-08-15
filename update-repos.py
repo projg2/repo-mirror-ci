@@ -30,9 +30,11 @@ import xml.etree.ElementTree
 REPOSITORIES_XML = 'https://api.gentoo.org/overlays/repositories.xml'
 
 CONFIG_ROOT = '/home/mgorny/data'
+CONFIG_ROOT_SYNC = '/home/mgorny/data-sync'
 LOG_DIR = '/home/mgorny/log'
+SYNC_DIR = '/home/mgorny/sync'
 REPOS_DIR = '/home/mgorny/repos'
-REPOS_CONF = os.path.join(CONFIG_ROOT, 'etc', 'portage', 'repos.conf')
+REPOS_CONF = 'etc/portage/repos.conf'
 
 MAX_SYNC_JOBS = 32
 MAX_REGEN_JOBS = 32
@@ -226,10 +228,9 @@ class TaskManager(object):
 
 def main():
     log = Logger()
-    reposdir = REPOS_DIR
     states = {}
 
-    os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT
+    os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_SYNC
 
     # collect all local and remote repositories
     sys.stderr.write('* fetching repository list\n')
@@ -246,7 +247,7 @@ def main():
     # collect local repository configuration
     sys.stderr.write('* updating repos.conf\n')
     repos_conf = configparser.ConfigParser()
-    repos_conf.read([REPOS_CONF])
+    repos_conf.read([os.path.join(CONFIG_ROOT_SYNC, REPOS_CONF)])
     local_repos = frozenset(repos_conf.sections())
 
     # 1. remove repos that no longer exist
@@ -319,7 +320,7 @@ def main():
         if not repos_conf.has_section(r):
             log[r].status('Adding new repository')
             repos_conf.add_section(r)
-        repo_path = os.path.join(reposdir, r)
+        repo_path = os.path.join(SYNC_DIR, r)
         repos_conf.set(r, 'location', repo_path)
 
         if os.path.exists(repo_path):
@@ -336,11 +337,13 @@ def main():
             repos_conf.set(r, k, v)
 
     # 3. write new repos.conf, remove stale checkouts
-    with open(REPOS_CONF, 'w') as f:
+    with open(os.path.join(CONFIG_ROOT_SYNC, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
     for r in to_remove:
-        if os.path.exists(os.path.join(reposdir, r)):
-            shutil.rmtree(os.path.join(reposdir, r))
+        if os.path.exists(os.path.join(SYNC_DIR, r)):
+            shutil.rmtree(os.path.join(SYNC_DIR, r))
+        if os.path.exists(os.path.join(REPOS_DIR, r)):
+            shutil.rmtree(os.path.join(REPOS_DIR, r))
     local_repos = frozenset(repos_conf.sections())
 
     # 4. sync all repos
@@ -361,8 +364,8 @@ def main():
             log[r].status('Sync failed with %d' % st)
             if r in existing_repos:
                 log[r].status('Will try to re-create')
-                if os.path.exists(os.path.join(reposdir, r)):
-                    shutil.rmtree(os.path.join(reposdir, r))
+                if os.path.exists(os.path.join(SYNC_DIR, r)):
+                    shutil.rmtree(os.path.join(SYNC_DIR, r))
                 to_readd.append(r)
             else:
                 states[r]['x-state'] = State.SYNC_FAIL
@@ -382,11 +385,13 @@ def main():
         else:
             log[r].status('Sync failed again with %d, removing' % st)
             states[r]['x-state'] = State.SYNC_FAIL
-            if os.path.exists(os.path.join(reposdir, r)):
-                shutil.rmtree(os.path.join(reposdir, r))
+            if os.path.exists(os.path.join(SYNC_DIR, r)):
+                shutil.rmtree(os.path.join(SYNC_DIR, r))
+            if os.path.exists(os.path.join(REPOS_DIR, r)):
+                shutil.rmtree(os.path.join(REPOS_DIR, r))
             repos_conf.remove_section(r)
 
-    with open(REPOS_CONF, 'w') as f:
+    with open(os.path.join(CONFIG_ROOT_SYNC, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
     local_repos = frozenset(repos_conf.sections())
 
@@ -435,15 +440,22 @@ def main():
                     states[r]['x-state'] = State.INVALID_METADATA
 
         if states[r]['x-state'] not in (State.GOOD,):
-            shutil.rmtree(os.path.join(reposdir, r))
             repos_conf.remove_section(r)
 
-    with open(REPOS_CONF, 'w') as f:
+    # 8. moves repos from SYNC_DIR to REPOS_DIR
+    s = subprocess.Popen(['rsync', '-rlpt', '--delete', '--exclude=.*/',
+        '--exclude=metadata/md5-cache', '--exclude=profiles/use.local.desc',
+        '--exclude=metadata/pkg_desc_index', os.path.join(SYNC_DIR, '.'), REPOS_DIR])
+    s.wait()
+    for r in local_repos:
+        repos_conf.set(r, 'location', os.path.join(REPOS_DIR, r))
+    with open(os.path.join(CONFIG_ROOT, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
     local_repos = frozenset(repos_conf.sections())
+    os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT
+    #pkgcore_config = pkgcore.config.load_config()
 
-    # 8. regen caches for all repos
-    # TODO: respect masters when ordering jobs
+    # 9. regen caches for all repos
     sys.stderr.write('* regenerating cache\n')
     regen_start = datetime.datetime.utcnow()
     regenman = TaskManager(MAX_REGEN_JOBS, log)
@@ -466,7 +478,7 @@ def main():
 
     log.write_summary(states)
 
-    # 9. run pkgcheck
+    # 10. run pkgcheck
     # disabled because pkgcheck does not support masters currently
     if False:
         pkgcheckman = TaskManager(MAX_PCHECK_JOBS, log)

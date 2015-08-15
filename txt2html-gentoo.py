@@ -61,18 +61,13 @@ def ranges(l):
     yield (first, prev)
 
 
-def main(repo_path, *files):
+def main(repo_path, ts, *files):
     h = Highlighter()
     results = {}
 
     menu = ''
 
-
-    s = subprocess.Popen(['git', 'log', '--pretty=%ct', '-1'],
-            cwd=repo_path, stdout=subprocess.PIPE)
-    stdout, stderr = s.communicate()
-    assert s.wait() == 0
-    ts = int(stdout)
+    ts = int(ts)
 
     borked = []
     for fn in sorted(files, key=ci_key):

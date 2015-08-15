@@ -1,4 +1,5 @@
 BINDIR = ~/bin
+SYNCDIR = ~/sync
 REPOSDIR = ~/repos
 MIRRORDIR = ~/mirror
 
@@ -17,7 +18,7 @@ update-%: $(MIRRORDIR)/% rsync-%
 push-%: $(MIRRORDIR)/%
 	cd $< && git push
 
-merge-%: $(REPOSDIR)/% $(MIRRORDIR)/%
+merge-%: $(SYNCDIR)/% $(MIRRORDIR)/%
 	$(BINDIR)/smart-merge.bash $< $(MIRRORDIR)/$(subst merge-,,$@) master
 
 rsync-%: $(REPOSDIR)/% $(MIRRORDIR)/% merge-%
