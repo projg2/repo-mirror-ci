@@ -203,7 +203,7 @@ def main(bug_db_path, summary_path):
         w = getattr(sth, issue)(r, v)
         if w is not None:
             if current_bugs:
-                raise NotImplementedError('New issue with the same repository')
+                raise NotImplementedError('New issue with the same repository (repo: %s, current: %s, new: %s' % (r, current_bugs, issue))
 
             owners = [o['email'] for o in v['owner']]
             params = {
