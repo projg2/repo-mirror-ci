@@ -11,6 +11,9 @@ import sys
 import textwrap
 
 
+REFERENCE_LOG_URL = 'http://gentoo.github.io/repo-qa-check-results'
+
+
 class BugDesc(object):
     def __init__(self, summary, msg):
         self.summary = summary
@@ -26,7 +29,48 @@ class StateHandlers(object):
         pass
 
     def BAD_CACHE(self, repo, data):
-        pass
+        summary = '[%s] Ebuild failures occuring in global scope' % repo
+        msg = ('''
+Our automated repository checks [1] have detected that the '%s'
+repository contains ebuilds that trigger fatal errors during the cache
+regeneration. This usually means that the ebuilds call 'die' in global
+scope indicating serious issues.
+
+Global-scope failures prevent the ebuild not only from being installed
+but also from being properly processed by the Package Manager. Since
+metadata can not be obtained for those ebuilds, no cache entries are
+created for them and the Package Manager needs to retry running them
+every time it stumbles upon them. This involves both a serious slowdown
+and repeating error output while performing dependency resolution.
+
+The most common cause of global-scope failures is use of removed or
+banned APIs in old ebuilds. In particular, this includes eclasses being
+removed or removing support for old EAPIs. Nonetheless there are also
+other issues such as performing illegal operations in global scope
+(external program calls), malformed bash in ebuilds or malformed
+metadata.xml.
+
+The error log for the repository can be found at:
+
+  %s/%s.html
+
+In particular, please look for highlighted '!!! ERROR' and '!!! caught
+exception' lines. The former usually mean failures coming from eclasses
+and the ebuild itself, while exceptions usually mean malformed ebuilds
+or metadata.xml.
+
+While at it, please consider fixing global-scope 'use' call warnings (if
+any). They are not fatal but are considered a serious QA violation.
+'use' functions must not ever be called outside of phase functions.
+
+Please fix the issue ASAP, possibly via removing unmaintained, old
+ebuilds. We reserve the right to remove the repository from our list if
+we do not receive any reply within 4 weeks.
+
+[1]:https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI
+''' % (repo, REFERENCE_LOG_URL, repo)).strip()
+
+        return BugDesc(summary, msg)
 
     def SYNC_FAIL(self, repo, data):
         summary = '[%s] Repository URI unaccessible' % repo
