@@ -213,6 +213,7 @@ def main(bug_db_path, summary_path):
                 'version': 'unspecified',
                 'summary': w.summary,
                 'description': w.msg,
+                'url': '%s/%s.html' % (REFERENCE_LOG_URL, r),
                 'assigned_to': owners[0],
                 'cc': ', '.join(owners[1:]),
                 'blocks': ['repository-qa-issues'],
@@ -221,6 +222,7 @@ def main(bug_db_path, summary_path):
             # print the bug and ask for confirmation
             print('Owners: %s' % owners)
             print('Summary: %s' % params['summary'])
+            print('Full log: %s' % params['url'])
             print()
             print(params['description'])
             print()
