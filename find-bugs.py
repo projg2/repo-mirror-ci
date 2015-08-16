@@ -11,6 +11,9 @@ import sys
 
 bug_summaries = {
     'Missing masters= specification': 'MISSING_MASTERS',
+    'Repository URI unaccessible': 'SYNC_FAIL',
+    'Conflicting repository name': 'CONFLICTING_REPO_NAME',
+    'Ebuild failures occuring in global scope': 'BAD_CACHE',
 }
 
 
