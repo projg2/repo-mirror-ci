@@ -444,8 +444,9 @@ def main():
 
     # 8. moves repos from SYNC_DIR to REPOS_DIR
     s = subprocess.Popen(['rsync', '-rlpt', '--delete', '--exclude=.*/',
-        '--exclude=metadata/md5-cache', '--exclude=profiles/use.local.desc',
-        '--exclude=metadata/pkg_desc_index', os.path.join(SYNC_DIR, '.'), REPOS_DIR])
+        '--exclude=*/metadata/md5-cache', '--exclude=*/profiles/use.local.desc',
+        '--exclude=*/metadata/pkg_desc_index', '--exclude=*/metadata/timestamp.chk',
+        os.path.join(SYNC_DIR, '.'), REPOS_DIR])
     s.wait()
     for r in local_repos:
         repos_conf.set(r, 'location', os.path.join(REPOS_DIR, r))
