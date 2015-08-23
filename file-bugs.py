@@ -11,7 +11,7 @@ import sys
 import textwrap
 
 
-REFERENCE_LOG_URL = 'http://gentoo.github.io/repo-qa-check-results'
+REFERENCE_LOG_URL = 'https://gitweb.gentoo.org/report/repos.git/plain'
 
 
 class BugDesc(object):

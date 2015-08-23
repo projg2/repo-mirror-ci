@@ -37,12 +37,12 @@ REPOS_DIR = '/home/mgorny/repos'
 REPOS_CONF = 'etc/portage/repos.conf'
 
 MAX_SYNC_JOBS = 32
-MAX_REGEN_JOBS = 32
-MAX_PCHECK_JOBS = 24
+MAX_REGEN_JOBS = 16
+MAX_PCHECK_JOBS = 16
 REGEN_THREADS = '1'
 
 # repositories which are broken and take a lot of time to sync
-BANNED_REPOS = frozenset(['chromiumos', 'udev'])
+BANNED_REPOS = frozenset()
 
 try:
     DEVNULL = subprocess.DEVNULL
