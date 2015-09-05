@@ -4,7 +4,7 @@ set -e -x
 
 borked_list=/home/mgorny/gentoo-ci/borked.list
 borked_last=${borked_list%.list}.last
-uri_prefix=https://gitweb.gentoo.org/report/gentoo-ci.git/plain/
+uri_prefix=https://qa-reports.gentoo.org/output/gentoo-ci/
 mail_to=gentoo-automated-testing@lists.gentoo.org
 
 if [[ ! -s ${borked_list} ]]; then
