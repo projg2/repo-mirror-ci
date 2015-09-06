@@ -1,0 +1,9 @@
+#!/home/mgorny/bin/run-cronjob.sh
+
+set -e -x
+ulimit -t 600 -v 2097152
+
+. /home/mgorny/pkgcore-venv/bin/activate
+
+cd /home/mgorny/sync/gentoo
+git fetch https://github.com/gentoo/gentoo 'refs/pull/*/head:refs/pull/*'
