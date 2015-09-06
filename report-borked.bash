@@ -2,8 +2,9 @@
 
 set -e -x
 
-borked_list=/home/mgorny/gentoo-ci/borked.list
-borked_last=${borked_list%.list}.last
+repo=/home/mgorny/gentoo-ci
+borked_list=${repo}/borked.list
+borked_last=${repo}/borked.last
 uri_prefix=https://qa-reports.gentoo.org/output/gentoo-ci/
 mail_to=gentoo-automated-testing@lists.gentoo.org
 
@@ -43,8 +44,9 @@ ${mail}
 
 "
 
+current_rev=$(cd "${repo}"; git rev-parse HEAD)
 while read l; do
-	mail+="${uri_prefix}${l}
+	mail+="${uri_prefix}${current_rev:0:8}/${l}
 "
 done <"${borked_list}"
 
