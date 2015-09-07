@@ -6,14 +6,47 @@ ulimit -t 600 -v 2097152
 . /home/mgorny/pkgcore-venv/bin/activate
 
 sync=/home/mgorny/sync/gentoo
+cache=/home/mgorny/repos/gentoo
+gentooci=/home/mgorny/gentoo-ci
 pull=/home/mgorny/pull
 
 cd "${sync}"
-git fetch https://github.com/gentoo/gentoo 'refs/pull/*/head:refs/pull/*'
+git fetch -f https://github.com/gentoo/gentoo 'refs/pull/*/head:refs/pull/*'
 
 mkdir -p "${pull}"
 while read hash t ref; do
 	prid=${ref#refs/pull/}
 
-	echo "${hash}" > "${pull}/${prid}"
+	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
+		cd "${pull}"
+		echo "${hash}" > "${prid}"
+		rm -rf tmp gentoo-ci
+
+		git clone -s --no-checkout "${sync}" tmp
+		cd tmp
+		git fetch "${sync}" "${ref}:${ref}"
+		git checkout -q "${ref}"
+		rsync -rlpt --delete "${cache}"/metadata/md5-cache metadata
+
+		export PORTAGE_CONFIGROOT="${pull}"
+		pmaint regen -t 16 gentoo
+
+		cd ..
+		git clone -s "${gentooci}" gentoo-ci
+		cd gentoo-ci
+		ln -s "${gentooci}"/Makefile
+		git checkout -b "pull-${prid}"
+		touch "${pull}"/.ts
+		time timeout 15m make -j16 ts="${pull}/.ts" repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
+		ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
+		/home/mgorny/bin/txt2html-gentoo.py "${pull}/.ts" "${ts}" *.txt
+		git add *.txt *.html *.css
+		git diff --cached --quiet --exit-code || git commit -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
+		git push -f origin "pull-${prid}"
+
+		cd "${gentooci}"
+		git push -f origin "pull-${prid}"
+
+		break
+	fi
 done < <(git for-each-ref 'refs/pull/*')
