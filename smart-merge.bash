@@ -11,7 +11,7 @@ branch=${3}
 [[ -d ${repo}/.git ]] || exit 0
 
 cd "${mirror}"
-git fetch "${repo}" "${branch}:refs/orig/${branch}"
+git fetch "${repo}" "+${branch}:refs/orig/${branch}"
 if git merge-base "${branch}" "refs/orig/${branch}" > /dev/null; then
 	# regular update
 	if ! git merge -q -s recursive -X theirs -m "Merge updates from ${branch}" "refs/orig/${branch}"; then
