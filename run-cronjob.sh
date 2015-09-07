@@ -21,4 +21,14 @@ echo "Stop: ${stop} (exited with ${ret})"
 
 echo "${start} ${stop}" >> /home/mgorny/"${basename}.times"
 
-# TODO: report errors
+if [[ ${ret} -ne 0 ]]; then
+	# close logs
+	exec &>/dev/null
+	sendmail mgorny@gentoo.org <<-EOF
+		Subject: ${basename} cronjob failure
+		To: mgorny@gentoo.org
+		Content-Type: text/plain; charset=utf8
+
+		$(</home/mgorny/"${basename}.log")
+	EOF
+fi
