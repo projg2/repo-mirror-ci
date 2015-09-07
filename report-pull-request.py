@@ -31,7 +31,7 @@ def main(prid, prhash, borked_path):
     pr = r.get_pull(int(prid))
 
     if not borked:
-        body = ':+1: The QA check for this pull requests confirms no issues.'
+        body = ':+1: The QA check for this pull request confirms no issues.'
     else:
         body = ':-1: The QA check for this pull request has found the following issues:\n\n'
         for url in borked:
