@@ -44,9 +44,9 @@ ${mail}
 
 "
 
-current_rev=$(cd "${repo}"; git rev-parse HEAD)
+current_rev=$(cd "${repo}"; git rev-parse --short HEAD)
 while read l; do
-	mail+="${uri_prefix}${current_rev:0:8}/${l}
+	mail+="${uri_prefix}${current_rev}/${l}
 "
 done <"${borked_list}"
 
