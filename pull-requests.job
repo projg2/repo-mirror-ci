@@ -20,6 +20,8 @@ while read hash t ref; do
 	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
 		cd "${pull}"
 		echo "${hash}" > "${prid}"
+		/home/mgorny/bin/pending-pull-request.py "${hash}" \
+			"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")"
 		rm -rf tmp gentoo-ci
 
 		git clone -s --no-checkout "${sync}" tmp
