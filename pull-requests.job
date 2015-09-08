@@ -14,6 +14,20 @@ cd "${sync}"
 git fetch -f https://github.com/gentoo/gentoo 'refs/pull/*/head:refs/pull/*'
 
 mkdir -p "${pull}"
+no=0
+while read hash t ref; do
+	prid=${ref#refs/pull/}
+
+	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
+		if [[ ${no} -ne 0 ]]; then
+			/home/mgorny/bin/pending-pull-request.py "${hash}" \
+				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")"
+		fi
+
+		: $(( no++ ))
+	fi
+done < <(git for-each-ref 'refs/pull/*')
+
 while read hash t ref; do
 	prid=${ref#refs/pull/}
 
