@@ -33,7 +33,7 @@ def main(prid, prhash, borked_path, commit_hash):
 
     report_url = REPORT_URI_PREFIX + prhash + '/global.html'
     if not borked:
-        c.create_status('success', descripton='All pkgcheck QA checks passed',
+        c.create_status('success', description='All pkgcheck QA checks passed',
                 target_url=report_url)
     else:
         body = ':disappointed: The QA check for this pull request has found the following issues:\n\n'
@@ -43,7 +43,7 @@ def main(prid, prhash, borked_path, commit_hash):
         body += '\nPlease note that the issues may come from the underlying Gentoo repository state rather than the pull request itself.'
 
         pr.create_issue_comment(body)
-        c.create_status('failure', descripton='Some of the QA checks failed',
+        c.create_status('failure', description='Some of the QA checks failed',
                 target_url=report_url)
 
 
