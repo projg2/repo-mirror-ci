@@ -48,7 +48,7 @@ while read hash t ref; do
 		cd "${gentooci}"
 		git push -f origin "pull-${prid}"
 
-		/home/mgorny/bin/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list
+		/home/mgorny/bin/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list "${hash}"
 
 		break
 	fi
