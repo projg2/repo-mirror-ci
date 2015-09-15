@@ -9,19 +9,17 @@ import xml.etree.ElementTree as et
 import github
 
 
-GITHUB_USERNAME = 'gentoo-repo-qa-bot'
-GITHUB_TOKEN_FILE = os.path.expanduser('~/.github-token')
-GITHUB_REPO = 'gentoo/gentoo'
-
-REPORT_URI_PREFIX = 'https://qa-reports.gentoo.org/output/gentoo-ci/'
-
-
-
 def main(prid, prhash, borked_path, commit_hash):
+    GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
+    GITHUB_TOKEN_FILE = os.environ['GITHUB_TOKEN_FILE']
+    GITHUB_REPO = os.environ['GITHUB_REPO']
+
+    REPORT_URI_PREFIX = os.environ['GENTOO_CI_URI_PREFIX']
+
     borked = []
     with open(borked_path) as f:
         for l in f:
-            borked.append(REPORT_URI_PREFIX + prhash + '/' + l)
+            borked.append(REPORT_URI_PREFIX + '/' + prhash + '/' + l)
 
     with open(GITHUB_TOKEN_FILE) as f:
         token = f.read().strip()
@@ -31,7 +29,7 @@ def main(prid, prhash, borked_path, commit_hash):
     pr = r.get_pull(int(prid))
     c = r.get_commit(commit_hash)
 
-    report_url = REPORT_URI_PREFIX + prhash + '/global.html'
+    report_url = REPORT_URI_PREFIX + '/' + prhash + '/global.html'
     if not borked:
         c.create_status('success', description='All pkgcheck QA checks passed',
                 target_url=report_url)

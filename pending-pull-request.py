@@ -9,15 +9,11 @@ import xml.etree.ElementTree as et
 import github
 
 
-GITHUB_USERNAME = 'gentoo-repo-qa-bot'
-GITHUB_TOKEN_FILE = os.path.expanduser('~/.github-token')
-GITHUB_REPO = 'gentoo/gentoo'
-
-REPORT_URI_PREFIX = 'https://qa-reports.gentoo.org/output/gentoo-ci/'
-
-
-
 def main(commit_hash, desc):
+    GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
+    GITHUB_TOKEN_FILE = os.environ['GITHUB_TOKEN_FILE']
+    GITHUB_REPO = os.environ['GITHUB_REPO']
+
     with open(GITHUB_TOKEN_FILE) as f:
         token = f.read().strip()
 

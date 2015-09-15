@@ -2,11 +2,11 @@
 
 set -e -x
 
-repo=/home/mgorny/gentoo-ci
+repo=${GENTOO_CI_GIT}
 borked_list=${repo}/borked.list
 borked_last=${repo}/borked.last
-uri_prefix=https://qa-reports.gentoo.org/output/gentoo-ci/
-mail_to=gentoo-automated-testing@lists.gentoo.org
+uri_prefix=${GENTOO_CI_URI_PREFIX}
+mail_to=${GENTOO_CI_MAIL}
 
 if [[ ! -s ${borked_list} ]]; then
 	if [[ -s ${borked_last} ]]; then

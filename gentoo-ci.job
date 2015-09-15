@@ -1,17 +1,18 @@
 #!/home/mgorny/bin/run-cronjob.sh
+# vim:ft=sh
 
 set -e -x
 ulimit -t 600 -v 2097152
 
-. /home/mgorny/pkgcore-venv/bin/activate
+. "${VIRTUAL_ENV}"/bin/activate
 
-cd /home/mgorny/sync/gentoo
+cd "${SYNC_DIR}"/gentoo
 ts=$(git log --pretty='%ct' -1)
-touch -r /home/mgorny/mirror/gentoo/metadata/timestamp.chk .git/timestamp
-cd /home/mgorny/gentoo-ci
-time timeout 15m make -j16
-/home/mgorny/bin/txt2html-gentoo.py /home/mgorny/repos/gentoo "${ts}" *.txt
+touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk .git/timestamp
+cd "${GENTOO_CI_GIT}"
+time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16
+"${SCRIPT_DIR}"/txt2html-gentoo.py "${REPOS_DIR}"/gentoo "${ts}" *.txt
 git add *.txt *.html *.css
-git diff --cached --quiet --exit-code || git commit -m "$(date -u --date="@$(cd /home/mgorny/sync/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
+git diff --cached --quiet --exit-code || git commit -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 git push
-/home/mgorny/bin/report-borked.bash
+"${SCRIPT_DIR}"/report-borked.bash

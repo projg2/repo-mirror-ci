@@ -9,11 +9,6 @@ import xml.etree.ElementTree as et
 import github
 
 
-GITHUB_USERNAME = 'gentoo-repo-qa-bot'
-GITHUB_TOKEN_FILE = os.path.expanduser('~/.github-token')
-GITHUB_ORG = 'gentoo-mirror'
-
-
 def gh_sources(r):
     return (
         ('git', r.clone_url),
@@ -37,6 +32,10 @@ def dtd_sort_key(av):
 
 
 def main(summary_path, repos_xml_path):
+    GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
+    GITHUB_TOKEN_FILE = os.environ['GITHUB_TOKEN_FILE']
+    GITHUB_ORG = os.environ['GITHUB_ORG']
+
     with open(summary_path) as f:
         repos = json.load(f)
 

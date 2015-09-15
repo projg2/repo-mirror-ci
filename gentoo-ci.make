@@ -1,10 +1,11 @@
+# vim:ft=make
 jobs = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 global
 jobs_no = 16
-repo = /home/mgorny/repos/gentoo
-checker = /home/mgorny/git/travis-repo-checks/run-pkgcheck.bash
-ts = /home/mgorny/sync/gentoo/.git/timestamp
+repo = $(REPOS_DIR)/gentoo
+checker = $(TRAVIS_REPO_CHECKS_GIT)/run-pkgcheck.bash
+ts = $(SYNC_DIR)/gentoo/.git/timestamp
 
-HOME = /home/mgorny/gentoo-ci
+HOME = $(GENTOO_CI_GIT)
 
 all: $(patsubst %,%.txt,$(jobs))
 

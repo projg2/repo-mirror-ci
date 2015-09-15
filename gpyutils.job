@@ -1,9 +1,10 @@
 #!/home/mgorny/bin/run-cronjob.sh
+# vim:ft=sh
 
 set -e -x
 ulimit -t 1200 -v 2097152
 
-export PORTAGE_CONFIGROOT=/home/mgorny/data
-cd /home/mgorny/git/gpyutils
+export PORTAGE_CONFIGROOT=${CONFIG_ROOT}
+cd "${GPYUTILS_GIT}"
 timeout 20m make -j all
 make push

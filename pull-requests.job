@@ -1,17 +1,18 @@
 #!/home/mgorny/bin/run-cronjob.sh
+# vim:ft=sh
 
 set -e -x
 ulimit -t 600 -v 2097152
 
-. /home/mgorny/pkgcore-venv/bin/activate
+. "${VIRTUAL_ENV}"/bin/activate
 
-sync=/home/mgorny/sync/gentoo
-cache=/home/mgorny/repos/gentoo
-gentooci=/home/mgorny/gentoo-ci
-pull=/home/mgorny/pull
+sync=${SYNC_DIR}/gentoo
+cache=${REPOS_DIR}/gentoo
+gentooci=${GENTOO_CI_GIT}
+pull=${PULL_REQUEST_DIR}
 
 cd "${sync}"
-git fetch -f https://github.com/gentoo/gentoo 'refs/pull/*/head:refs/pull/*'
+git fetch -f "${PULL_REQUEST_REPO}" 'refs/pull/*/head:refs/pull/*'
 
 mkdir -p "${pull}"
 no=0
@@ -20,7 +21,7 @@ while read hash t ref; do
 
 	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
 		if [[ ${no} -ne 0 ]]; then
-			/home/mgorny/bin/pending-pull-request.py "${hash}" \
+			"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
 				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")"
 		fi
 
@@ -34,7 +35,7 @@ while read hash t ref; do
 	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
 		cd "${pull}"
 		echo "${hash}" > "${prid}"
-		/home/mgorny/bin/pending-pull-request.py "${hash}" \
+		"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
 			"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")"
 		rm -rf tmp gentoo-ci
 
@@ -50,12 +51,12 @@ while read hash t ref; do
 		cd ..
 		git clone -s "${gentooci}" gentoo-ci
 		cd gentoo-ci
-		ln -s "${gentooci}"/Makefile
 		git checkout -b "pull-${prid}"
 		touch "${pull}"/.ts
-		time timeout 15m make -j16 ts="${pull}/.ts" repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
+		time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16 \
+			ts="${pull}/.ts" repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
 		ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
-		/home/mgorny/bin/txt2html-gentoo.py "${pull}/.ts" "${ts}" *.txt
+		"${SCRIPT_DIR}"/txt2html-gentoo.py "${pull}/.ts" "${ts}" *.txt
 		git add *.txt *.html *.css
 		git diff --cached --quiet --exit-code || git commit -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 		pr_hash=$(git rev-parse --short HEAD)
@@ -64,7 +65,7 @@ while read hash t ref; do
 		cd "${gentooci}"
 		git push -f origin "pull-${prid}"
 
-		/home/mgorny/bin/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list "${hash}"
+		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list "${hash}"
 
 		break
 	fi

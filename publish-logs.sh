@@ -2,9 +2,9 @@
 
 set -e -x
 
-bindir=~/bin
-datadir=~/bin
-target=~/git/repo-qa-check-results
+bindir=${SCRIPT_DIR}
+datadir=${SCRIPT_DIR}
+target=${REPORT_REPOS_GIT}
 logdir=${1}
 date=${logdir##*/}
 

@@ -1,17 +1,18 @@
 #!/home/mgorny/bin/run-cronjob.sh
+# vim:ft=sh
 
 set -e -x
 ulimit -t 600 -v 2097152
 
-. /home/mgorny/pkgcore-venv/bin/activate
+. "${VIRTUAL_ENV}"/bin/activate
 
-cd /home/mgorny
-/home/mgorny/bin/update-repos.py
-cd log
+"${SCRIPT_DIR}"/update-repos.py
+cd "${LOG_DIR}"
 dates=( * )
 
-/home/mgorny/bin/update-mirror.py "${dates[-1]}"/summary.json "${dates[-1]}"/repositories.xml > /home/mgorny/mirror/Makefile.repos
-/home/mgorny/bin/publish-logs.sh ${dates[-1]}
+"${SCRIPT_DIR}"/update-mirror.py "${dates[-1]}"/summary.json \
+	"${dates[-1]}"/repositories.xml > "${MIRROR_DIR}"/Makefile.repos
+"${SCRIPT_DIR}"/publish-logs.sh "${dates[-1]}"
 
-make -C /home/mgorny/mirror clean
-make -j16 -k -C /home/mgorny/mirror
+make -C "${MIRROR_DIR}" clean
+make -j16 -k -C "${MIRROR_DIR}"

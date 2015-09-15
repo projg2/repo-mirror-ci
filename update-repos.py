@@ -27,23 +27,6 @@ import sys
 import time
 import xml.etree.ElementTree
 
-REPOSITORIES_XML = 'https://api.gentoo.org/overlays/repositories.xml'
-
-CONFIG_ROOT = '/home/mgorny/data'
-CONFIG_ROOT_SYNC = '/home/mgorny/data-sync'
-LOG_DIR = '/home/mgorny/log'
-SYNC_DIR = '/home/mgorny/sync'
-REPOS_DIR = '/home/mgorny/repos'
-REPOS_CONF = 'etc/portage/repos.conf'
-
-MAX_SYNC_JOBS = 32
-MAX_REGEN_JOBS = 16
-MAX_PCHECK_JOBS = 16
-REGEN_THREADS = '1'
-
-# repositories which are broken and take a lot of time to sync
-BANNED_REPOS = frozenset()
-
 try:
     DEVNULL = subprocess.DEVNULL
 except AttributeError:
@@ -147,9 +130,9 @@ class LoggerProxy(object):
 
 
 class Logger(object):
-    def __init__(self):
+    def __init__(self, log_root):
         dt = datetime.datetime.utcnow()
-        self.log_dir = os.path.join(LOG_DIR, dt.strftime('%Y-%m-%dT%H:%M:%S'))
+        self.log_dir = os.path.join(log_root, dt.strftime('%Y-%m-%dT%H:%M:%S'))
         os.makedirs(self.log_dir)
 
     def __getitem__(self, key):
@@ -227,7 +210,23 @@ class TaskManager(object):
 
 
 def main():
-    log = Logger()
+    REPOSITORIES_XML = os.environ['REPOSITORIES_XML']
+
+    CONFIG_ROOT = os.environ['CONFIG_ROOT']
+    CONFIG_ROOT_SYNC = os.environ['CONFIG_ROOT_SYNC']
+    LOG_DIR = os.environ['LOG_DIR']
+    SYNC_DIR = os.environ['SYNC_DIR']
+    REPOS_DIR = os.environ['REPOS_DIR']
+    REPOS_CONF = os.environ['REPOS_CONF']
+
+    MAX_SYNC_JOBS = int(os.environ['MAX_SYNC_JOBS'])
+    MAX_REGEN_JOBS = int(os.environ['MAX_REGEN_JOBS'])
+    MAX_PCHECK_JOBS = int(os.environ['MAX_PCHECK_JOBS'])
+    REGEN_THREADS = os.environ['REGEN_THREADS']
+
+    BANNED_REPOS = frozenset(os.environ['BANNED_REPOS'].split())
+
+    log = Logger(LOG_DIR)
     states = {}
 
     os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_SYNC
