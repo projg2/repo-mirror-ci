@@ -14,5 +14,5 @@ dates=( * )
 	"${dates[-1]}"/repositories.xml > "${MIRROR_DIR}"/Makefile.repos
 "${SCRIPT_DIR}"/publish-logs.sh "${dates[-1]}"
 
-make -C "${MIRROR_DIR}" clean
-make -j16 -k -C "${MIRROR_DIR}"
+make -f "${SCRIPT_DIR}"/mirror.make -C "${MIRROR_DIR}" clean
+make -f "${SCRIPT_DIR}"/mirror.make -j16 -k -C "${MIRROR_DIR}"

@@ -1,11 +1,13 @@
-BINDIR = ~/bin
-SYNCDIR = ~/sync
-REPOSDIR = ~/repos
-MIRRORDIR = ~/mirror
+# vim:ft=make
+
+BINDIR = $(SCRIPT_DIR)
+SYNCDIR = $(SYNC_DIR)
+REPOSDIR = $(REPOS_DIR)
+MIRRORDIR = $(MIRROR_DIR)
 
 GITHUB_PREFIX = git@github.com:gentoo-mirror
 
-include Makefile.repos
+include $(MIRROR_DIR)/Makefile.repos
 
 update: $(patsubst %,update-%,$(REPOS))
 clean: $(patsubst %,clean-%,$(DELETED_REPOS))
