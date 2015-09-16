@@ -23,8 +23,11 @@ push-%: $(MIRRORDIR)/%
 merge-%: $(SYNCDIR)/% $(MIRRORDIR)/%
 	$(BINDIR)/smart-merge.bash $< $(MIRRORDIR)/$(subst merge-,,$@) master
 
-rsync-%: $(REPOSDIR)/% $(MIRRORDIR)/% merge-%
-	rsync -rlpt --delete --exclude=metadata/timestamp.chk --exclude='.*/' $< $(MIRRORDIR)/
+postmerge-%: $(MIRRORDIR)/% merge-%
+	[ ! -f $(BINDIR)/repo-postmerge/$(subst postmerge-,,$@) ] || $(BINDIR)/repo-postmerge/$(subst postmerge-,,$@) $<
+
+rsync-%: $(REPOSDIR)/% $(MIRRORDIR)/% merge-% postmerge-%
+	rsync -rlpt --delete --exclude=metadata/timestamp.chk --exclude='.*/' --exclude=metadata/dtd --exclude=metadata/herds.xml --exclude=metadata/glsa --exclude=metadata/news $< $(MIRRORDIR)/
 
 $(MIRRORDIR)/%: create-%
 	:

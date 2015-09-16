@@ -1,0 +1,31 @@
+#!/bin/bash
+
+merge_subrepo() {
+	url=${1}
+	path=${2}
+	remote=${path##*/}
+	branch=master
+
+	if ! git config --get "remote.${remote}.url" &>/dev/null; then
+		git remote add "${remote}" "${url}"
+	fi
+	git fetch "${remote}"
+
+	if ! git merge-base HEAD "${remote}/${branch}"; then
+		# first merge
+		git merge -s ours --no-commit "${remote}/${branch}"
+		git read-tree --prefix="${path}" -u "${remote}/${branch}"
+		git commit -q -m "Merge ${path} subrepository"
+	else
+		git merge -q -m "Merge ${path} subrepository" \
+			-s subtree "${remote}/${branch}"
+	fi
+}
+
+set -e -x
+
+cd "${1}"
+merge_subrepo git://anongit.gentoo.org/data/dtd.git metadata/dtd
+merge_subrepo git://anongit.gentoo.org/data/glsa.git metadata/glsa
+# TODO: herds.xml out of git://anongit.gentoo.org/data/api.git
+merge_subrepo git://anongit.gentoo.org/data/gentoo-news.git metadata/news
