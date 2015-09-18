@@ -76,6 +76,25 @@ class BugzillaWrapper(object):
         assert(len(ret['bugs']) == 1)
         return ret['bugs'][0]
 
+    def add_comment(self, bug_id, comment):
+        params = {
+            'Bugzilla_token': self.token,
+            'id': bug_id,
+            'comment': comment,
+        }
+        ret = self.bz.Bug.add_comment(params)
+        return ret['id']
+
+    def update_bug(self, bug_id, **data):
+        params = {
+            'Bugzilla_token': self.token,
+            'ids': [bug_id],
+        }
+        params.update(data)
+        ret = self.bz.Bug.update(params)
+        assert(len(ret['bugs']) == 1)
+
+
 def main(json_db):
     GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
     GITHUB_TOKEN_FILE = os.environ['GITHUB_TOKEN_FILE']
@@ -135,26 +154,40 @@ def main(json_db):
             if (pr.state == 'open') != db_pr['is-open']:
                 if db_pr['is-open']:
                     comment = 'Reopening since the Gentoo bug has been reopened'
+                    new_state = 'open'
                 else:
                     comment = ('Closing since the Gentoo has been resolved (%s)'
                             % bug['resolution'])
+                    new_state = 'closed'
                 c = pr.create_issue_comment(comment)
                 db_pr['github-comments'].append(c.id)
-                pr.edit(state = ('open' if db_pr['is-open'] else 'closed'))
-                print('PR %d: %s due to bug resolution change (%s/%s)'
-                        % (pr.number, 'reopened' if db_pr['is-open'] else 'closed',
-                            bug['status'], bug['resolution']))
+                pr.edit(state = new_state)
+                print('PR %d: state -> %s due to bug resolution change (%s/%s)'
+                        % (pr.number, new_state, bug['status'], bug['resolution']))
         # has PR been closed/reopened?
         elif (pr.state == 'open') != db_pr['is-open']:
             db_pr['is-open'] = (pr.state == 'open')
             # propagate to bug
             if (bug['status'] != 'RESOLVED') != db_pr['is-open']:
                 if db_pr['is-open']:
-                    # reopen bug
-                    print('-> REOPEN BUG')
+                    comment = 'Reopening since the pull request has been reopened'
+                    new_status = 'CONFIRMED'
+                    new_resolution = ''
                 else:
-                    # close bug
-                    print('-> CLOSE BUG')
+                    new_status = 'RESOLVED'
+                    if pr.is_merged():
+                        comment = 'Closing since the pull request has been merged'
+                        new_resolution = 'FIXED'
+                    else:
+                        # we don't know why it was closed so let's just obso it
+                        comment = 'Closing since the pull request has been closed'
+                        new_resolution = 'OBSOLETE'
+                db_pr['bugzilla-comments'].append(
+                        bz.add_comment(db_pr['bug-id'], comment))
+                bz.update_bug(db_pr['bug-id'],
+                        status=new_status, resolution=new_resolution)
+                print('PR %d: bug -> %s/%s due to pull request state change'
+                        % (pr.number, new_status, new_resolution))
 
         from IPython import embed
         embed()
