@@ -447,11 +447,11 @@ def main():
         '--exclude=*/metadata/pkg_desc_index', '--exclude=*/metadata/timestamp.chk',
         os.path.join(SYNC_DIR, '.'), REPOS_DIR])
     s.wait()
+    local_repos = frozenset(repos_conf.sections())
     for r in local_repos:
         repos_conf.set(r, 'location', os.path.join(REPOS_DIR, r))
     with open(os.path.join(CONFIG_ROOT, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
-    local_repos = frozenset(repos_conf.sections())
     os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT
     #pkgcore_config = pkgcore.config.load_config()
 
