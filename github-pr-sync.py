@@ -76,6 +76,17 @@ class BugzillaWrapper(object):
         assert(len(ret['bugs']) == 1)
         return ret['bugs'][0]
 
+    def get_comments(self, bug_id):
+        # TODO: use new_since to limit the list
+        params = {
+            'Bugzilla_token': self.token,
+            'ids': [bug_id],
+        }
+        ret = self.bz.Bug.comments(params)
+        assert(len(ret['bugs']) == 1)
+        assert(len(ret['comments']) == 0)
+        return ret['bugs'][str(bug_id)]['comments']
+
     def add_comment(self, bug_id, comment):
         params = {
             'Bugzilla_token': self.token,
@@ -140,11 +151,63 @@ def main(json_db):
                 alias = 'github:%d' % pr.number,
             )
             db_pr['is-open'] = True
-            db_pr['bugzilla-comments'] = []
+            # get initial comment id
+            db_pr['bugzilla-comments'] = [
+                    c['id'] for c in bz.get_comments(db_pr['bug-id'])
+                    if c['count'] == 0]
             db_pr['github-comments'] = []
             print('PR %d: filed bug #%d' % (pr.number, db_pr['bug-id']))
 
         bug = bz.get_bug(db_pr['bug-id'])
+
+        # sync new comments
+        def get_new_comments():
+            for f, t in ((pr.get_issue_comments, 'issue'),
+                    (pr.get_review_comments, 'review')):
+                for c in f():
+                    if c.id not in db_pr['github-comments']:
+                        yield (c.created_at, 'github-' + t, c)
+            for c in bz.get_comments(db_pr['bug-id']):
+                if c['id'] not in db_pr['bugzilla-comments']:
+                    dt = datetime.datetime(*(c['creation_time'].timetuple()[:6]))
+                    yield (dt, 'bugzilla', c)
+
+        for d, t, c in sorted(get_new_comments()):
+            if t == 'bugzilla':
+                # add to github
+                # TODO: URL
+                body = '''(Bugzilla comment #%(pos)d by %(creator)s @ %(time)s)
+
+%(body)s''' % {
+                    'pos': c['count'],
+                    'creator': c['creator'],
+                    'time': d.strftime(DATE_FORMAT),
+                    'body': c['text'],
+                }
+                gc = pr.create_issue_comment(body)
+                db_pr['github-comments'].append(gc.id)
+                print('PR %d: bz comment #%d copied to github' % (pr.number, c['count']))
+            else:
+                # add to bugzilla
+                creator = c.user.login
+                if c.user.name:
+                    creator += ' (%s)' % c.user.name
+
+                c_body = c.body
+                if t == 'github-review':
+                    d_body = '\n'.join('> ' + l for l in c.diff_hunk.splitlines())
+                    c_body = d_body + '\n\n' + c_body
+
+                body = '''(GitHub %(type)s comment by %(creator)s @ %(time)s)
+
+%(body)s''' % {
+                    'type': t[7:],
+                    'creator': creator,
+                    'time': d.strftime(DATE_FORMAT),
+                    'body': c_body,
+                }
+                db_pr['bugzilla-comments'].append(bz.add_comment(db_pr['bug-id'], body))
+                print('PR %d: github comment %s/%s copied to bugzilla' % (pr.number, c.user.login, d.strftime(DATE_FORMAT)))
 
         # sync state
         # has bug been closed/reopened?
