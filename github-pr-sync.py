@@ -50,8 +50,8 @@ If you need to rebase the commits against updated master:
 
 
 class BugzillaWrapper(object):
-    def __init__(self, token):
-        self.bz = bugz.bugzilla.BugzillaProxy('https://mgorny:oe9to(Doox]eek4z@bugstest.gentoo.org/xmlrpc.cgi')
+    def __init__(self, url_prefix, token):
+        self.bz = bugz.bugzilla.BugzillaProxy(url_prefix + 'xmlrpc.cgi')
         self.token = token
         self.cache = {}
 
@@ -127,7 +127,8 @@ def main(json_db):
     GITHUB_TOKEN_FILE = os.environ['GITHUB_TOKEN_FILE']
     GITHUB_REPO = os.environ['GITHUB_REPO']
 
-    BUGZILLA_URL = 'https://bugstest.gentoo.org/'
+    BUGZILLA_URL = os.environ['BUGZILLA_URL']
+    assert BUGZILLA_URL.endswith('/')
     BUGZILLA_TOKEN_FILE = os.environ['BUGZILLA_TOKEN_FILE']
 
     with open(GITHUB_TOKEN_FILE) as f:
@@ -140,7 +141,7 @@ def main(json_db):
 
     g = github.Github(GITHUB_USERNAME, token, per_page=50)
     r = g.get_repo(GITHUB_REPO)
-    bz = BugzillaWrapper(bugz_token)
+    bz = BugzillaWrapper(BUGZILLA_URL, bugz_token)
 
     bz.prefetch_bugs([pr['bug-id'] for pr in db.values()])
 
