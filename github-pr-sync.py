@@ -43,6 +43,9 @@ If you need to rebase the commits against updated master:
 
   git pull --rebase=preserve -S
 
+Please do not ever close this bug as a duplicate! Instead, please add
+the relevant bugs to 'Blocks' field of this bug.
+
 == == == == == == == == == == == == == == == == == == == == == == == ==
 
 %(body)s
@@ -262,6 +265,19 @@ def main(json_db):
                     print('PR #%d: bz comment #%d copied to github' % (pr.number, c['count']))
 
             # sync state
+            # check if bug has been RESO/DUPL
+            if bug['status'] == 'RESOLVED' and bug['resolution'] == 'DUPLICATE':
+                comment = '''This bug is technically needed to sync comments with pull requests.
+Please do not close it as a duplicate.'''
+                bug['status'] = 'CONFIRMED'
+                bug['blocks'].append(bug['dupe_of'])
+                db_pr['bugzilla-comments'].append(
+                        bz.add_comment(db_pr['bug-id'], comment))
+                bz.update_bug(db_pr['bug-id'], status=bug['status'],
+                        blocks={'add': [bug['dupe_of']]})
+                print('PR #%d: bug -> %s because of unrequested RESO/DUPL (#%d)'
+                        % (pr.number, bug['status'], bug['dupe_of']))
+
             # has bug been closed/reopened?
             if (bug['status'] != 'RESOLVED') != db_pr['is-open']:
                 db_pr['is-open'] = (bug['status'] != 'RESOLVED')
