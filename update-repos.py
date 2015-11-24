@@ -405,11 +405,11 @@ def main():
     pkgcore_config = pkgcore.config.load_config()
     for r in sorted(local_repos):
         config_sect = pkgcore_config.collapse_named_section(r)
-        raw_repo = config_sect.config['raw_repo'].instantiate()
+        repo_config = config_sect.config['repo_config'].instantiate()
 
-        p_repo_id = raw_repo.repo_id
-        p_masters = raw_repo.masters
-        if raw_repo.is_empty:
+        p_repo_id = repo_config.repo_id
+        p_masters = repo_config.masters
+        if repo_config.is_empty:
             log[r].status('Empty repository, removing')
             states[r]['x-state'] = State.EMPTY
         elif not p_repo_id:
