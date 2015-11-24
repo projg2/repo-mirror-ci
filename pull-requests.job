@@ -51,7 +51,7 @@ while read hash t ref; do
 
 		# update for pre-merge cache
 		export PORTAGE_CONFIGROOT="${pull}"
-		pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo
+		time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo
 		git add -A -f
 		git commit --quiet -m "Pre-merge cache init"
 
@@ -59,7 +59,7 @@ while read hash t ref; do
 		git merge --quiet -m "Merge PR ${prid}" "${ref}"
 
 		# update cache post-merge
-		pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo
+		time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo
 		git add -A -f
 		git commit --quiet -m "Post-merge cache update"
 
