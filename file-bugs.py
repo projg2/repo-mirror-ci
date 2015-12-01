@@ -74,12 +74,12 @@ we do not receive any reply within 4 weeks.
 
     def SYNC_FAIL(self, repo, data):
         summary = '[%s] Repository URI unaccessible' % repo
-        uris = '\n'.join(
+        uris = '\n\n'.join(
                 '  [%8s] %s' % (r['type'], r['uri'])
                 for r in data['source'])
         msg = ('''
 Our automated repository checks [1] have detected that the '%s'
-repository can not be synced for at least a few days.
+repository can not be synced.
 
 The following URIs are listed for the repository:
 
@@ -202,8 +202,8 @@ def main(bug_db_path, summary_path):
 
         w = getattr(sth, issue)(r, v)
         if w is not None:
-            if current_bugs:
-                raise NotImplementedError('New issue with the same repository (repo: %s, current: %s, new: %s' % (r, current_bugs, issue))
+            if issue in current_bugs:
+                continue
 
             owners = [o['email'] for o in v['owner']]
             params = {
