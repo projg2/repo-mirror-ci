@@ -32,6 +32,11 @@ at the following pkgcheck failures:"
 		mail="
 Looks like the breakage list has just shrinked! Good work, but please
 fix the remaining pkgcheck failures:"
+	elif ! cmp -s "${borked_list}" "${borked_last}"; then
+		subject="BROKEN: repository is still broken!"
+		mail="
+Looks like the breakage list just changed! Please take a look
+at the following pkgcheck failures:"
 	else
 		exit 0
 	fi
