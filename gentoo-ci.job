@@ -7,12 +7,13 @@ ulimit -t 600 -v 2097152
 . "${VIRTUAL_ENV}"/bin/activate
 
 cd "${SYNC_DIR}"/gentoo
-ts=$(git log --pretty='%ct' -1)
 touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk .git/timestamp
 cd "${GENTOO_CI_GIT}"
 time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16
-"${SCRIPT_DIR}"/txt2html-gentoo.py "${REPOS_DIR}"/gentoo "${ts}" *.txt
-git add *.txt *.html *.css
+
+touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk *.xml
+"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py *.xml
+git add *.xml *.html *.css
 git diff --cached --quiet --exit-code || git commit -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 git push
 "${SCRIPT_DIR}"/report-borked.bash

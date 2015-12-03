@@ -7,12 +7,12 @@ ts = $(SYNC_DIR)/gentoo/.git/timestamp
 
 HOME = $(GENTOO_CI_GIT)
 
-all: $(patsubst %,%.txt,$(jobs))
+all: $(patsubst %,%.xml,$(jobs))
 
-%.txt: $(ts)
-	{ cd $(repo) && bash $(checker) $(patsubst %.txt,%,$@) $(jobs_no); } > $@ 2>&1
+%.xml: $(ts)
+	{ cd $(repo) && bash $(checker) $(patsubst %.xml,%,$@) $(jobs_no); } > $@
 
 clean:
-	rm -f *.txt
+	rm -f *.xml
 
 .PHONY: all
