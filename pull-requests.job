@@ -75,8 +75,9 @@ while read hash t ref; do
 		time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16 \
 			ts="${pull}/.ts" repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
 		ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
-		"${SCRIPT_DIR}"/txt2html-gentoo.py "${pull}/.ts" "${ts}" *.txt
-		git add *.txt *.html *.css
+		touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk *.xml
+		"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py *.xml
+		git add *.xml *.html *.css
 		git diff --cached --quiet --exit-code || git commit -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 		pr_hash=$(git rev-parse --short HEAD)
 		git push -f origin "pull-${prid}"
