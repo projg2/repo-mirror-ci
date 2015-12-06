@@ -8,6 +8,7 @@ ulimit -t 600 -v 2097152
 
 cd "${SYNC_DIR}"/gentoo
 touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk .git/timestamp
+CURRENT_COMMIT=$(git rev-parse --short HEAD)
 cd "${GENTOO_CI_GIT}"
 time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16
 
@@ -16,4 +17,5 @@ touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk *.xml
 git add *.xml *.html *.css
 git diff --cached --quiet --exit-code || git commit -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 git push
-"${SCRIPT_DIR}"/report-borked.bash
+"${SCRIPT_DIR}"/report-borked.bash "$(<.last-commit)" "${CURRENT_COMMIT}"
+echo "${CURRENT_COMMIT}" > .last-commit

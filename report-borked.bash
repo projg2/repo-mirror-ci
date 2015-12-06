@@ -7,6 +7,8 @@ borked_list=${repo}/borked.list
 borked_last=${repo}/borked.last
 uri_prefix=${GENTOO_CI_URI_PREFIX}
 mail_to=${GENTOO_CI_MAIL}
+previous_commit=${1}
+next_commit=${2}
 
 if [[ ! -s ${borked_list} ]]; then
 	if [[ -s ${borked_last} ]]; then
@@ -56,6 +58,10 @@ while read l; do
 done <"${borked_list}"
 
 mail+="
+
+Changes since last check:
+${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
+
 --
 Gentoo repository CI"
 
