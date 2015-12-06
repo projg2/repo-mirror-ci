@@ -29,7 +29,7 @@ def main(prid, prhash, borked_path, commit_hash):
     pr = r.get_pull(int(prid))
     c = r.get_commit(commit_hash)
 
-    report_url = REPORT_URI_PREFIX + '/' + prhash + '/global.html'
+    report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
     if not borked:
         c.create_status('success', description='All pkgcheck QA checks passed',
                 target_url=report_url)
