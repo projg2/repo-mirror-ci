@@ -64,8 +64,11 @@ while read hash t ref; do
 		git diff --cached --quiet --exit-code || git commit --quiet -m "Post-merge cache update"
 
 		# push to mirror
-		git push -f "${mirror}" "pull-${prid}"
-		( cd "${mirror}"; git push -f origin "pull-${prid}" )
+		(
+			git push -f "${mirror}" "pull-${prid}"
+			cd "${mirror}"
+			git push -f origin "pull-${prid}"
+		) &
 
 		cd ..
 		git clone -s "${gentooci}" gentoo-ci
@@ -86,6 +89,9 @@ while read hash t ref; do
 		git push -f origin "pull-${prid}"
 
 		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list "${hash}"
+
+		# wait for mirror pushing job
+		wait
 
 		break
 	fi
