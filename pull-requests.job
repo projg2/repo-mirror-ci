@@ -74,9 +74,9 @@ while read hash t ref; do
 		git clone -s "${gentooci}" gentoo-ci
 		cd gentoo-ci
 		git checkout -b "pull-${prid}"
-		touch "${pull}"/.ts
+		make -f "${SCRIPT_DIR}"/gentoo-ci.make clean
 		time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16 \
-			ts="${pull}/.ts" repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
+			repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
 		ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
 		touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk *.xml
 		"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py *.xml
