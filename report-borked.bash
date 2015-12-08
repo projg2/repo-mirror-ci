@@ -60,12 +60,29 @@ done < <(diff -N \
 		--new-line-format='new %L' \
 		"${borked_last}" "${borked_list}")
 
+broken_commits=()
+for i in "${new[@]}"; do
+	pkg=${i##*#}
+	commit=$("${SCRIPT_DIR}"/bisect-borked.bash "${pkg}" \
+		"${next_commit}" "${previous_commit}")
+
+	# skip duplicates
+	for c in "${broken_commits[@]}"; do
+		[[ ${c} != ${commit} ]] || continue 2
+	done
+	broken_commits+=( "${commit}" )
+done
+
 IFS='
 '
 
 mail+="
 ${new:+New issues:
 ${new[*]/#/${uri_prefix}/${current_rev}/}
+
+
+}${broken_commits:+Introduced by commits:
+${broken_commits[*]/#/${GENTOO_CI_GITWEB_COMMIT_URI}}
 
 
 }${old:+Previous issues still unfixed:
@@ -81,9 +98,6 @@ ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 
 --
 Gentoo repository CI"
-
-echo "$mail"
-exit 1
 
 sendmail "${mail_to}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
