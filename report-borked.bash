@@ -22,23 +22,11 @@ else
 	if [[ ! -s ${borked_last} ]]; then
 		subject="BROKEN: repository became broken!"
 		mail="
-Looks like someone just broke Gentoo! Please take a look
-at the following pkgcheck failures:"
-	elif [[ $(wc -l <"${borked_list}") -gt $(wc -l <"${borked_last}") ]]; then
-		subject="BROKEN: repository is even more broken!"
-		mail="
-Looks like the breakage list has just grown! Please take a look
-at the following pkgcheck failures:"
-	elif [[ $(wc -l <"${borked_list}") -lt $(wc -l <"${borked_last}") ]]; then
-		subject="BROKEN: repository is less broken now!"
-		mail="
-Looks like the breakage list has just shrinked! Good work, but please
-fix the remaining pkgcheck failures:"
+Looks like someone just broke Gentoo!"
 	elif ! cmp -s "${borked_list}" "${borked_last}"; then
 		subject="BROKEN: repository is still broken!"
 		mail="
-Looks like the breakage list just changed! Please take a look
-at the following pkgcheck failures:"
+Looks like the breakage list has just changed!"
 	else
 		exit 0
 	fi
@@ -52,18 +40,50 @@ ${mail}
 "
 
 current_rev=$(cd "${repo}"; git rev-parse --short HEAD)
-while read l; do
-	mail+="${uri_prefix}/${current_rev}/${l}
-"
-done <"${borked_list}"
+
+fixed=()
+old=()
+new=()
+
+while read t l; do
+	case "${t}" in
+		fixed) fixed+=( "${l}" );;
+		old) old+=( "${l}" );;
+		new) new+=( "${l}" );;
+		*)
+			echo "Invalid diff result: ${t} ${l}" >&2
+			exit 1;;
+	esac
+done < <(diff -N \
+		--old-line-format='fixed %L' \
+		--unchanged-line-format='old %L' \
+		--new-line-format='new %L' \
+		"${borked_last}" "${borked_list}")
+
+IFS='
+'
 
 mail+="
+${new:+New issues:
+${new[*]/#/${uri_prefix}/${current_rev}/}
 
-Changes since last check:
+
+}${old:+Previous issues still unfixed:
+${old[*]/#/${uri_prefix}/${current_rev}/}
+
+
+}${fixed:+Packages fixed since last run:
+${fixed[*]/#/${uri_prefix}/${current_rev}/}
+
+
+}Changes since last check:
 ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 
 --
 Gentoo repository CI"
+
+echo "$mail"
+exit 1
 
 sendmail "${mail_to}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
