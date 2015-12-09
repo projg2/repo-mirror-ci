@@ -7,37 +7,28 @@ borked_list=${repo}/borked.list
 borked_last=${repo}/borked.last
 uri_prefix=${GENTOO_CI_URI_PREFIX}
 mail_to=${GENTOO_CI_MAIL}
+mail_cc=()
 previous_commit=${1}
 next_commit=${2}
 
 if [[ ! -s ${borked_list} ]]; then
 	if [[ -s ${borked_last} ]]; then
 		subject="FIXED: all failures have been fixed"
-		mail="
-Everything seems nice and cool now."
+		mail="Everything seems nice and cool now."
 	else
 		exit 0
 	fi
 else
 	if [[ ! -s ${borked_last} ]]; then
 		subject="BROKEN: repository became broken!"
-		mail="
-Looks like someone just broke Gentoo!"
+		mail="Looks like someone just broke Gentoo!"
 	elif ! cmp -s "${borked_list}" "${borked_last}"; then
 		subject="BROKEN: repository is still broken!"
-		mail="
-Looks like the breakage list has just changed!"
+		mail="Looks like the breakage list has just changed!"
 	else
 		exit 0
 	fi
 fi
-
-mail="Subject: ${subject}
-To: <${mail_to}>
-Content-Type: text/plain; charset=utf8
-${mail}
-
-"
 
 current_rev=$(cd "${repo}"; git rev-parse --short HEAD)
 
@@ -61,6 +52,8 @@ done < <(diff -N \
 		"${borked_last}" "${borked_list}")
 
 broken_commits=()
+cc_line=()
+
 for i in "${new[@]}"; do
 	pkg=${i##*#}
 	commit=$("${SCRIPT_DIR}"/bisect-borked.bash "${pkg}" \
@@ -71,12 +64,29 @@ for i in "${new[@]}"; do
 		[[ ${c} != ${commit} ]] || continue 2
 	done
 	broken_commits+=( "${commit}" )
+
+	for a in $(cd "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
+	do
+		for o in "${mail_cc[@]}"; do
+			[[ ${o} != ${a} ]] || continue 2
+		done
+		mail_cc+=( "${a}" )
+		cc_line+=( "<${a}>" )
+	done
 done
+
+cc_line=${cc_line[*]}
 
 IFS='
 '
 
-mail+="
+mail="Subject: ${subject}
+To: <${mail_to}>
+${mail_cc[@]:+CC: ${cc_line// /, }
+}Content-Type: text/plain; charset=utf8
+
+${mail}
+
 ${new:+New issues:
 ${new[*]/#/${uri_prefix}/${current_rev}/}
 
@@ -99,5 +109,5 @@ ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 --
 Gentoo repository CI"
 
-sendmail "${mail_to}" <<<"${mail}"
+sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
