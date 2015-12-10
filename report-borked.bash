@@ -54,26 +54,38 @@ done < <(diff -N \
 broken_commits=()
 cc_line=()
 
-for i in "${new[@]}"; do
-	pkg=${i##*#}
-	commit=$("${SCRIPT_DIR}"/bisect-borked.bash "${pkg}" \
-		"${next_commit}" "${previous_commit}")
+if [[ ${new[@]} ]]; then
+	trap 'rm -rf "${BISECT_TMP}"' EXIT
+	export BISECT_TMP=$(mktemp -d)
+	sed -e "s^@path@^${SYNC_DIR}/gentoo^" \
+		"${TRAVIS_REPO_CHECKS_GIT}"/pkgcore.conf.in \
+		> "${BISECT_TMP}"/.pkgcore.conf
 
-	# skip duplicates
-	for c in "${broken_commits[@]}"; do
-		[[ ${c} != ${commit} ]] || continue 2
-	done
-	broken_commits+=( "${commit}" )
+	set -- "${new[@]##*#}"
+	while [[ ${@} ]]; do
+		commit=$("${SCRIPT_DIR}"/bisect-borked.bash \
+			"${next_commit}" "${previous_commit}" "${@}")
+		shift
 
-	for a in $(cd "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
-	do
-		for o in "${mail_cc[@]}"; do
-			[[ ${o} != ${a} ]] || continue 2
+		# skip duplicates
+		for c in "${broken_commits[@]}"; do
+			[[ ${c} != ${commit} ]] || continue 2
 		done
-		mail_cc+=( "${a}" )
-		cc_line+=( "<${a}>" )
+		broken_commits+=( "${commit}" )
+
+		for a in $(cd "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
+		do
+			for o in "${mail_cc[@]}"; do
+				[[ ${o} != ${a} ]] || continue 2
+			done
+			mail_cc+=( "${a}" )
+			cc_line+=( "<${a}>" )
+		done
 	done
-done
+
+	trap '' EXIT
+	rm -rf "${BISECT_TMP}"
+fi
 
 cc_line=${cc_line[*]}
 

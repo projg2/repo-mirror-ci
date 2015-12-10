@@ -5,8 +5,31 @@ set -e -x
 trap 'exit 255' EXIT
 
 export HOME=${BISECT_TMP}
+current_commit=$(git rev-parse BISECT_HEAD)
 
-pkgcheck -r gentoo --reporter XmlReporter "${1}" \
+if [[ -s ${BISECT_TMP}/.bisect.cache ]]; then
+	while read -a cline; do
+		if [[ ${cline[0]} == ${current_commit} ]]; then
+			ret=0
+			for p in "${cline[@]:1}"; do
+				if [[ ${p} == ${1} ]]; then
+					ret=1
+					break
+				fi
+			done
+			trap '' EXIT
+			exit "${ret}"
+		fi
+	done <"${BISECT_TMP}/.bisect.cache"
+fi
+
+git checkout -q "${current_commit}"
+
+# we always check multiple packages and cache the result to avoid
+# re-checking the same commits in next bisect
+# however, we only return result for the first one
+
+pkgcheck -r gentoo --reporter XmlReporter "${@}" \
 	-d imlate -d unstable_only -d cleanup -d stale_unstable \
 	-d deprecated -d UnusedGlobalFlags -d UnusedLicense \
 	-d CategoryMetadataXmlCheck \
@@ -17,11 +40,20 @@ pkgcheck -r gentoo --reporter XmlReporter "${1}" \
 	--output /dev/null --borked "${BISECT_TMP}/.bisect.tmp.borked" \
 	"${BISECT_TMP}/.bisect.tmp.xml"
 
-if grep -q "#${1}$" "${BISECT_TMP}/.bisect.tmp.borked"; then
-	ret=1
-else
-	ret=0
-fi
+borked_pkgs=()
+while read l; do
+	borked_pkgs+=( "${l##*#}" )
+done <"${BISECT_TMP}/.bisect.tmp.borked"
+
+echo "${current_commit} ${borked_pkgs[*]}" >> "${BISECT_TMP}/.bisect.cache"
+
+ret=0
+for p in "${borked_pkgs[@]}"; do
+	if [[ ${1} == ${p} ]]; then
+		ret=1
+		break
+	fi
+done
 
 trap '' EXIT
 exit "${ret}"
