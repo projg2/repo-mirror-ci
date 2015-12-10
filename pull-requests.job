@@ -53,6 +53,7 @@ while read hash t ref; do
 		time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
 		git add -A -f
 		git diff --cached --quiet --exit-code || git commit --quiet -m "Pre-merge cache init"
+		git tag pre-merge
 
 		# merge the PR on top of cache
 		git merge --quiet -m "Merge PR ${prid}" "${ref}"
@@ -87,7 +88,30 @@ while read hash t ref; do
 		cd "${gentooci}"
 		git push -f origin "pull-${prid}"
 
-		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list "${hash}"
+		# if we have any breakages...
+		if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
+			pkgs=()
+			while read l; do
+				pkgs+=( "${l##*#}" )
+			done <"${pull}"/gentoo-ci/borked.list
+
+			# go back to pre-merge state and see if they were there
+			cd "${pull}"/tmp
+			git checkout -q pre-merge
+
+			pkgcheck -r gentoo --reporter XmlReporter "${pkgs[@]}" \
+				-d imlate -d unstable_only -d cleanup -d stale_unstable \
+				-d deprecated -d UnusedGlobalFlags -d UnusedLicense \
+				-d CategoryMetadataXmlCheck \
+				--profile-disable-dev --profile-disable-exp \
+				> .pre-merge.xml
+
+			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
+				--output /dev/null --borked .pre-merge.borked \
+				.pre-merge.xml
+		fi
+
+		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
 		# wait for mirror pushing job
 		wait
