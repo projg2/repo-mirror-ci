@@ -9,13 +9,16 @@ except ImportError:
     import ConfigParser as configparser
 
 try:
+    import urllib.error
     import urllib.request
 except ImportError:
-    import urllib as urllib_request
+    import urllib2
     class urllib:
-        request = urllib_request
+        error = urllib2
+        request = urllib2
 
 import datetime
+import email.utils
 import json
 import os
 import os.path
@@ -211,6 +214,7 @@ class TaskManager(object):
 
 def main():
     REPOSITORIES_XML = os.environ['REPOSITORIES_XML']
+    REPOSITORIES_XML_CACHE = os.environ['REPOSITORIES_XML_CACHE']
 
     CONFIG_ROOT = os.environ['CONFIG_ROOT']
     CONFIG_ROOT_SYNC = os.environ['CONFIG_ROOT_SYNC']
@@ -232,12 +236,34 @@ def main():
     os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_SYNC
 
     # collect all local and remote repositories
-    sys.stderr.write('* fetching repository list\n')
-    f = urllib.request.urlopen(REPOSITORIES_XML)
+    sys.stderr.write('* updating repository list\n')
+    req = urllib.request.Request(REPOSITORIES_XML)
+    req.add_header('User-Agent', 'repo-mirror-ci')
+
     try:
-        repos_xml = xml.etree.ElementTree.parse(f).getroot()
-    finally:
-        f.close()
+        req.add_header('If-Modified-Since',
+                email.utils.formatdate(
+                    os.stat(REPOSITORIES_XML_CACHE).st_mtime))
+    except OSError:
+        pass
+
+    try:
+        f = urllib.request.urlopen(req)
+        try:
+            with open(REPOSITORIES_XML_CACHE, 'wb') as outf:
+                outf.write(f.read())
+                ts = time.mktime(email.utils.parsedate(f.info()['Last-Modified']))
+            # py2 can't do fd here...
+            os.utime(REPOSITORIES_XML_CACHE, (ts, ts))
+        finally:
+            f.close()
+    except urllib.error.HTTPError as e:
+        if e.code == 304:
+            print('- note: file up-to-date')
+        else:
+            print('!!! Warning: fetch failed: %s' % e)
+
+    repos_xml = xml.etree.ElementTree.parse(REPOSITORIES_XML_CACHE).getroot()
 
     remote_repos = frozenset(
             r.find('name').text for r in repos_xml)

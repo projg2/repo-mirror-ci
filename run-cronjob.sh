@@ -2,6 +2,9 @@
 
 . "$(dirname "${0}")"/repo-mirror-ci.conf
 
+# SANITY!
+export TZ=UTC
+
 script=${1}
 basename=${1##*/}
 basename=${basename%.*}
