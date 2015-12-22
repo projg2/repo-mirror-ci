@@ -61,11 +61,18 @@ if [[ ${new[@]} ]]; then
 		"${TRAVIS_REPO_CHECKS_GIT}"/pkgcore.conf.in \
 		> "${BISECT_TMP}"/.pkgcore.conf
 
+	# check one commit extra to make sure the breakages were introduced
+	# in the commit set; this could happen e.g. when new checks
+	# are added on top of already-broken repo
+	pre_previous_commit=$(cd "${SYNC_DIR}"/gentoo; git rev-parse "${previous_commit}^")
 	set -- "${new[@]##*#}"
 	while [[ ${@} ]]; do
 		commit=$("${SCRIPT_DIR}"/bisect-borked.bash \
-			"${next_commit}" "${previous_commit}" "${@}")
+			"${next_commit}" "${pre_previous_commit}" "${@}")
 		shift
+
+		# skip breakages introduced before the commit set
+		[[ ${pre_previous_commit} != ${commit}* ]] || continue
 
 		# skip duplicates
 		for c in "${broken_commits[@]}"; do
