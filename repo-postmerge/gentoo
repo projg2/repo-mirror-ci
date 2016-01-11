@@ -22,10 +22,17 @@ merge_subrepo() {
 	fi
 }
 
+fetch_file() {
+	url=${1}
+	path=${2}
+
+	wget -O "${path}" -N "${url}"
+}
+
 set -e -x
 
 cd "${1}"
 merge_subrepo git://anongit.gentoo.org/data/dtd.git metadata/dtd
 merge_subrepo git://anongit.gentoo.org/data/glsa.git metadata/glsa
-# TODO: herds.xml out of git://anongit.gentoo.org/data/api.git
 merge_subrepo git://anongit.gentoo.org/data/gentoo-news.git metadata/news
+fetch_file https://api.gentoo.org/metastructure/projects.xml metadata/projects.xml
