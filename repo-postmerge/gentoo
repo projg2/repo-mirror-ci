@@ -25,4 +25,5 @@ cd "${1}"
 merge_subrepo git://anongit.gentoo.org/data/dtd.git metadata/dtd
 merge_subrepo git://anongit.gentoo.org/data/glsa.git metadata/glsa
 merge_subrepo git://anongit.gentoo.org/data/gentoo-news.git metadata/news
+merge_subrepo git://anongit.gentoo.org/data/xml-schema.git metadata/xml-schema
 fetch_file https://api.gentoo.org/metastructure/projects.xml metadata/
