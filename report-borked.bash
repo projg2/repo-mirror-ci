@@ -54,7 +54,7 @@ done < <(diff -N \
 broken_commits=()
 cc_line=()
 
-if [[ ${new[@]} ]]; then
+if [[ ${new[@]} && ${previous_commit} ]]; then
 	trap 'rm -rf "${BISECT_TMP}"' EXIT
 	export BISECT_TMP=$(mktemp -d)
 	sed -e "s^@path@^${SYNC_DIR}/gentoo^" \
