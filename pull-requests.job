@@ -109,6 +109,18 @@ while read hash t ref; do
 			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
 				--output /dev/null --borked .pre-merge.borked \
 				.pre-merge.xml
+
+			pkgcheck -r gentoo --reporter XmlReporter "*/*" \
+				-c UnusedGlobalFlags -c UnusedLicense \
+				-c CategoryMetadataXmlCheck \
+				--profile-disable-dev --profile-disable-exp \
+				> .pre-merge-g.xml
+
+			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
+				--output /dev/null --borked .pre-merge-g.borked \
+				.pre-merge-g.xml
+
+			cat .pre-merge-g.borked >> .pre-merge.borked
 		fi
 
 		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" "${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
