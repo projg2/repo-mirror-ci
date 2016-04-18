@@ -107,19 +107,23 @@ ${mail_cc[@]:+CC: ${cc_line// /, }
 ${mail}
 
 ${new:+New issues:
-${new[*]/#/${uri_prefix}/${current_rev}/}
+${new[*]/#/
+${uri_prefix}/${current_rev}/}
 
 
 }${broken_commits:+Introduced by commits:
-${broken_commits[*]/#/${GENTOO_CI_GITWEB_COMMIT_URI}}
+${broken_commits[*]/#/
+${GENTOO_CI_GITWEB_COMMIT_URI}}
 
 
 }${old:+Previous issues still unfixed:
-${old[*]/#/${uri_prefix}/${current_rev}/}
+${old[*]/#/
+${uri_prefix}/${current_rev}/}
 
 
 }${fixed:+Packages fixed since last run:
-${fixed[*]/#/${uri_prefix}/${current_rev}/}
+${fixed[*]/#/
+${uri_prefix}/${current_rev}/}
 
 
 }Changes since last check:
