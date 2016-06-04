@@ -25,4 +25,10 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	git push
 	"${SCRIPT_DIR}"/report-borked.bash "${PREV_COMMIT}" "${CURRENT_COMMIT}"
 	echo "${CURRENT_COMMIT}" > .last-commit
+
+	if [[ ! -s ${GENTOO_CI_GIT}/borked.list ]]; then
+		# no failures? push to the stable branch!
+		cd "${MIRROR_DIR}"/gentoo
+		git push origin master:stable
+	fi
 fi
