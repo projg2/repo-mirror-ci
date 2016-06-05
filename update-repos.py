@@ -85,6 +85,7 @@ class SourceMapping(object):
             'sync-type': 'hg',
             'sync-uri': uri,
             'x-vcs-preference': 5,
+            'x-timestamp-command': ('hg', 'log', '-l', '1', '--template={date|isodatesec}'),
         }
 
     def rsync(self, uri, branch):
@@ -94,6 +95,7 @@ class SourceMapping(object):
             'sync-type': 'rsync',
             'sync-uri': uri,
             'x-vcs-preference': 100,
+            'x-timestamp-command': ('stat', '--format=%y', '.'),
         }
 
     def svn(self, uri, branch):
@@ -103,6 +105,7 @@ class SourceMapping(object):
             'sync-type': 'git',
             'sync-uri': uri if uri.startswith('svn://') else 'svn+' + uri,
             'x-vcs-preference': 10,
+            'x-timestamp-command': ('git', 'log', '--format=%ci', '-1'),
         }
 
     def bzr(self, uri, branch):
@@ -112,6 +115,7 @@ class SourceMapping(object):
             'sync-type': 'bzr',
             'sync-uri': uri,
             'x-vcs-preference': 5,
+            'x-timestamp-command': ('bzr', 'version-info', '--custom', '--template={date}'),
         }
 
 
