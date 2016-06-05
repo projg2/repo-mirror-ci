@@ -25,7 +25,7 @@ def main(summary_path, output_path = None):
     </head>
     <body>
         <table>
-            <tr><th>Repository</th><th>Status</th><th>Last commit</th><th># of ebuilds</th></tr>
+            <tr><th>Repository</th><th>Status</th><th>Last commit</th><th># of ebuilds</th><th>Homepage</th></tr>
         ''')
 
         status_mapping = {
@@ -47,10 +47,12 @@ def main(summary_path, output_path = None):
                 r = '<a href="%s.html">%s</a>' % (r, r)
             elif os.path.isfile(os.path.join(res_dir, '%s.txt' % r)):
                 r = '<a href="%s.txt">%s</a>' % (r, r)
-            outf.write('        <tr class="%s"><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n'
+            outf.write('        <tr class="%s"><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n'
                     % (data['x-state'], r, status_mapping[data['x-state']],
                         data.get('x-timestamp', ''),
-                        data.get('x-ebuild-count', '')))
+                        data.get('x-ebuild-count', ''),
+                        '<a href="%s">%s</a>' % (data['homepage'], data['name'])
+                            if 'homepage' in data else '(none)'))
 
         outf.write('''
         </table>
