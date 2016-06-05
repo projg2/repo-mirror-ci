@@ -16,13 +16,17 @@ git fetch -f "${PULL_REQUEST_REPO}" 'refs/pull/*/head:refs/pull/*'
 
 mkdir -p "${pull}"
 no=0
+set +x
 while read hash t ref; do
 	prid=${ref#refs/pull/}
 
 	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
 		if [[ ${no} -ne 0 ]]; then
+			echo "${pull}: pending" >&2
+			set -x
 			"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
 				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")"
+			set +x
 		fi
 
 		: $(( no++ ))
@@ -33,6 +37,8 @@ while read hash t ref; do
 	prid=${ref#refs/pull/}
 
 	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
+		echo "${pull}: in progress" >&2
+		set -x
 		cd "${pull}"
 		echo "${hash}" > "${prid}"
 		"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
