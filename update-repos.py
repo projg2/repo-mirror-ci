@@ -525,8 +525,15 @@ def main():
     regen_finish = datetime.datetime.utcnow()
     sys.stderr.write('** total regen time: %s\n' % (regen_finish - regen_start))
 
-    log.write_summary(states)
+    # 9.5. gather some more useful repo statistics
+    # - no of valid ebuilds
+    for r in sorted(local_repos):
+        p = os.path.join(REPOS_DIR, r, 'metadata', 'md5-cache')
+        ebcount = sum(len(filenames) for path, dirnames, filenames in os.walk(p))
+        states[r]['x-ebuild-count'] = ebcount
 
+    log.write_summary(states)
+    
     # 10. run pkgcheck
     # disabled because pkgcheck does not support masters currently
     if False:
