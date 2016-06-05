@@ -34,7 +34,7 @@ $(MIRRORDIR)/%: create-%
 	:
 
 create-%:
-	cd $(MIRRORDIR) && git clone $(GITHUB_PREFIX)/$(subst create-,,$@)
+	cd $(MIRRORDIR) && git clone $(GITHUB_PREFIX)/$(subst create-,,$@) && cd $(subst create-,,$@) && { if git rev-parse HEAD 2>/dev/null; then git checkout master; fi; }
 
 clean-%:
 	cd $(MIRRORDIR) && rm -rf $(subst clean-,,$@)
