@@ -75,6 +75,7 @@ class SourceMapping(object):
             'sync-depth': '0',
             'sync-uri': uri,
             'x-vcs-preference': 0,
+            'x-timestamp-command': ('git', 'log', '--format=%ci', '-1'),
         }
 
     def mercurial(self, uri, branch):
@@ -341,6 +342,11 @@ def main():
         # choose the first URI for most preferred protocol (stable sort)
         vals = sorted(possible_configs, key=lambda x: x['x-vcs-preference'])[0]
         del vals['x-vcs-preference']
+        # copy other internal params
+        internal_params = [k for k in vals if k.startswith('x-')]
+        for k in internal_params:
+            states[r][k] = vals[k]
+            del vals[k]
 
         if not repos_conf.has_section(r):
             log[r].status('Adding new repository')
@@ -419,6 +425,23 @@ def main():
     with open(os.path.join(CONFIG_ROOT_SYNC, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
     local_repos = frozenset(repos_conf.sections())
+
+    # 6.5. gather some useful repo statistics
+    # - last commit timestamp
+    for r in sorted(local_repos):
+        p = os.path.join(SYNC_DIR, r)
+        ts = 'unknown'
+        try:
+            c = states[r].pop('x-timestamp-command')
+        except KeyError:
+            pass
+        else:
+            log[r].command(c)
+            with log[r].open() as log_f:
+                s = subprocess.Popen(c, stdout=subprocess.PIPE,
+                        stderr=log_f, cwd=p)
+                ts, stderr = s.communicate()
+        states[r]['x-timestamp'] = ts
 
     # 7. check all added repos for invalid metadata:
     # - correct & matching repo_name (otherwise mischief will happen)
