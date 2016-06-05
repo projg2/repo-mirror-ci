@@ -47,7 +47,7 @@ def main(summary_path, output_path = None):
                 r = '<a href="%s.html">%s</a>' % (r, r)
             elif os.path.isfile(os.path.join(res_dir, '%s.txt' % r)):
                 r = '<a href="%s.txt">%s</a>' % (r, r)
-            outf.write('        <tr class="%s"><td>%s</td><td>%s</td>\n'
+            outf.write('        <tr class="%s"><td>%s</td><td>%s</td></tr>\n'
                     % (data['x-state'], r, status_mapping[data['x-state']]))
 
         outf.write('''
