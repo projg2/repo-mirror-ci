@@ -160,6 +160,36 @@ do not receive any reply within 2 weeks.
 
         return BugDesc(summary, msg)
 
+    def INVALID_MASTERS(self, repo, data):
+        summary = '[%s] Invalid masters declared' % repo
+        msg = ('''
+Our automated repository checks [1] have detected that the repository
+registered as '%s' is using one or more master repositories that are
+either invalid or unreachable. The invalid masters are:
+
+    %s
+
+This is going to cause issues with various Package Managers and even may
+render the repository unusable to our users.
+
+Please ensure that the master list contains correct repository names
+and that all the masters are available in the official repository list.
+If necessary, please either remove invalid masters (and stop relying
+on them) or request adding them to the list.
+
+Furthermore, please note that listing the repository itself as its
+master is invalid and meaningless. Depending on the implementation,
+it may trigger infinite loops or be ignored.
+
+Please fix the issue ASAP. It prevents our tools from working on the
+repository, and mirroring it. We reserve the right to remove it if we
+do not receive any reply within 2 weeks.
+
+[1]:https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI
+''' % (repo, ' '.join(data['x-wrong-masters']))).strip()
+
+        return BugDesc(summary, msg)
+
 
 def main(bug_db_path, summary_path):
     if not os.path.exists(bug_db_path):
