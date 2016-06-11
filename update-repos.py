@@ -476,13 +476,18 @@ def main():
             log[r].status('Missing masters!')
             states[r]['x-state'] = State.MISSING_MASTERS
         else:
+            states[r]['x-masters'] = p_masters
+            wrong_masters = []
             for m in p_masters:
                 if m == r:
                     log[r].status('Package lists itself as a master (infinite loop imminent!) = %s, removing' % m)
-                    states[r]['x-state'] = State.INVALID_MASTERS
+                    wrong_masters.append(m)
                 elif m not in remote_repos:
                     log[r].status('Invalid/unavailable master = %s, removing' % m)
-                    states[r]['x-state'] = State.INVALID_MASTERS
+                    wrong_masters.append(m)
+            if wrong_masters:
+                states[r]['x-state'] = State.INVALID_MASTERS
+                states[r]['x-wrong-masters'] = wrong_masters
 
         if states[r]['x-state'] in (State.GOOD,):
             # we check this since failure to instantiate a repo will
