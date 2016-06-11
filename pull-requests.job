@@ -106,10 +106,7 @@ while read hash t ref; do
 			git checkout -q pre-merge
 
 			pkgcheck -r gentoo --reporter XmlReporter "${pkgs[@]}" \
-				-d imlate -d unstable_only -d cleanup -d stale_unstable \
-				-d deprecated -d UnusedGlobalFlags -d UnusedLicense \
-				-d CategoryMetadataXmlCheck \
-				--profile-disable-dev --profile-disable-exp \
+				${PKGCHECK_OPTIONS} \
 				> .pre-merge.xml
 
 			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
@@ -117,9 +114,9 @@ while read hash t ref; do
 				.pre-merge.xml
 
 			pkgcheck -r gentoo --reporter XmlReporter "*/*" \
-				-c UnusedGlobalFlags -c UnusedLicense \
+				${PKGCHECK_OPTIONS} \
+				-C repo \
 				-c CategoryMetadataXmlCheck \
-				--profile-disable-dev --profile-disable-exp \
 				> .pre-merge-g.xml
 
 			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \

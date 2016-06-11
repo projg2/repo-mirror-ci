@@ -30,10 +30,7 @@ git checkout -q "${current_commit}"
 # however, we only return result for the first one
 
 pkgcheck -r gentoo --reporter XmlReporter "${@}" \
-	-d imlate -d unstable_only -d cleanup -d stale_unstable \
-	-d deprecated -d UnusedGlobalFlags -d UnusedLicense \
-	-d CategoryMetadataXmlCheck \
-	--profile-disable-dev --profile-disable-exp \
+	${PKGCHECK_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
 
 "${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
