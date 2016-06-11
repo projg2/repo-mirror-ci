@@ -477,7 +477,10 @@ def main():
             states[r]['x-state'] = State.MISSING_MASTERS
         else:
             for m in p_masters:
-                if m not in remote_repos:
+                if m == r:
+                    log[r].status('Package lists itself as a master (infinite loop imminent!) = %s, removing' % m)
+                    states[r]['x-state'] = State.INVALID_MASTERS
+                elif m not in remote_repos:
                     log[r].status('Invalid/unavailable master = %s, removing' % m)
                     states[r]['x-state'] = State.INVALID_MASTERS
 
