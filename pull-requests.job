@@ -115,8 +115,7 @@ while read hash t ref; do
 
 			pkgcheck -r gentoo --reporter XmlReporter "*/*" \
 				${PKGCHECK_OPTIONS} \
-				-C repo \
-				-c CategoryMetadataXmlCheck \
+				-C repo-category \
 				> .pre-merge-g.xml
 
 			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
