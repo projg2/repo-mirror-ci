@@ -52,7 +52,7 @@ while read hash t ref; do
 		git branch "pull-${prid}" "$(git merge-base "${ref}" master)"
 		git checkout -q "pull-${prid}"
 		# copy existing md5-cache (TODO: try to find previous merge commit)
-		rsync -rlpt --delete "${mirror}"/metadata/{dtd,glsa,md5-cache,news} metadata
+		rsync -rlpt --delete "${mirror}"/metadata/{dtd,glsa,md5-cache,news,xml-schema} metadata
 
 		# update for pre-merge cache
 		export PORTAGE_CONFIGROOT="${pull}"
