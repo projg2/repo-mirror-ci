@@ -480,7 +480,7 @@ def main():
             wrong_masters = []
             for m in p_masters:
                 if m == r:
-                    log[r].status('Package lists itself as a master (infinite loop imminent!) = %s, removing' % m)
+                    log[r].status('Repository lists itself as a master (infinite loop imminent!) = %s, removing' % m)
                     wrong_masters.append(m)
                 elif m not in remote_repos:
                     log[r].status('Invalid/unavailable master = %s, removing' % m)
