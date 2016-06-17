@@ -238,8 +238,8 @@ def main(bug_db_path, summary_path):
             owners = [o['email'] for o in v['owner']]
             params = {
                 'Bugzilla_token': token,
-                'product': 'Gentoo Infrastructure',
-                'component': 'Gentoo Overlays',
+                'product': 'Gentoo Linux',
+                'component': 'Overlays',
                 'version': 'unspecified',
                 'summary': w.summary,
                 'description': w.msg,
