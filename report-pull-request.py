@@ -48,15 +48,15 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     else:
         body = ':disappointed: The QA check for this pull request has found the following issues:\n'
         if borked:
-            body += '\nNew issues:\n'
+            body += '\nNew issues caused by PR:\n'
             for url in borked:
                 body += url
         if pre_borked:
-            body += '\nIssues persisted from underlying repository state:\n'
+            body += '\nIssues inherited from Gentoo (may be modified by PR):\n'
             for url in pre_borked:
                 body += url
         if fixed:
-            body += '\nUnderlying repository issues fixed:\n'
+            body += '\nGentoo issues fixed by PR:\n'
             for url in fixed:
                 body += url
 
