@@ -460,18 +460,27 @@ def main():
         config_sect = pkgcore_config.collapse_named_section(r)
         repo_config = config_sect.config['repo_config'].instantiate()
 
-        p_repo_id = repo_config.repo_id
+        # profiles/repo_name
+        p_repo_id = repo_config.pms_repo_name
+        # layout.conf
+        p_lay_repo_id = repo_config.repo_name
         p_masters = repo_config.masters
         if repo_config.is_empty:
             log[r].status('Empty repository, removing')
             states[r]['x-state'] = State.EMPTY
         elif not p_repo_id:
-            log[r].status('Missing repo_name, removing')
+            log[r].status('Missing profiles/repo_name, removing')
             states[r]['x-state'] = State.MISSING_REPO_NAME
         elif p_repo_id != r:
             log[r].status('Conflicting repo_name, removing ("%s" in repo_name, "%s" on list)' % (p_repo_id, r))
             states[r]['x-state'] = State.CONFLICTING_REPO_NAME
             states[r]['x-repo-name'] = p_repo_id
+            states[r]['x-repo-where'] = 'profiles/repo_name'
+        elif p_lay_repo_id and p_lay_repo_id != p_repo_id:
+            log[r].status('Conflicting repo_name, removing ("%s" in repo_name, "%s" in layout.conf)' % (p_repo_id, p_lay_repo_id))
+            states[r]['x-state'] = State.CONFLICTING_REPO_NAME
+            states[r]['x-repo-name'] = p_lay_repo_id
+            states[r]['x-repo-where'] = 'metadata/layout.conf'
         elif p_masters is None:
             log[r].status('Missing masters!')
             states[r]['x-state'] = State.MISSING_MASTERS

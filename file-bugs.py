@@ -137,7 +137,7 @@ do not receive any reply within 2 weeks.
         summary = '[%s] Conflicting repository name' % repo
         msg = ('''
 Our automated repository checks [1] have detected that the repository
-registered as '%s' is using a different repo_name in profiles/repo_name
+registered as '%s' is using a different repo_name in %s
 file:
 
     %s
@@ -145,7 +145,7 @@ file:
 This is going to cause issues with various Package Managers and even may
 render the repository unusable to our users.
 
-Please either set profiles/repo_name to '%s', or let us know that you
+Please either set the repository name in %s to '%s', or let us know that you
 would like to have the repository renamed on the official repository
 list. However, please note that our tools provide no meaningful way of
 informing users that a repository has been renamed -- therefore it is no
@@ -156,7 +156,7 @@ repository, and mirroring it. We reserve the right to remove it if we
 do not receive any reply within 2 weeks.
 
 [1]:https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI
-''' % (repo, data['x-repo-name'], repo)).strip()
+''' % (repo, data['x-repo-where'], data['x-repo-name'], data['x-repo-where'], repo)).strip()
 
         return BugDesc(summary, msg)
 
