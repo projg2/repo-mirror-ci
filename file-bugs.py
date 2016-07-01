@@ -133,6 +133,32 @@ do not receive any reply within 2 weeks.
 
         return BugDesc(summary, msg)
 
+    def MISSING_REPO_NAME(self, repo, data):
+        summary = '[%s] Missing profiles/repo_name' % repo
+        msg = ('''
+Our automated repository checks [1] have detected that the repository
+registered as '%s' is missing a repository name in profiles/repo_name
+file.
+
+This is going to cause issues with various Package Managers and even may
+render the repository unusable to our users.
+
+Please create the profiles/repo_name file, and type the repository name
+inside. It needs to be equal to the name on the list ('%s'). If you
+would like to use another name, please let us know. However, please note
+that our tools provide no meaningful way of informing users that
+a repository has been renamed -- therefore it is no different from
+removing and re-adding the repository with a new name.
+
+Please fix the issue ASAP. It prevents our tools from working on the
+repository, and mirroring it. We reserve the right to remove it if we
+do not receive any reply within 2 weeks.
+
+[1]:https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI
+''' % (repo, repo)).strip()
+
+        return BugDesc(summary, msg)
+
     def CONFLICTING_REPO_NAME(self, repo, data):
         summary = '[%s] Conflicting repository name' % repo
         msg = ('''
