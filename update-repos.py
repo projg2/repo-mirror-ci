@@ -344,7 +344,7 @@ def main():
             continue
 
         # choose the first URI for most preferred protocol (stable sort)
-        vals = sorted(possible_configs, key=lambda x: x['x-vcs-preference'])[0]
+        vals = sorted(possible_configs, key=lambda x: x['x-vcs-preference'] + 1000 * ('.onion' in x['sync-uri']))[0]
         del vals['x-vcs-preference']
         # copy other internal params
         internal_params = [k for k in vals if k.startswith('x-')]
