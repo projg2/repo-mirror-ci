@@ -7,7 +7,11 @@ checker = $(TRAVIS_REPO_CHECKS_GIT)/run-pkgcheck.bash
 
 HOME = $(GENTOO_CI_GIT)
 
-all: $(out_xml)
+all: output.xml
+
+output.xml: $(out_xml)
+	python3 $(PKGCHECK_RESULT_PARSER_GIT)/combine-xml.py $(out_xml) > output.xml
+	rm -f $(out_xml)
 
 %.xml:
 	{ cd $(repo) && bash $(checker) $(patsubst %.xml,%,$@) $(jobs_no); } > $@

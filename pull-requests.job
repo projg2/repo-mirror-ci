@@ -87,7 +87,7 @@ while read hash t ref; do
 		touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk *.xml
 		"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py *.xml
 		git add *.xml *.html *.css
-		git diff --cached --quiet --exit-code || git commit -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
+		git diff --cached --quiet --exit-code || git commit -a -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 		pr_hash=$(git rev-parse --short HEAD)
 		git push -f origin "pull-${prid}"
 
