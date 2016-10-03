@@ -42,10 +42,7 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     c = r.get_commit(commit_hash)
 
     report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
-    if not borked and not pre_borked:
-        c.create_status('success', description='All pkgcheck QA checks passed',
-                target_url=report_url)
-    else:
+    if borked or pre_borked:
         body = ':disappointed: The QA check for this pull request has found the following issues:\n'
         if borked:
             body += '\nNew issues caused by PR:\n'
@@ -59,9 +56,16 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             body += '\nGentoo issues fixed by PR:\n'
             for url in fixed:
                 body += url
-
         pr.create_issue_comment(body)
-        c.create_status('failure', description='Some of the QA checks failed',
+
+    if borked:
+        c.create_status('failure', description='PR introduced new issues',
+                target_url=report_url)
+    elif pre_borked:
+        c.create_status('success', description='No new issues found',
+                target_url=report_url)
+    else:
+        c.create_status('success', description='All pkgcheck QA checks passed',
                 target_url=report_url)
 
 
