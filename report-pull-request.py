@@ -41,6 +41,11 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     pr = r.get_pull(int(prid))
     c = r.get_commit(commit_hash)
 
+    # delete old results
+    for co in pr.get_issue_comments():
+        if co.user.login == GITHUB_USERNAME:
+            co.delete()
+
     report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
     if borked or pre_borked:
         body = ':disappointed: The QA check for this pull request has found the following issues:\n'
