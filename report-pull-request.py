@@ -42,8 +42,10 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     c = r.get_commit(commit_hash)
 
     # delete old results
+    old_comment_found = False
     for co in pr.get_issue_comments():
         if co.user.login == GITHUB_USERNAME:
+            old_comment_found = True
             co.delete()
 
     report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
@@ -61,6 +63,9 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             body += '\nGentoo issues fixed by PR:\n'
             for url in fixed:
                 body += url
+        pr.create_issue_comment(body)
+    elif old_comment_found:
+        body = ':+1: All QA issues have been fixed!\n'
         pr.create_issue_comment(body)
 
     if borked:
