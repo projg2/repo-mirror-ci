@@ -86,10 +86,8 @@ def main(summary_path, repos_xml_path):
     for r, data in sorted(repos.items()):
         if r not in gh_repos and data['x-can-create']:
             sys.stderr.write('* adding %s\n' % r)
-            # description[1+] can be other languages
-            # sadly, layman gives us no clue what language it is...
             gr = gu.create_repo(r,
-                    description = data.get('description', {}).get('en') or github.GithubObject.NotSet,
+                    description = ' '.join(data.get('description', {}).get('en').split()) or github.GithubObject.NotSet,
                     homepage = data.get('homepage') or github.GithubObject.NotSet,
                     has_issues = False,
                     has_wiki = False)
