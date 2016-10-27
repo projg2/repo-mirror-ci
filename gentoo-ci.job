@@ -15,6 +15,7 @@ if [[ -f .last-commit ]]; then
 fi
 
 if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
+	export PORTAGE_CONFIGROOT=${CONFIG_ROOT}
 	make -f "${SCRIPT_DIR}"/gentoo-ci.make clean
 	time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16
 
