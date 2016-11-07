@@ -222,9 +222,11 @@ def main():
     REPOSITORIES_XML_CACHE = os.environ['REPOSITORIES_XML_CACHE']
 
     CONFIG_ROOT = os.environ['CONFIG_ROOT']
+    CONFIG_ROOT_MIRROR = os.environ['CONFIG_ROOT_MIRROR']
     CONFIG_ROOT_SYNC = os.environ['CONFIG_ROOT_SYNC']
     LOG_DIR = os.environ['LOG_DIR']
     SYNC_DIR = os.environ['SYNC_DIR']
+    MIRROR_DIR = os.environ['MIRROR_DIR']
     REPOS_DIR = os.environ['REPOS_DIR']
     REPOS_CONF = os.environ['REPOS_CONF']
 
@@ -554,6 +556,13 @@ def main():
         states[r]['x-ebuild-count'] = ebcount
 
     log.write_summary(states)
+
+    # 9.75. update CI paths to mirrors
+    for r in local_repos:
+        repos_conf.set(r, 'location', os.path.join(MIRROR_DIR, r))
+    with open(os.path.join(CONFIG_ROOT_MIRROR, REPOS_CONF), 'w') as f:
+        repos_conf.write(f)
+    os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_MIRROR
     
     # 10. run pkgcheck
     # disabled because pkgcheck does not support masters currently
