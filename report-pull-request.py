@@ -45,6 +45,15 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     old_comment_found = False
     for co in pr.get_issue_comments():
         if co.user.login == GITHUB_USERNAME:
+            if 'All QA issues have been fixed' in co.body:
+                # avoid repeating 'issues fixed' message
+                if not (borked or pre_borked):
+                    return 0
+            elif 'The QA check for this pull request has found the following issues' in co.body:
+                pass
+            else:
+                # skip comments that don't look like CI results
+                continue
             old_comment_found = True
             co.delete()
 
