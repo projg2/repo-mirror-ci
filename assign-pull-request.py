@@ -106,7 +106,7 @@ def main(prid, ref_repo_path):
             ppath = os.path.join(ref_repo_path, p, 'metadata.xml')
             try:
                 metadata_xml = lxml.etree.parse(ppath)
-            except OSError:
+            except (OSError, IOError):
                 # no metadata.xml? most likely a new package!
                 pkg_maints[p] = ['@gentoo/proxy-maint (new package)']
                 new_package = True
