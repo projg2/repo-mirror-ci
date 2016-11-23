@@ -103,15 +103,16 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         ', '.join(sorted(packages)[0:5]),
         '...' if len(packages) > 5 else '')
 
+    new_package = False
+    maint_needed = False
+    cant_assign = False
+
     if packages:
         # now try to determine unique sets of maintainers
         # if we get too many unique sets, i.e. we would end up highlighting
         # everyone, do not auto-assign
         pkg_maints = {}
         unique_maints = set()
-        new_package = False
-        maint_needed = False
-        cant_assign = False
         for p in packages:
             ppath = os.path.join(ref_repo_path, p, 'metadata.xml')
             try:
