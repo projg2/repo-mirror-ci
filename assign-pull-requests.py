@@ -99,8 +99,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
 
 *Areas affected*: %s
 *Packages affected*: %s%s
-''' % (', '.join(sorted(areas)),
-        ', '.join(sorted(packages)[0:5]),
+''' % (', '.join(sorted(areas)) or '(none, wtf?!)',
+        ', '.join(sorted(packages)[0:5]) or '(none)',
         '...' if len(packages) > 5 else '')
 
     new_package = False
