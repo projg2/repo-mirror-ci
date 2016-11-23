@@ -128,13 +128,6 @@ while read hash t ref; do
 		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" \
 			"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
-		# either only copied from ::gentoo, or none at all == success
-		if [[ ! -s "${pull}"/gentoo-ci/borked.list ]] \
-				|| cmp "${pull}"/gentoo-ci/borked.list .pre-merge.borked; then
-			"${SCRIPT_DIR}"/assign-pull-request.py "${prid}" "${MIRROR_DIR}"/gentoo \
-				< <( cd "${pull}/tmp"; exec git diff --name-only pre-merge )
-		fi
-
 		# wait for mirror pushing job
 		wait
 

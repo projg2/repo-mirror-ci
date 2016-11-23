@@ -29,7 +29,7 @@ def map_proj(proj, proj_mapping):
     return '~~[%s (project)]~~' % proj
 
 
-def main(prid, ref_repo_path):
+def main(ref_repo_path):
     GITHUB_DEV_MAPPING = os.environ['GITHUB_DEV_MAPPING']
     GITHUB_PROJ_MAPPING = os.environ['GITHUB_PROJ_MAPPING']
     GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
@@ -41,24 +41,6 @@ def main(prid, ref_repo_path):
 
     g = github.Github(GITHUB_USERNAME, token, per_page=50)
     r = g.get_repo(GITHUB_REPO)
-    # issue API fits us better here
-    pr = r.get_issue(int(prid))
-
-    # check if assigned already
-    if pr.assignee:
-        return 0
-    for l in pr.get_labels():
-        if l.name in ('assigned', 'need assignment'):
-            return 0
-
-    # delete old results
-    old_comment_found = False
-    for co in pr.get_comments():
-        if co.user.login == GITHUB_USERNAME:
-            if 'Pull Request assignment' not in co.body:
-                continue
-            old_comment_found = True
-            co.delete()
 
     with open(GITHUB_DEV_MAPPING) as f:
         dev_mapping = json.load(f)
@@ -67,10 +49,38 @@ def main(prid, ref_repo_path):
     with open(os.path.join(ref_repo_path, 'profiles/categories')) as f:
         categories = [l.strip() for l in f.read().splitlines()]
 
+    for pr in r.get_pulls(state='open'):
+        # note: we need github.Issue due to labels missing in PR
+        issue = r.get_issue(pr.number)
+        assign_one(pr, issue, dev_mapping, proj_mapping, categories,
+                GITHUB_USERNAME, ref_repo_path)
+
+    return 0
+
+
+def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
+        GITHUB_USERNAME, ref_repo_path):
+    # check if assigned already
+    if issue.assignee:
+        print('PR#%d: assignee found' % pr.number)
+        return
+    for l in issue.get_labels():
+        if l.name in ('assigned', 'need assignment'):
+            print('PR#%d: %s label found' % (pr.number, l.name))
+            return
+
+    # delete old results
+    for co in issue.get_comments():
+        if co.user.login == GITHUB_USERNAME:
+            if 'Pull Request assignment' not in co.body:
+                continue
+            co.delete()
+
+    # scan file list
     areas = set()
     packages = set()
-    for l in sys.stdin:
-        path = l.strip().split('/')
+    for f in pr.get_files():
+        path = f.filename.split('/')
         if path[0] in categories:
             areas.add('ebuilds')
             packages.add('/'.join(path[0:2]))
@@ -151,15 +161,15 @@ def main(prid, ref_repo_path):
         body += '\n@gentoo/proxy-maint'
 
     if maint_needed:
-        pr.add_to_labels('maintainer-needed')
+        issue.add_to_labels('maintainer-needed')
     if new_package:
-        pr.add_to_labels('new ebuild')
+        issue.add_to_labels('new ebuild')
     if cant_assign:
-        pr.add_to_labels('need assignment')
+        issue.add_to_labels('need assignment')
     else:
-        pr.add_to_labels('assigned')
-    pr.create_comment(body)
-    return 0
+        issue.add_to_labels('assigned')
+    issue.create_comment(body)
+    print('PR#%d: assigned' % pr.number)
 
 
 if __name__ == '__main__':

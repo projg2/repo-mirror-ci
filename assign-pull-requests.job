@@ -1,0 +1,9 @@
+#!/home/mgorny/bin/run-cronjob.sh
+# vim:ft=sh
+
+set -e -x
+ulimit -t 60 -v 512000
+
+. "${VIRTUAL_ENV}"/bin/activate
+
+"${SCRIPT_DIR}"/assign-pull-requests.py "${MIRROR_DIR}"/gentoo
