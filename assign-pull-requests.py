@@ -10,7 +10,7 @@ import lxml.etree
 
 
 def map_dev(dev, dev_mapping):
-    if dev.lower() in dev_mapping:
+    if dev_mapping.get(dev.lower()):
         return '@' + dev_mapping[dev]
     if dev.endswith('@gentoo.org'):
         dev = dev[:-len('@gentoo.org')]
