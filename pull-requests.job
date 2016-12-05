@@ -84,8 +84,7 @@ while read hash t ref; do
 		time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16 \
 			repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
 		ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
-		touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk *.xml
-		"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py *.xml
+		"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -o borked.list *.xml
 		git add *.xml
 		git diff --cached --quiet --exit-code || git commit -a -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 		pr_hash=$(git rev-parse --short HEAD)
@@ -109,20 +108,13 @@ while read hash t ref; do
 				${PKGCHECK_OPTIONS} \
 				> .pre-merge.xml
 
-			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
-				--output /dev/null --borked .pre-merge.borked \
-				.pre-merge.xml
-
 			pkgcheck -r gentoo --reporter XmlReporter "*/*" \
 				${PKGCHECK_OPTIONS} \
 				-C repo-category \
 				> .pre-merge-g.xml
 
-			"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
-				--output /dev/null --borked .pre-merge-g.borked \
-				.pre-merge-g.xml
-
-			cat .pre-merge-g.borked >> .pre-merge.borked
+			"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+				-o .pre-merge.borked .pre-merge.xml .pre-merge-g.xml
 		fi
 
 		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" \

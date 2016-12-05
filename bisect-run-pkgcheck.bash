@@ -34,8 +34,8 @@ pkgcheck -r gentoo --reporter XmlReporter "${@}" \
 	${PKGCHECK_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
 
-"${PKGCHECK_RESULT_PARSER_GIT}"/xml2html.py \
-	--output /dev/null --borked "${BISECT_TMP}/.bisect.tmp.borked" \
+"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+	--output "${BISECT_TMP}/.bisect.tmp.borked" \
 	"${BISECT_TMP}/.bisect.tmp.xml"
 
 borked_pkgs=()
