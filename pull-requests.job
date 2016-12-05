@@ -97,7 +97,7 @@ while read hash t ref; do
 		if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
 			pkgs=()
 			while read l; do
-				pkgs+=( "${l##*#}" )
+				pkgs+=( "${l}" )
 			done <"${pull}"/gentoo-ci/borked.list
 
 			# go back to pre-merge state and see if they were there

@@ -19,14 +19,14 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     borked = []
     with open(borked_path) as f:
         for l in f:
-            borked.append(REPORT_URI_PREFIX + '/' + prhash + '/' + l)
+            borked.append(REPORT_URI_PREFIX + '/' + prhash + '/output.html#' + l)
 
     pre_borked = []
     fixed = []
     if borked:
         with open(pre_borked_path) as f:
             for l in f:
-                lf = REPORT_URI_PREFIX + '/' + prhash + '/' + l
+                lf = REPORT_URI_PREFIX + '/' + prhash + '/output.html#' + l
                 if lf in borked:
                     pre_borked.append(lf)
                     borked.remove(lf)
