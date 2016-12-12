@@ -164,7 +164,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
     if maint_needed:
         issue.add_to_labels('maintainer-needed')
     if new_package:
-        issue.add_to_labels('new ebuild')
+        issue.add_to_labels('new package')
     if cant_assign:
         issue.add_to_labels('need assignment')
     else:
