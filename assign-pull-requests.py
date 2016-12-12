@@ -65,7 +65,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         print('PR#%d: assignee found' % pr.number)
         return
     for l in issue.get_labels():
-        if l.name in ('assigned', 'need assignment'):
+        if l.name in ('assigned', 'need assignment', 'do not merge'):
             print('PR#%d: %s label found' % (pr.number, l.name))
             return
 
