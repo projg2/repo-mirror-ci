@@ -11,7 +11,7 @@ import lxml.etree
 
 def map_dev(dev, dev_mapping):
     if dev_mapping.get(dev.lower()):
-        return '@' + dev_mapping[dev]
+        return '@' + dev_mapping[dev.lower()]
     if dev.endswith('@gentoo.org'):
         dev = dev[:-len('@gentoo.org')]
     else:
@@ -21,7 +21,7 @@ def map_dev(dev, dev_mapping):
 
 def map_proj(proj, proj_mapping):
     if proj.lower() in proj_mapping:
-        return '@' + proj_mapping[proj]
+        return '@' + proj_mapping[proj.lower()]
     if proj.endswith('@gentoo.org'):
         proj = proj[:-len('@gentoo.org')]
     else:
