@@ -18,8 +18,8 @@ mkdir -p "${pull}"
 no=0
 prid=
 set +x
-while read hash t ref; do
-	iid=${ref#refs/pull/}
+while read mtime iid; do
+	hash=$(git rev-parse "refs/pull/${iid}")
 
 	if [[ ! -f ${pull}/${iid} || $(<"${pull}/${iid}") != ${hash} ]]; then
 		if [[ ${no} -eq 0 ]]; then
@@ -34,7 +34,7 @@ while read hash t ref; do
 
 		: $(( no++ ))
 	fi
-done < <(git for-each-ref 'refs/pull/*')
+done < <(find .git/refs/pull -type f -printf '%TY-%TM-%TdT%TT %P\n' | sort -k1)
 
 if [[ -n ${prid} ]]; then
 	ref=refs/pull/${prid}
