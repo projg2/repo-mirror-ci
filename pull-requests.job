@@ -16,12 +16,15 @@ git fetch -f "${PULL_REQUEST_REPO}" 'refs/pull/*/head:refs/pull/*'
 
 mkdir -p "${pull}"
 no=0
+prid=
 set +x
 while read hash t ref; do
-	prid=${ref#refs/pull/}
+	iid=${ref#refs/pull/}
 
-	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
-		if [[ ${no} -ne 0 ]]; then
+	if [[ ! -f ${pull}/${iid} || $(<"${pull}/${iid}") != ${hash} ]]; then
+		if [[ ${no} -eq 0 ]]; then
+			prid=${iid}
+		else
 			echo "${pull}: pending" >&2
 			set -x
 			"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
@@ -33,96 +36,93 @@ while read hash t ref; do
 	fi
 done < <(git for-each-ref 'refs/pull/*')
 
-while read hash t ref; do
-	prid=${ref#refs/pull/}
+if [[ -n ${prid} ]]; then
+	ref=refs/pull/${prid}
+	hash=$(git rev-parse "${ref}")
 
-	if [[ ! -f ${pull}/${prid} || $(<"${pull}/${prid}") != ${hash} ]]; then
-		echo "${pull}: in progress" >&2
-		set -x
-		cd "${pull}"
-		echo "${hash}" > "${prid}"
-		"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
-			"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")"
-		rm -rf tmp gentoo-ci
+	echo "${prid}: in progress" >&2
+	set -x
+	cd "${pull}"
+	echo "${hash}" > "${prid}"
+	"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
+		"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")"
+	rm -rf tmp gentoo-ci
 
-		git clone -s --no-checkout "${mirror}" tmp
-		cd tmp
-		git fetch "${sync}" "${ref}:${ref}"
-		# start on top of last common commit, like fast-forward would do
-		git branch "pull-${prid}" "$(git merge-base "${ref}" master)"
-		git checkout -q "pull-${prid}"
-		# copy existing md5-cache (TODO: try to find previous merge commit)
-		rsync -rlpt --delete "${mirror}"/metadata/{dtd,glsa,md5-cache,news,xml-schema} metadata
+	git clone -s --no-checkout "${mirror}" tmp
+	cd tmp
+	git fetch "${sync}" "${ref}:${ref}"
+	# start on top of last common commit, like fast-forward would do
+	git branch "pull-${prid}" "$(git merge-base "${ref}" master)"
+	git checkout -q "pull-${prid}"
+	# copy existing md5-cache (TODO: try to find previous merge commit)
+	rsync -rlpt --delete "${mirror}"/metadata/{dtd,glsa,md5-cache,news,xml-schema} metadata
 
-		# update for pre-merge cache
-		export PORTAGE_CONFIGROOT="${pull}"
-		time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
-		git add -A -f
-		git diff --cached --quiet --exit-code || git commit --quiet -m "Pre-merge cache init"
-		git tag pre-merge
+	# update for pre-merge cache
+	export PORTAGE_CONFIGROOT="${pull}"
+	time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
+	git add -A -f
+	git diff --cached --quiet --exit-code || git commit --quiet -m "Pre-merge cache init"
+	git tag pre-merge
 
-		# merge the PR on top of cache
-		git merge --quiet -m "Merge PR ${prid}" "${ref}"
+	# merge the PR on top of cache
+	git merge --quiet -m "Merge PR ${prid}" "${ref}"
 
-		# update cache post-merge
-		time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
-		git add -A -f
-		git diff --cached --quiet --exit-code || git commit --quiet -m "Post-merge cache update"
+	# update cache post-merge
+	time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
+	git add -A -f
+	git diff --cached --quiet --exit-code || git commit --quiet -m "Post-merge cache update"
 
-		# push to mirror
-		(
-			git push -f "${mirror}" "pull-${prid}"
-			cd "${mirror}"
-			git push -f origin "pull-${prid}"
-		) &
-
-		cd ..
-		git clone -s "${gentooci}" gentoo-ci
-		cd gentoo-ci
-		git checkout -b "pull-${prid}"
-		make -f "${SCRIPT_DIR}"/gentoo-ci.make clean
-		time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16 \
-			repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
-		ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
-		"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -o borked.list *.xml
-		git add *.xml
-		git diff --cached --quiet --exit-code || git commit -a -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
-		pr_hash=$(git rev-parse --short HEAD)
+	# push to mirror
+	(
+		git push -f "${mirror}" "pull-${prid}"
+		cd "${mirror}"
 		git push -f origin "pull-${prid}"
+	) &
 
-		cd "${gentooci}"
-		git push -f origin "pull-${prid}"
+	cd ..
+	git clone -s "${gentooci}" gentoo-ci
+	cd gentoo-ci
+	git checkout -b "pull-${prid}"
+	make -f "${SCRIPT_DIR}"/gentoo-ci.make clean
+	time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16 \
+		repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
+	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
+	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -o borked.list *.xml
+	git add *.xml
+	git diff --cached --quiet --exit-code || git commit -a -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
+	pr_hash=$(git rev-parse --short HEAD)
+	git push -f origin "pull-${prid}"
 
-		# if we have any breakages...
-		if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
-			pkgs=()
-			while read l; do
-				pkgs+=( "${l}" )
-			done <"${pull}"/gentoo-ci/borked.list
+	cd "${gentooci}"
+	git push -f origin "pull-${prid}"
 
-			# go back to pre-merge state and see if they were there
-			cd "${pull}"/tmp
-			git checkout -q pre-merge
+	# if we have any breakages...
+	if [[ -s ${pull}/gentoo-ci/borked.list ]]; then
+		pkgs=()
+		while read l; do
+			pkgs+=( "${l}" )
+		done <"${pull}"/gentoo-ci/borked.list
 
-			pkgcheck -r gentoo --reporter XmlReporter "${pkgs[@]}" \
-				${PKGCHECK_OPTIONS} \
-				> .pre-merge.xml
+		# go back to pre-merge state and see if they were there
+		cd "${pull}"/tmp
+		git checkout -q pre-merge
 
-			pkgcheck -r gentoo --reporter XmlReporter "*/*" \
-				${PKGCHECK_OPTIONS} \
-				-C repo-category \
-				> .pre-merge-g.xml
+		pkgcheck -r gentoo --reporter XmlReporter "${pkgs[@]}" \
+			${PKGCHECK_OPTIONS} \
+			> .pre-merge.xml
 
-			"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
-				-o .pre-merge.borked .pre-merge.xml .pre-merge-g.xml
-		fi
+		pkgcheck -r gentoo --reporter XmlReporter "*/*" \
+			${PKGCHECK_OPTIONS} \
+			-C repo-category \
+			> .pre-merge-g.xml
 
-		"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" \
-			"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
-
-		# wait for mirror pushing job
-		wait
-
-		break
+		"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+			-o .pre-merge.borked .pre-merge.xml .pre-merge-g.xml
 	fi
-done < <(git for-each-ref 'refs/pull/*')
+
+	"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" \
+		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
+
+	# wait for mirror pushing job
+	wait
+fi
