@@ -43,6 +43,7 @@ if [[ -n ${prid} ]]; then
 	echo "${prid}: in progress" >&2
 	set -x
 	cd "${pull}"
+	rm -f "${prid}.done"
 	echo "${hash}" > "${prid}"
 	"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
 		"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")"
