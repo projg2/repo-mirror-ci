@@ -27,12 +27,26 @@ while read mtime iid; do
 		else
 			echo "${pull}: pending" >&2
 			set -x
-			"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
+			"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
 				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")"
 			set +x
 		fi
 
 		: $(( no++ ))
+	elif [[ ! -f ${pull}/${iid}.done ]]; then
+		"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" error \
+			"QA checks crashed. Please check profile changes for syntax errors, and possibly force push to recheck"
+		sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
+			Subject: Pull request crash: ${iid}
+			To: <${CRONJOB_ADMIN_MAIL}>
+			Content-Type: text/plain; charset=utf8
+
+			It seems that pull request check for ${iid} crashed [1].
+
+			[1]:${PULL_REQUEST_REPO}/pull/${iid}
+		EOF
+		# avoid reporting indefinitely ;-)
+		touch "${pull}/${iid}.done"
 	fi
 done < <(find .git/refs/pull -type f -printf '%TY-%TM-%TdT%TT %P\n' | sort -k1)
 
@@ -45,7 +59,7 @@ if [[ -n ${prid} ]]; then
 	cd "${pull}"
 	rm -f "${prid}.done"
 	echo "${hash}" > "${prid}"
-	"${SCRIPT_DIR}"/pending-pull-request.py "${hash}" \
+	"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
 		"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")"
 	rm -rf tmp gentoo-ci
 

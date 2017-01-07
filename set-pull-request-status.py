@@ -9,7 +9,7 @@ import xml.etree.ElementTree as et
 import github
 
 
-def main(commit_hash, desc):
+def main(commit_hash, stat, desc):
     GITHUB_USERNAME = os.environ['GITHUB_USERNAME']
     GITHUB_TOKEN_FILE = os.environ['GITHUB_TOKEN_FILE']
     GITHUB_REPO = os.environ['GITHUB_REPO']
@@ -21,7 +21,7 @@ def main(commit_hash, desc):
     r = g.get_repo(GITHUB_REPO)
     c = r.get_commit(commit_hash)
 
-    c.create_status('pending', description=desc)
+    c.create_status(stat, description=desc)
 
 
 if __name__ == '__main__':
