@@ -34,6 +34,7 @@ while read mtime iid; do
 
 		: $(( no++ ))
 	elif [[ ! -f ${pull}/${iid}.done ]]; then
+		set -x
 		"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" error \
 			"QA checks crashed. Please check profile changes for syntax errors, and possibly force push to recheck"
 		sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
@@ -47,6 +48,7 @@ while read mtime iid; do
 		EOF
 		# avoid reporting indefinitely ;-)
 		touch "${pull}/${iid}.done"
+		set +x
 	fi
 done < <(find .git/refs/pull -type f -printf '%TY-%TM-%TdT%TT %P\n' | sort -k1)
 
