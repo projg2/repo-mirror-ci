@@ -123,6 +123,8 @@ if [[ -n ${prid} ]]; then
 	"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" \
 		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
+	touch "${pull}/${prid}.done"
+
 	# wait for mirror pushing job
 	wait
 fi
