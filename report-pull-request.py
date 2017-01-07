@@ -42,19 +42,27 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     c = r.get_commit(commit_hash)
 
     # delete old results
-    old_comment_found = False
+    leave_comment = False
+    old_comments = []
     for co in pr.get_issue_comments():
         if co.user.login == GITHUB_USERNAME:
             if 'All QA issues have been fixed' in co.body:
                 # avoid repeating 'issues fixed' message
                 if not (borked or pre_borked):
-                    return 0
+                    leave_comment = False
             elif 'The QA check for this pull request has found the following issues' in co.body:
-                pass
+                # if we could have good followed by bad for some reason,
+                # make sure to re-report
+                leave_comment = True
             else:
                 # skip comments that don't look like CI results
                 continue
-            old_comment_found = True
+            old_comments.append(co)
+    if old_comments:
+        if not leave_comment:
+            # leave last comment
+            del old_comments[-1]
+        for co in old_comments:
             co.delete()
 
     report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
@@ -73,7 +81,7 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             for url in fixed:
                 body += url
         pr.create_issue_comment(body)
-    elif old_comment_found:
+    elif leave_comment:
         body = ':+1: All QA issues have been fixed!\n'
         pr.create_issue_comment(body)
 
