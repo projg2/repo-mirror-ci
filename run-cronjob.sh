@@ -5,11 +5,10 @@
 # SANITY!
 export TZ=UTC
 
+nolock=
 if [[ ${1} == --nolock ]]; then
+       nolock=1
        shift
-else
-       exec {gentoolockfd}>> "${CRONJOB_STATE_DIR}/gentoo-repo.lock"
-       flock -x "${gentoolockfd}" || exit 1
 fi
 
 script=${1}
@@ -18,6 +17,11 @@ basename=${basename%.*}
 
 exec {lockfd}>> "${CRONJOB_STATE_DIR}/${basename}.lock"
 flock -x -n "${lockfd}" || exit 0
+
+if [[ ! ${nolock} ]]; then
+       exec {gentoolockfd}>> "${CRONJOB_STATE_DIR}/gentoo-repo.lock"
+       flock -x "${gentoolockfd}" || exit 1
+fi
 
 exec &> "${CRONJOB_STATE_DIR}/${basename}.log"
 
