@@ -40,7 +40,7 @@ pkgcheck -r gentoo --reporter XmlReporter "${@}" \
 
 borked_pkgs=()
 while read l; do
-	borked_pkgs+=( "${l}" )
+	[[ ${l} ]] && borked_pkgs+=( "${l}" )
 done <"${BISECT_TMP}/.bisect.tmp.borked"
 
 echo "${current_commit} ${borked_pkgs[*]}" >> "${BISECT_TMP}/.bisect.cache"
