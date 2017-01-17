@@ -22,7 +22,6 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             borked.append(REPORT_URI_PREFIX + '/' + prhash + '/output.html#' + l)
 
     pre_borked = []
-    fixed = []
     too_many_borked = False
     if borked:
         with open(pre_borked_path) as f:
@@ -35,8 +34,6 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
                 if lf in borked:
                     pre_borked.append(lf)
                     borked.remove(lf)
-                else:
-                    fixed.append(lf)
 
     with open(GITHUB_TOKEN_FILE) as f:
         token = f.read().strip()
@@ -81,10 +78,6 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
         if pre_borked:
             body += '\nIssues inherited from Gentoo (may be modified by PR):\n'
             for url in pre_borked:
-                body += url
-        if fixed:
-            body += '\nGentoo issues fixed by PR:\n'
-            for url in fixed:
                 body += url
         if too_many_borked:
             body += '\nThere are too many broken packages to determine whether the breakages were added by the pull request. If in doubt, please rebase.'
