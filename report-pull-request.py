@@ -23,9 +23,14 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
 
     pre_borked = []
     fixed = []
+    too_many_borked = False
     if borked:
         with open(pre_borked_path) as f:
             for l in f:
+                if l.strip() == 'ETOOMANY':
+                    too_many_borked = True
+                    break
+
                 lf = REPORT_URI_PREFIX + '/' + prhash + '/output.html#' + l
                 if lf in borked:
                     pre_borked.append(lf)
@@ -69,7 +74,8 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     if borked or pre_borked:
         body = ':disappointed: The QA check for this pull request has found the following issues:\n'
         if borked:
-            body += '\nNew issues caused by PR:\n'
+            if not too_many_borked:
+                body += '\nNew issues caused by PR:\n'
             for url in borked:
                 body += url
         if pre_borked:
@@ -80,6 +86,8 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             body += '\nGentoo issues fixed by PR:\n'
             for url in fixed:
                 body += url
+        if too_many_borked:
+            body += '\nThere are too many broken packages to determine whether the breakages were added by the pull request. If in doubt, please rebase.'
         pr.create_issue_comment(body)
     elif leave_comment:
         body = ':+1: All QA issues have been fixed!\n'
