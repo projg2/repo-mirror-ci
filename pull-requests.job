@@ -125,17 +125,23 @@ if [[ -n ${prid} ]]; then
 		git checkout -q pre-merge
 
 		if [[ ${#pkgs[@]} -le 10 ]]; then
-			pkgcheck -r gentoo --reporter XmlReporter "${pkgs[@]}" \
-				${PKGCHECK_OPTIONS} \
-				> .pre-merge.xml
+			outfiles=()
+
+			if [[ ${#pkgs[@]} -gt 0 ]]; then
+				pkgcheck -r gentoo --reporter XmlReporter "${pkgs[@]}" \
+					${PKGCHECK_OPTIONS} \
+					> .pre-merge.xml
+				outfiles+=( .pre-merge.xml )
+			fi
 
 			pkgcheck -r gentoo --reporter XmlReporter "*/*" \
 				${PKGCHECK_OPTIONS} \
 				-C repo-category \
 				> .pre-merge-g.xml
+			outfiles+=( .pre-merge-g.xml )
 
 			"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
-				-o .pre-merge.borked .pre-merge.xml .pre-merge-g.xml
+				-o .pre-merge.borked "${outfiles[@]}"
 		else
 			ETOOMANY > .pre-merge.borked
 		fi
