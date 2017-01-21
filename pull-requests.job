@@ -143,7 +143,7 @@ if [[ -n ${prid} ]]; then
 			"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 				-o .pre-merge.borked "${outfiles[@]}"
 		else
-			ETOOMANY > .pre-merge.borked
+			echo ETOOMANY > .pre-merge.borked
 		fi
 	fi
 
