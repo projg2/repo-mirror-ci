@@ -120,8 +120,8 @@ class SourceMapping(object):
 
 
 class LoggerProxy(object):
-    def __init__(self, logdir, key):
-        self._path = os.path.join(logdir, key + '.txt')
+    def __init__(self, key):
+        self._path = key + '.txt'
         self._key = key
 
     def status(self, msg):
@@ -138,16 +138,11 @@ class LoggerProxy(object):
 
 
 class Logger(object):
-    def __init__(self, log_root):
-        dt = datetime.datetime.utcnow()
-        self.log_dir = os.path.join(log_root, dt.strftime('%Y-%m-%dT%H:%M:%S'))
-        os.makedirs(self.log_dir)
-
     def __getitem__(self, key):
-        return LoggerProxy(self.log_dir, key)
+        return LoggerProxy(key)
 
     def write_summary(self, data):
-        with open(os.path.join(self.log_dir, 'summary.json'), 'w') as f:
+        with open('summary.json', 'w') as f:
             json.dump(data, f)
 
 
@@ -224,7 +219,6 @@ def main():
     CONFIG_ROOT = os.environ['CONFIG_ROOT']
     CONFIG_ROOT_MIRROR = os.environ['CONFIG_ROOT_MIRROR']
     CONFIG_ROOT_SYNC = os.environ['CONFIG_ROOT_SYNC']
-    LOG_DIR = os.environ['LOG_DIR']
     SYNC_DIR = os.environ['SYNC_DIR']
     MIRROR_DIR = os.environ['MIRROR_DIR']
     REPOS_DIR = os.environ['REPOS_DIR']
@@ -237,7 +231,7 @@ def main():
 
     BANNED_REPOS = frozenset(os.environ['BANNED_REPOS'].split())
 
-    log = Logger(LOG_DIR)
+    log = Logger()
     states = {}
 
     os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_SYNC

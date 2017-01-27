@@ -4,15 +4,23 @@
 set -e -x
 ulimit -t 600 -v 6291456
 
+date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+
 . "${VIRTUAL_ENV}"/bin/activate
 
+cd "${REPORT_REPOS_GIT}"
+rm -f *
+cp "${SCRIPT_DIR}"/{log,repo-status}.css ./
 "${SCRIPT_DIR}"/update-repos.py
-cd "${LOG_DIR}"
-dates=( * )
 
-"${SCRIPT_DIR}"/update-mirror.py "${dates[-1]}"/summary.json \
-	"${dates[-1]}"/repositories.xml > "${MIRROR_DIR}"/Makefile.repos
-"${SCRIPT_DIR}"/publish-logs.sh "${dates[-1]}"
+"${SCRIPT_DIR}"/update-mirror.py summary.json repositories.xml \
+	> "${MIRROR_DIR}"/Makefile.repos
+
+"${SCRIPT_DIR}"/txt2html.py *.txt
+"${SCRIPT_DIR}"/summary2html.py summary.json
+git add *
+git commit -a -m "${date}"
+git push
 
 make -f "${SCRIPT_DIR}"/mirror.make -C "${MIRROR_DIR}" clean
 make -f "${SCRIPT_DIR}"/mirror.make -j16 -k -C "${MIRROR_DIR}"
