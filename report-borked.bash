@@ -134,3 +134,8 @@ Gentoo repository CI"
 
 sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
+if [[ -n ${new[@]} ]]; then
+	"${SCRIPT_DIR}"/report-borked-irc.py "${mail_cc[*]}" \
+		"${uri_prefix}/${current_rev}/output.html" \
+		"${broken_commits[*]/#/${GENTOO_CI_GITWEB_COMMIT_URI}}"
+fi
