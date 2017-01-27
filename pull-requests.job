@@ -154,4 +154,6 @@ if [[ -n ${prid} ]]; then
 
 	# wait for mirror pushing job
 	wait
+
+	rm -rf "${pull}"/tmp "${pull}"/gentoo-ci
 fi
