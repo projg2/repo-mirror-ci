@@ -29,6 +29,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	if [[ ! -s ${GENTOO_CI_GIT}/borked.list ]]; then
 		# no failures? push to the stable branch!
 		cd "${MIRROR_DIR}"/gentoo
+		git fetch --all
 		git push origin master:stable
 	fi
 fi
