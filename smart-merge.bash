@@ -43,7 +43,9 @@ elif ! git rev-parse HEAD &>/dev/null; then
 else
 	# repo rewrite
 	git checkout -q "refs/orig/${branch}"
-	git merge -q -s ours -m "Merge/replace with the new version of ${branch} (reversed 'ours' strategy)" "${m_branch}"
+	git merge -q -s ours --allow-unrelated-histories \
+		-m "Merge/replace with the new version of ${branch} (reversed 'ours' strategy)" \
+		"${m_branch}"
 	git branch -f "${m_branch}" HEAD
 	git checkout "${m_branch}"
 fi
