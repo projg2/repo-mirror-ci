@@ -3,6 +3,7 @@
 import json
 import os
 import os.path
+import socket
 import sys
 
 import github
@@ -174,4 +175,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
 
 
 if __name__ == '__main__':
-    sys.exit(main(*sys.argv[1:]))
+    try:
+        sys.exit(main(*sys.argv[1:]))
+    except socket.timeout:
+        print('-- Exiting due to socket timeout --')
+        sys.exit(0)
