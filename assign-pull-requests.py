@@ -152,7 +152,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
 
         if len(unique_maints) > 5:
             cant_assign = True
-            body += '\n@gentoo/proxy-maint: Too many disjoint maintainers, disabling auto-assignment.'
+            body += '\n@gentoo/github: Too many disjoint maintainers, disabling auto-assignment.'
         else:
             for p in sorted(packages):
                 body += '\n**%s**: %s' % (p, ', '.join(pkg_maints[p]))
@@ -160,7 +160,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
                 body += '\n\nAt least one of the listed packages is maintained entirely by non-GitHub developers!'
     else:
         cant_assign = True
-        body += '\n@gentoo/proxy-maint'
+        body += '\n@gentoo/github'
 
     if maint_needed:
         issue.add_to_labels('maintainer-needed')
