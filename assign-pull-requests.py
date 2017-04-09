@@ -107,6 +107,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
     new_package = False
     maint_needed = False
     cant_assign = False
+    not_self_maintained = False
 
     if packages:
         # now try to determine unique sets of maintainers
@@ -142,6 +143,11 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
                     if not [x for x in all_ms if '@' in x]:
                         cant_assign = True
                     pkg_maints[p] = all_ms
+                    # if for at least one package, the user is not
+                    # in maintainers, we do not consider it self-maintained
+                    # TODO: handle team memberships
+                    if '@' + pr.user.login not in all_ms:
+                        not_self_maintained = True
                     unique_maints.add(tuple(sorted(all_ms)))
                     if len(unique_maints) > 5:
                         break
@@ -169,6 +175,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
     if cant_assign:
         issue.add_to_labels('need assignment')
     else:
+        if not not_self_maintained:
+            issue.add_to_labels('self-maintained')
         issue.add_to_labels('assigned')
     issue.create_comment(body)
     print('PR#%d: assigned' % pr.number)
