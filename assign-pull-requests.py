@@ -122,7 +122,10 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         path = f.filename.split('/')
         if path[0] in categories:
             areas.add('ebuilds')
-            packages.add('/'.join(path[0:2]))
+            if path[1] == 'metadata.xml':
+                areas.add('category-metadata')
+            else:
+                packages.add('/'.join(path[0:2]))
         elif path[0] == 'eclass':
             areas.add('eclasses')
         elif path[0] == 'profiles':
