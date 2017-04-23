@@ -74,8 +74,8 @@ def verify_emails(mails):
     # failing.
     short_circ = bugz_user_query(mails)
     if short_circ['error'] is None:
-        assert resp['result'] is not None
-        assert len(resp['result']) == len(mails)
+        assert short_circ['result'] is not None
+        assert len(short_circ['result']) == len(mails)
         return
 
     for m in mails:
