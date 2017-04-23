@@ -153,6 +153,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
     maint_needed = False
     cant_assign = False
     not_self_maintained = False
+    totally_all_maints = set()
 
     if packages:
         # now try to determine unique sets of maintainers
@@ -173,6 +174,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
                 for m in metadata_xml.getroot():
                     if m.tag != 'maintainer':
                         continue
+                    totally_all_maints.add(m.findtext('email').strip())
                     if m.get('type') == 'project':
                         ms = map_proj(m.findtext('email'), proj_mapping)
                     else:
@@ -213,9 +215,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         cant_assign = True
         body += '\n@gentoo/github'
 
-    totally_all_maints = set()
-    if len(unique_maints) <= 5:
-        totally_all_maints = set(m for ms in unique_maints for m in ms)
+    if len(unique_maints) > 5:
+        totally_all_maints = set()
 
     # if any metadata.xml files were changed, we want to check the new
     # maintainers for invalid addresses too
