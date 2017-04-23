@@ -5,6 +5,7 @@ import os
 import os.path
 import socket
 import sys
+import urllib
 
 import github
 import lxml.etree
@@ -28,6 +29,43 @@ def map_proj(proj, proj_mapping):
     else:
         proj = proj.replace('@', '[at]')
     return '~~[%s (project)]~~' % proj
+
+
+def verify_email(mail):
+    if not mail:  # early check ;-)
+        return False
+
+    params = json.dumps([{"names": [mail]}])
+    qs = urllib.urlencode({
+        'method': 'User.get',
+        'params': params,
+    })
+    req = 'https://bugs.gentoo.org/jsonrpc.cgi?' + qs
+
+    f = urllib.urlopen(req)
+    try:
+        resp = json.load(f)
+    finally:
+        f.close()
+
+    if resp['error'] is None:
+        assert resp['result'] is not None
+        assert len(resp['result']['users']) == 1
+        return True
+
+    assert resp['result'] is None
+    if resp['error']['code'] == 51:  # account does not exist
+        return False
+    raise NotImplementedError('Unknown error [%d]: %s'
+            % (resp['error']['code'], resp['error']['message']))
+
+
+def verify_emails(mails):
+    """ Verify if emails have Bugzilla accounts. Returns iterator over
+    mails that do not have accounts. """
+    for m in mails:
+        if not verify_email(m):
+            yield m
 
 
 def main(ref_repo_path):
@@ -167,6 +205,14 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
     else:
         cant_assign = True
         body += '\n@gentoo/github'
+
+    # now verify maintainers for invalid addresses
+    if len(unique_maints) <= 5:
+        invalid_mails = sorted(verify_emails(set(m for ms in unique_maints for m in ms)))
+        if invalid_mails:
+            body += '\n\n**WARNING**: The following maintainers do not match any Bugzilla accounts:'
+            for m in invalid_mails:
+                body += '\n- %s' % m
 
     if maint_needed:
         issue.add_to_labels('maintainer-needed')
