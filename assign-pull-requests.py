@@ -31,11 +31,8 @@ def map_proj(proj, proj_mapping):
     return '~~[%s (project)]~~' % proj
 
 
-def verify_email(mail):
-    if not mail:  # early check ;-)
-        return False
-
-    params = json.dumps([{"names": [mail]}])
+def bugz_user_query(mails):
+    params = json.dumps([{"names": list(mails)}])
     qs = urllib.urlencode({
         'method': 'User.get',
         'params': params,
@@ -48,6 +45,14 @@ def verify_email(mail):
     finally:
         f.close()
 
+    return resp
+
+
+def verify_email(mail):
+    if not mail:  # early check ;-)
+        return False
+
+    resp = bugz_user_query([mail])
     if resp['error'] is None:
         assert resp['result'] is not None
         assert len(resp['result']['users']) == 1
@@ -63,6 +68,16 @@ def verify_email(mail):
 def verify_emails(mails):
     """ Verify if emails have Bugzilla accounts. Returns iterator over
     mails that do not have accounts. """
+    # To avoid querying bugzilla a lot, start with one big query for
+    # all users. If they are all fine, we will get no error here.
+    # If at least one fails, we need to get user-by-user to get all
+    # failing.
+    short_circ = bugz_user_query(mails)
+    if short_circ['error'] is None:
+        assert resp['result'] is not None
+        assert len(resp['result']) == len(mails)
+        return
+
     for m in mails:
         if not verify_email(m):
             yield m
