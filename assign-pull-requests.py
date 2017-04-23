@@ -170,6 +170,9 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
 
     if maint_needed:
         issue.add_to_labels('maintainer-needed')
+        # packages with m-needed are not self-maintained unless the user
+        # makes himself the maintainer
+        not_self_maintained = True
     if new_package:
         issue.add_to_labels('new package')
     if cant_assign:
