@@ -118,6 +118,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
     # scan file list
     areas = set()
     packages = set()
+    metadata_xml_files = set()
     for f in pr.get_files():
         path = f.filename.split('/')
         if path[0] in categories:
@@ -125,6 +126,9 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
             if path[1] == 'metadata.xml':
                 areas.add('category-metadata')
             else:
+                if path[2] == 'metadata.xml':
+                    # package metadata, need to verify it
+                    metadata_xml_files.add(f.raw_url)
                 packages.add('/'.join(path[0:2]))
         elif path[0] == 'eclass':
             areas.add('eclasses')
@@ -209,9 +213,31 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         cant_assign = True
         body += '\n@gentoo/github'
 
-    # now verify maintainers for invalid addresses
+    totally_all_maints = set()
     if len(unique_maints) <= 5:
-        invalid_mails = sorted(verify_emails(set(m for ms in unique_maints for m in ms)))
+        totally_all_maints = set(m for ms in unique_maints for m in ms)
+
+    # if any metadata.xml files were changed, we want to check the new
+    # maintainers for invalid addresses too
+    # TODO: report maintainer change diffs
+    for mxml in metadata_xml_files:
+        f = urllib.urlopen(mxml)
+        try:
+            try:
+                metadata_xml = lxml.etree.parse(f)
+            except lxml.etree.XMLSyntaxError:
+                # TODO: report this? pkgcheck should complain anyway
+                pass
+            else:
+                for m in metadata_xml.getroot():
+                    if m.tag == 'maintainer':
+                        totally_all_maints.add(m.findtext('email').strip())
+        finally:
+            f.close()
+
+    # now verify maintainers for invalid addresses
+    if totally_all_maints:
+        invalid_mails = sorted(verify_emails(totally_all_maints))
         if invalid_mails:
             body += '\n\n**WARNING**: The following maintainers do not match any Bugzilla accounts:'
             for m in invalid_mails:
