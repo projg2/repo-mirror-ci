@@ -168,6 +168,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
     maint_needed = False
     cant_assign = False
     not_self_maintained = False
+    unique_maints = set()
     totally_all_maints = set()
 
     if packages:
@@ -175,7 +176,6 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         # if we get too many unique sets, i.e. we would end up highlighting
         # everyone, do not auto-assign
         pkg_maints = {}
-        unique_maints = set()
         for p in packages:
             ppath = os.path.join(ref_repo_path, p, 'metadata.xml')
             try:
