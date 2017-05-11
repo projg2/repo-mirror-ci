@@ -23,7 +23,7 @@ def map_dev(dev, dev_mapping):
 
 def map_proj(proj, proj_mapping):
     if proj.lower() in proj_mapping:
-        return '@' + proj_mapping[proj.lower()]
+        return '@' + proj_mapping[proj.lower()].lower()
     if proj.endswith('@gentoo.org'):
         proj = proj[:-len('@gentoo.org')]
     else:
