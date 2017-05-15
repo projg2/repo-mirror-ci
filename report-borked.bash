@@ -183,7 +183,7 @@ ${uri_prefix}/${current_rev}/output.html#}
 
 
 }${wold:+Previous warnings still unfixed:
-${old[*]/#/
+${wold[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
