@@ -104,8 +104,7 @@ done < <(diff -N \
 broken_commits=()
 cc_line=()
 
-# TODO: bisect warnings as well
-if [[ ${new[@]} && ${previous_commit} && ${#new[@]} -lt 30 ]]; then
+if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#wnew[@]} )) -lt 50 ]]; then
 	trap 'rm -rf "${BISECT_TMP}"' EXIT
 	export BISECT_TMP=$(mktemp -d)
 	sed -e "s^@path@^${SYNC_DIR}/gentoo^" \
@@ -116,10 +115,17 @@ if [[ ${new[@]} && ${previous_commit} && ${#new[@]} -lt 30 ]]; then
 	# in the commit set; this could happen e.g. when new checks
 	# are added on top of already-broken repo
 	pre_previous_commit=$(cd "${SYNC_DIR}"/gentoo; git rev-parse "${previous_commit}^")
-	set -- "${new[@]##*#}"
+	flag=e
+	set -- "${new[@]##*#}" -WARN- "${wnew[@]##*#}"
 	while [[ ${@} ]]; do
+		if [[ ${1} == -WARN- ]]; then
+			flag=w
+			shift
+			continue
+		fi
+
 		commit=$("${SCRIPT_DIR}"/bisect-borked.bash \
-			"${next_commit}" "${pre_previous_commit}" "${@}")
+			"${next_commit}" "${pre_previous_commit}" "${flag}" "${@}")
 		shift
 
 		# skip breakages introduced before the commit set

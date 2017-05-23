@@ -4,10 +4,13 @@ set -e -x
 
 trap 'exit 255' EXIT
 
+flag=${1}
+shift
+
 export HOME=${BISECT_TMP}
 current_commit=$(git rev-parse BISECT_HEAD)
 
-if [[ -s ${BISECT_TMP}/.bisect.cache ]]; then
+if [[ -s ${BISECT_TMP}/.bisect.cache.${flag} ]]; then
 	while read -a cline; do
 		if [[ ${cline[0]} == ${current_commit} ]]; then
 			ret=0
@@ -20,7 +23,7 @@ if [[ -s ${BISECT_TMP}/.bisect.cache ]]; then
 			trap '' EXIT
 			exit "${ret}"
 		fi
-	done <"${BISECT_TMP}/.bisect.cache"
+	done <"${BISECT_TMP}/.bisect.cache.${flag}"
 fi
 
 git checkout -q "${current_commit}"
@@ -38,12 +41,24 @@ pkgcheck -r gentoo --reporter XmlReporter "${@}" \
 	--output "${BISECT_TMP}/.bisect.tmp.borked" \
 	"${BISECT_TMP}/.bisect.tmp.xml"
 
+"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+	-w --output "${BISECT_TMP}/.bisect.tmp.warning" \
+	"${BISECT_TMP}/.bisect.tmp.xml"
+
 borked_pkgs=()
 while read l; do
 	[[ ${l} ]] && borked_pkgs+=( "${l}" )
 done <"${BISECT_TMP}/.bisect.tmp.borked"
 
-echo "${current_commit} ${borked_pkgs[*]}" >> "${BISECT_TMP}/.bisect.cache"
+warning_pkgs=()
+while read l; do
+	[[ ${l} ]] && warning_pkgs+=( "${l}" )
+done <"${BISECT_TMP}/.bisect.tmp.warning"
+
+echo "${current_commit} ${borked_pkgs[*]}" >> "${BISECT_TMP}/.bisect.cache.e"
+echo "${current_commit} ${warning_pkgs[*]}" >> "${BISECT_TMP}/.bisect.cache.w"
+
+[[ ${flag} == w ]] && borked_pkgs=( "${warning_pkgs[@]}" )
 
 ret=0
 for p in "${borked_pkgs[@]}"; do
