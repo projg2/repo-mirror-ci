@@ -140,6 +140,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
             areas.add('ebuilds')
             if path[1] == 'metadata.xml':
                 areas.add('category-metadata')
+            elif len(path) <= 2:
+                areas.add('other files')
             else:
                 if path[2] == 'metadata.xml':
                     # package metadata, need to verify it
