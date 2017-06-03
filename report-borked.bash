@@ -202,7 +202,8 @@ ${uri_prefix}/${current_rev}/output.html#}
 ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 
 --
-Gentoo repository CI"
+Gentoo repository CI
+https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI"
 
 sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
