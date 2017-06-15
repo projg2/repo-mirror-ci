@@ -37,6 +37,11 @@ echo "${start} ${stop}" >> "${CRONJOB_STATE_DIR}/${basename}.times"
 if [[ ${ret} -ne 0 ]]; then
 	# close logs
 	exec &>/dev/null
+
+	# store a local copy of the log in case mail failed
+	cp "${CRONJOB_STATE_DIR}/${basename}.log" \
+	       "${CRONJOB_STATE_DIR}/${basename}.log.${start}"
+
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
 		Subject: ${basename} cronjob failure
 		To: <${CRONJOB_ADMIN_MAIL}>
