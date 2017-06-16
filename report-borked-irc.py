@@ -22,9 +22,9 @@ class Croaker(irc.client.SimpleIRCClient):
         if self.people:
             message[0] += " %s, you broke it!" % (', '.join(x.split('@')[0] for x in self.people))
         message.append('Report: %s' % self.url)
-        for c in self.commit_urls[:3]:
+        for c in self.commit_urls[:4 if len(self.commit_urls) <= 4 else 3]:
             message.append(c)
-        if len(self.commit_urls) > 3:
+        if len(self.commit_urls) > 4:
             message.append('(and %d more commits)' % (len(self.commit_urls) - 3))
 
         for l in message:
