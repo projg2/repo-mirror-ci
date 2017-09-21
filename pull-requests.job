@@ -130,13 +130,13 @@ if [[ -n ${prid} ]]; then
 			outfiles=()
 
 			if [[ ${#pkgs[@]} -gt 0 ]]; then
-				pkgcheck -r gentoo --reporter XmlReporter "${pkgs[@]}" \
+				pkgcheck scan -r gentoo --reporter XmlReporter "${pkgs[@]}" \
 					${PKGCHECK_OPTIONS} \
 					> .pre-merge.xml
 				outfiles+=( .pre-merge.xml )
 			fi
 
-			pkgcheck -r gentoo --reporter XmlReporter "*/*" \
+			pkgcheck scan -r gentoo --reporter XmlReporter "*/*" \
 				${PKGCHECK_OPTIONS} \
 				-C repo-category \
 				> .pre-merge-g.xml
