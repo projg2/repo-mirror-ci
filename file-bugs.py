@@ -34,7 +34,7 @@ class StateHandlers(object):
 Our automated repository checks [1] have detected that the '%s'
 repository contains ebuilds that trigger fatal errors during the cache
 regeneration. This usually means that the ebuilds call 'die' in global
-scope indicating serious issues.
+scope indicating serious issues or have other serious QA violations.
 
 Global-scope failures prevent the ebuild not only from being installed
 but also from being properly processed by the Package Manager. Since
@@ -59,9 +59,9 @@ exception' lines. The former usually mean failures coming from eclasses
 and the ebuild itself, while exceptions usually mean malformed ebuilds
 or metadata.xml.
 
-While at it, please consider fixing global-scope 'use' call warnings (if
-any). They are not fatal but are considered a serious QA violation.
-'use' functions must not ever be called outside of phase functions.
+Please note that due to technical limitations of pkgcore, the processing
+stops on the first error found. Once solved, please wait ~30 minutes
+for the report to refresh in case new errors may appear.
 
 Please fix the issue ASAP, possibly via removing unmaintained, old
 ebuilds. We reserve the right to remove the repository from our list if
