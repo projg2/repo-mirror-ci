@@ -7,6 +7,7 @@ borked_list=${repo}/borked.list
 borked_last=${repo}/borked.last
 warning_list=${repo}/warning.list
 warning_last=${repo}/warning.last
+blame_list=${repo}/blame
 uri_prefix=${GENTOO_CI_URI_PREFIX}
 mail_to=${GENTOO_CI_MAIL}
 mail_cc=()
@@ -131,6 +132,9 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 		# skip breakages introduced before the commit set
 		[[ ${pre_previous_commit} != ${commit}* ]] || continue
 
+		# record the blame!
+		echo "${pkg} ${commit}" >> "${blamelist}.${flag}"
+
 		# skip duplicates
 		for c in "${broken_commits[@]}"; do
 			[[ ${c} != ${commit} ]] || continue 2
@@ -149,6 +153,39 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 
 	trap '' EXIT
 	rm -rf "${BISECT_TMP}"
+fi
+
+# CC people whose breakages have been fixed
+if [[ ${fixed[@]} || ${wfixed[@]} ]]; then
+	flag=e
+	set -- "${fixed[@]##*#}" -WARN- "${wfixed[@]##*#}"
+	while [[ ${@} ]]; do
+		if [[ ${1} == -WARN- ]]; then
+			flag=w
+			shift
+			continue
+		fi
+
+		while read pkg commit; do
+			if [[ ${pkg} == ${1} ]]; then
+				for a in $(cd "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
+				do
+					for o in "${mail_cc[@]}"; do
+						[[ ${o} != ${a} ]] || continue 2
+					done
+					mail_cc+=( "${a}" )
+					cc_line+=( "<${a}>" )
+				done
+
+				sed -i -e "\@^${pkg}@d" "${blamelist}.${flag}"
+
+				# we can't have more than one anyway
+				break
+			fi
+		done < <( cat "${blamelist}.${flag}" || : )
+
+		shift
+	done
 fi
 
 cc_line=${cc_line[*]}
