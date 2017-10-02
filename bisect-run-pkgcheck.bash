@@ -42,7 +42,7 @@ pkgcheck scan -r gentoo --reporter XmlReporter "${@}" \
 	"${BISECT_TMP}/.bisect.tmp.xml"
 
 "${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
-	-w --output "${BISECT_TMP}/.bisect.tmp.warning" \
+	-s -w --output "${BISECT_TMP}/.bisect.tmp.warning" \
 	"${BISECT_TMP}/.bisect.tmp.xml"
 
 borked_pkgs=()

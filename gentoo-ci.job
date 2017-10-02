@@ -20,7 +20,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	time timeout 15m make -f "${SCRIPT_DIR}"/gentoo-ci.make -j16
 
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -o borked.list *.xml
-	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -w -o warning.list *.xml
+	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -s -w -o warning.list *.xml
 	git add *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 	git push
