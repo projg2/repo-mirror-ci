@@ -261,6 +261,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
             for m in invalid_mails:
                 body += '\n- %s' % m
 
+    issue.create_comment(body)
     if maint_needed:
         issue.add_to_labels('maintainer-needed')
         # packages with m-needed are not self-maintained unless the user
@@ -274,7 +275,6 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         if not not_self_maintained:
             issue.add_to_labels('self-maintained')
         issue.add_to_labels('assigned')
-    issue.create_comment(body)
     print('PR#%d: assigned' % pr.number)
 
 
