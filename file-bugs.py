@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 #  vim:se fileencoding=utf8
-# (c) 2015 Michał Górny
+# (c) 2017 Michał Górny
 
-import bugz.bugzilla
+import bugzilla
+import configparser
 import json
 import os
 import os.path
@@ -234,10 +235,11 @@ def main(bug_db_path, summary_path):
         with open(token_file, 'r') as f:
             token = f.read().strip()
     except IOError:
-        print('! Bugz token not found, please run "bugz login" first')
+        print('Put bugzilla API key into ~/.bugz_token')
         return 1
 
-    bz = bugz.bugzilla.BugzillaProxy('https://bugs.gentoo.org/xmlrpc.cgi')
+    bz = bugzilla.Bugzilla('https://bugs.gentoo.org',
+                           api_key=token)
 
     sth = StateHandlers()
 
@@ -263,7 +265,6 @@ def main(bug_db_path, summary_path):
 
             owners = [o['email'] for o in v['owner']]
             params = {
-                'Bugzilla_token': token,
                 'product': 'Gentoo Linux',
                 'component': 'Overlays',
                 'version': 'unspecified',
@@ -274,6 +275,7 @@ def main(bug_db_path, summary_path):
                 'cc': ', '.join(owners[1:]),
                 'blocks': ['repository-qa-issues'],
             }
+            createinfo = bz.build_createbug(**params)
 
             # print the bug and ask for confirmation
             print('Owners: %s' % owners)
@@ -285,8 +287,10 @@ def main(bug_db_path, summary_path):
             resp = input('File the bug? [Y/n]')
             if resp.lower() in ('', 'y', 'yes'):
                 try:
-                    ret = bz.Bug.create(params)
+                    ret = bz.createbug(createinfo)
                 except Exception as e:
+                    raise e
+                    # TODO: update this
                     for o in owners:
                         if o in e.faultString:
                             print('Owner not on Bugzie, reassigning...')
@@ -301,7 +305,8 @@ Owner: %s
                             params['assigned_to'] = 'overlays@gentoo.org'
                             params['cc'] = []
                             params['blocks'].append('repository-qa-bugzie')
-                            ret = bz.Bug.create(params)
+                            createinfo = bz.build_createbug(**params)
+                            ret = bz.createbug(createinfo)
 
                             break
                     else:
@@ -317,60 +322,57 @@ Owner: %s
                     json.dump(bug_db, f)
                 os.rename(bug_db_path + '.new', bug_db_path)
         elif current_bugs: # update existing bugs
-            params = {
-                'Bugzilla_token': token,
-                'ids': list(current_bugs.values()),
-            }
-            if params['ids']:
-                ret = bz.Bug.get(params)
-                for b in ret['bugs']:
-                    # skip bugs that were already resolved
-                    if b['resolution']:
-                        params['ids'].remove(b['id'])
+            bug_ids = list(current_bugs.values()),
+            ret = bz.getbugs(bug_ids)
+            for i, b in reversed(list(enumerate(ret))):
+                # skip bugs that were already resolved
+                if b is None:
+                    print('Warning: getting #%d failed' % bug_ids[i])
+                    del bug_ids[i]
+                elif b.resolution:
+                    del bug_ids[i]
 
-                if params['ids']:
-                    params['status'] = 'RESOLVED'
-                    if issue == 'REMOVED':
-                        params['resolution'] = 'OBSOLETE'
-                        params['comment'] = {
-                            'body': 'The repository has been removed, rendering this bug obsolete.',
-                        }
-                    else:
-                        params['resolution'] = 'FIXED'
-                        params['comment'] = {
-                            'body': 'The bug seems to be fixed in the repository. Closing.',
-                        }
+            if bug_ids:
+                params = {}
+                params['status'] = 'RESOLVED'
+                if issue == 'REMOVED':
+                    params['resolution'] = 'OBSOLETE'
+                    params['comment'] = 'The repository has been removed, rendering this bug obsolete.'
+                else:
+                    params['resolution'] = 'FIXED'
+                    params['comment'] = 'The bug seems to be fixed in the repository. Closing.'
 
-                    print('Bugs: %s' % params['ids'])
-                    print('Repository: %s' % r)
-                    print('Status: %s/%s' % (params['status'], params['resolution']))
-                    print()
-                    print(params['comment']['body'])
-                    print()
-                    resp = input('Update the bugs? [Y/n]')
-                    if resp.lower() in ('', 'y', 'yes'):
-                        ret = bz.Bug.update(params)
-                        print('Updated bugs %s' % [b['id'] for b in ret['bugs']])
+                updateinfo = bz.build_update(**params)
 
-                del bug_db[r]
+                print('Bugs: %s' % params['ids'])
+                print('Repository: %s' % r)
+                print('Status: %s/%s' % (params['status'], params['resolution']))
+                print()
+                print(params['comment'])
+                print()
+                resp = input('Update the bugs? [Y/n]')
+                if resp.lower() in ('', 'y', 'yes'):
+                    ret = bz.update_bugs(bug_ids, updateinfo)
+                    print('Updated bugs %s' % [b['id'] for b in ret['bugs']])
 
-                with open(bug_db_path + '.new', 'w') as f:
-                    json.dump(bug_db, f)
-                os.rename(bug_db_path + '.new', bug_db_path)
-            continue
+            del bug_db[r]
 
-    params = {
-        'Bugzilla_token': token,
-        'ids': list(expected_open_bugs),
-    }
-    if params['ids']:
-        ret = bz.Bug.get(params)
-        for b in ret['bugs']:
+            with open(bug_db_path + '.new', 'w') as f:
+                json.dump(bug_db, f)
+            os.rename(bug_db_path + '.new', bug_db_path)
+
+    bug_ids = list(expected_open_bugs)
+    if bug_ids:
+        ret = bz.getbugs(bug_ids)
+        for b in ret:
+            if b is None:
+                print('Warning: getting some bugs failed')
+                continue
             # warn about bugs that were resolved (incorrectly?)
-            if b['resolution']:
+            if b.resolution:
                 print('Warning: #%d (%s) %s/%s'
-                        % (b['id'], ': '.join(expected_open_bugs[b['id']]),
-                            b['status'], b['resolution']))
+                        % (b.id, ': '.join(expected_open_bugs[b.id]),
+                            b.status, b.resolution))
 
     return 0
 
