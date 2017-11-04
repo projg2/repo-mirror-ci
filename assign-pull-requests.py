@@ -82,9 +82,16 @@ def main(ref_repo_path):
     with open(GITHUB_TOKEN_FILE) as f:
         token = f.read().strip()
 
+    BUGZILLA_URL = os.environ['BUGZILLA_URL']
+    BUGZILLA_APIKEY_FILE = os.environ['BUGZILLA_APIKEY_FILE']
+
+    with open(BUGZILLA_APIKEY_FILE) as f:
+        bugz_apikey = f.read().strip()
+
     g = github.Github(GITHUB_USERNAME, token, per_page=50)
     r = g.get_repo(GITHUB_REPO)
-    bz = bugzilla.Bugzilla('https://bugs.gentoo.org')
+    bz = bugzilla.Bugzilla(BUGZILLA_URL,
+                           api_key=bugz_apikey)
 
     with open(GITHUB_DEV_MAPPING) as f:
         dev_mapping = json.load(f)
