@@ -284,9 +284,11 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
                 '[%d](%s/%d)' % (x, BUGZILLA_URL, x) for x in bugs])
         updq = bz.build_update(see_also_add=[pr.html_url])
         bz.update_bugs(bugs, updq)
+    else:
+        body += '\n\nNo bug reference found in commit messages. To reference bugs in the pull request, please use [GLEP 66](https://www.gentoo.org/glep/glep-0066.html#commit-messages) tags in commit message.'
 
-    if not_self_maintained:
-        pass
+    if not_self_maintained and not bugs:
+        body += '\n\n**If there is no bug open for this pull request, please open one. Otherwise, please link it to the commit messages as noted above.**'
 
     issue.create_comment(body)
     if maint_needed:
@@ -304,6 +306,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         issue.add_to_labels('assigned')
     if bugs:
         issue.add_to_labels('bug linked')
+    elif not_self_maintained:
+        issue.add_to_labels('no bug found')
     print('PR#%d: assigned' % pr.number)
 
 
