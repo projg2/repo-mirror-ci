@@ -7,7 +7,10 @@ import os.path
 import socket
 import sys
 import urllib
-import xmlrpc.client
+try:
+    import xmlrpc.client as xmlrpcclient
+except ImportError:
+    import xmlrpclib as xmlrpcclient
 
 import github
 import lxml.etree
@@ -43,7 +46,7 @@ def verify_email(mail, bz):
 
     try:
         resp = bugz_user_query([mail], bz)
-    except xmlrpc.client.Fault as e:
+    except xmlrpcclient.Fault as e:
         if e.faultCode == 51:  # account does not exist
             return False
         raise
