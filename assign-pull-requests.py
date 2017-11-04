@@ -287,7 +287,7 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
         updq = bz.build_update(see_also_add=[pr.html_url])
         bz.update_bugs(bugs, updq)
     else:
-        body += '\n\nNo bug reference found in commit messages. To reference bugs in the pull request, please use [GLEP 66](https://www.gentoo.org/glep/glep-0066.html#commit-messages) tags in commit message.'
+        body += '\n\nNo bug reference found in commit messages. If you would like to reference bugs in the pull request, please make sure to use [GLEP 66](https://www.gentoo.org/glep/glep-0066.html#commit-messages) tags in the commit message.'
 
     if not_self_maintained and not bugs:
         body += '\n\n**If there is no bug open for this pull request, please open one. Otherwise, please link it to the commit messages as noted above.**'
