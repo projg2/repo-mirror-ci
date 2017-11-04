@@ -280,8 +280,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
                     bugs.append(int(m.group(1)))
 
     if bugs:
-        body += '\n\nBugs linked: %s' % [
-                '[%d](%s/%d)' % (x, BUGZILLA_URL, x) for x in bugs]
+        body += '\n\nBugs linked: %s' % ', '.join([
+                '[%d](%s/%d)' % (x, BUGZILLA_URL, x) for x in bugs])
         updq = bz.build_update(see_also_add=[pr.html_url])
         bz.update_bugs(bugs, updq)
 
