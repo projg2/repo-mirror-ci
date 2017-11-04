@@ -4,6 +4,7 @@ import bugzilla
 import json
 import os
 import os.path
+import re
 import socket
 import sys
 import urllib
@@ -14,6 +15,10 @@ except ImportError:
 
 import github
 import lxml.etree
+
+
+BUG_LONG_URL_RE = re.compile(r'https?://bugs\.gentoo\.org/show_bug\.cgi\?id=(\d+)(?:[&#].*)?$')
+BUG_SHORT_URL_RE = re.compile(r'https?://bugs\.gentoo\.org/(\d+)(?:[?#].*)?$')
 
 
 def map_dev(dev, dev_mapping):
@@ -260,6 +265,22 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
             body += '\n\n**WARNING**: The following maintainers do not match any Bugzilla accounts:'
             for m in invalid_mails:
                 body += '\n- %s' % m
+
+    # scan for bugs now
+    bugs = []
+    for c in pr.get_commits():
+        for l in c.commit.message.splitlines():
+            if l.startswith('Bug:') or l.startswith('Closes:'):
+                tag, url = l.split(':', 1)
+                url = url.strip()
+                m = BUG_LONG_URL_RE.match(url)
+                if m is None:
+                    m = BUG_SHORT_URL_RE.match(url)
+                if m is not None:
+                    bugs.append(int(m.group(1)))
+
+    if not_self_maintained:
+        body += '\n\nBug references found: %s' % bugs
 
     issue.create_comment(body)
     if maint_needed:
