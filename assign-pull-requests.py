@@ -112,13 +112,13 @@ def main(ref_repo_path):
         # note: we need github.Issue due to labels missing in PR
         issue = r.get_issue(pr.number)
         assign_one(pr, issue, dev_mapping, proj_mapping, categories,
-                GITHUB_USERNAME, ref_repo_path, bz)
+                GITHUB_USERNAME, ref_repo_path, bz, BUGZILLA_URL)
 
     return 0
 
 
 def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
-        GITHUB_USERNAME, ref_repo_path, bz):
+        GITHUB_USERNAME, ref_repo_path, bz, BUGZILLA_URL):
     # check if assigned already
     if issue.assignee:
         print('PR#%d: assignee found' % pr.number)
@@ -279,8 +279,14 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
                 if m is not None:
                     bugs.append(int(m.group(1)))
 
+    if bugs:
+        body += '\n\nBugs linked: %s' % [
+                '[%d](%s/%d)' % (x, BUGZILLA_URL, x) for x in bugs]
+        updq = bz.build_update(see_also_add=[pr.html_url])
+        bz.update_bugs(bugs, updq)
+
     if not_self_maintained:
-        body += '\n\nBug references found: %s' % bugs
+        pass
 
     issue.create_comment(body)
     if maint_needed:
@@ -296,6 +302,8 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
         if not not_self_maintained:
             issue.add_to_labels('self-maintained')
         issue.add_to_labels('assigned')
+    if bugs:
+        issue.add_to_labels('bug-linked')
     print('PR#%d: assigned' % pr.number)
 
 
