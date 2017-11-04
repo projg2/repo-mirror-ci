@@ -108,25 +108,27 @@ def main(ref_repo_path):
     with open(os.path.join(ref_repo_path, 'profiles/categories')) as f:
         categories = [l.strip() for l in f.read().splitlines()]
 
-    for pr in r.get_pulls(state='open'):
+    for issue in r.get_issues(state='open'):
         # note: we need github.Issue due to labels missing in PR
-        issue = r.get_issue(pr.number)
-        assign_one(pr, issue, dev_mapping, proj_mapping, categories,
+        pr_getter = lambda: r.get_pull(issue.number)
+        assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
                 GITHUB_USERNAME, ref_repo_path, bz, BUGZILLA_URL)
 
     return 0
 
 
-def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
+def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
         GITHUB_USERNAME, ref_repo_path, bz, BUGZILLA_URL):
     # check if assigned already
     if issue.assignee:
-        print('PR#%d: assignee found' % pr.number)
+        print('PR#%d: assignee found' % issue.number)
         return
-    for l in issue.get_labels():
+    for l in issue.labels:
         if l.name in ('assigned', 'need assignment', 'do not merge'):
-            print('PR#%d: %s label found' % (pr.number, l.name))
+            print('PR#%d: %s label found' % (issue.number, l.name))
             return
+
+    pr = pr_getter()
 
     # delete old results
     for co in issue.get_comments():
