@@ -303,7 +303,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
             issue.add_to_labels('self-maintained')
         issue.add_to_labels('assigned')
     if bugs:
-        issue.add_to_labels('bug-linked')
+        issue.add_to_labels('bug linked')
     print('PR#%d: assigned' % pr.number)
 
 
