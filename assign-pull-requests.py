@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
+import bugzilla
 import json
 import os
 import os.path
 import socket
 import sys
 import urllib
+import xmlrpc.client
 
 import github
 import lxml.etree
@@ -31,55 +33,42 @@ def map_proj(proj, proj_mapping):
     return '~~[%s (project)]~~' % proj
 
 
-def bugz_user_query(mails):
-    params = json.dumps([{"names": list(mails)}])
-    qs = urllib.urlencode({
-        'method': 'User.get',
-        'params': params,
-    })
-    req = 'https://bugs.gentoo.org/jsonrpc.cgi?' + qs
-
-    f = urllib.urlopen(req)
-    try:
-        resp = json.load(f)
-    finally:
-        f.close()
-
-    return resp
+def bugz_user_query(mails, bz):
+    return bz.getusers(mails)
 
 
-def verify_email(mail):
+def verify_email(mail, bz):
     if not mail:  # early check ;-)
         return False
 
-    resp = bugz_user_query([mail])
-    if resp['error'] is None:
-        assert resp['result'] is not None
-        assert len(resp['result']['users']) == 1
+    try:
+        resp = bugz_user_query([mail], bz)
+    except xmlrpc.client.Fault as e:
+        if e.faultCode == 51:  # account does not exist
+            return False
+        raise
+    else:
+        assert len(resp) == 1
         return True
 
-    assert resp['result'] is None
-    if resp['error']['code'] == 51:  # account does not exist
-        return False
-    raise NotImplementedError('Unknown error [%d]: %s'
-            % (resp['error']['code'], resp['error']['message']))
 
-
-def verify_emails(mails):
+def verify_emails(mails, bz):
     """ Verify if emails have Bugzilla accounts. Returns iterator over
     mails that do not have accounts. """
     # To avoid querying bugzilla a lot, start with one big query for
     # all users. If they are all fine, we will get no error here.
     # If at least one fails, we need to get user-by-user to get all
     # failing.
-    short_circ = bugz_user_query(mails)
-    if short_circ['error'] is None:
-        assert short_circ['result'] is not None
-        assert len(short_circ['result']['users']) == len(mails)
+    try:
+        short_circ = bugz_user_query(mails, bz)
+    except:
+        pass
+    else:
+        assert len(short_circ) == len(mails)
         return
 
     for m in mails:
-        if not verify_email(m):
+        if not verify_email(m, bz):
             yield m
 
 
@@ -95,6 +84,7 @@ def main(ref_repo_path):
 
     g = github.Github(GITHUB_USERNAME, token, per_page=50)
     r = g.get_repo(GITHUB_REPO)
+    bz = bugzilla.Bugzilla('https://bugs.gentoo.org')
 
     with open(GITHUB_DEV_MAPPING) as f:
         dev_mapping = json.load(f)
@@ -107,13 +97,13 @@ def main(ref_repo_path):
         # note: we need github.Issue due to labels missing in PR
         issue = r.get_issue(pr.number)
         assign_one(pr, issue, dev_mapping, proj_mapping, categories,
-                GITHUB_USERNAME, ref_repo_path)
+                GITHUB_USERNAME, ref_repo_path, bz)
 
     return 0
 
 
 def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
-        GITHUB_USERNAME, ref_repo_path):
+        GITHUB_USERNAME, ref_repo_path, bz):
     # check if assigned already
     if issue.assignee:
         print('PR#%d: assignee found' % pr.number)
@@ -255,7 +245,7 @@ def assign_one(pr, issue, dev_mapping, proj_mapping, categories,
 
     # now verify maintainers for invalid addresses
     if totally_all_maints:
-        invalid_mails = sorted(verify_emails(totally_all_maints))
+        invalid_mails = sorted(verify_emails(totally_all_maints, bz))
         if invalid_mails:
             body += '\n\n**WARNING**: The following maintainers do not match any Bugzilla accounts:'
             for m in invalid_mails:
