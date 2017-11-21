@@ -311,18 +311,18 @@ Owner: %s
                             break
                     else:
                         raise
-                print('Bug filed as #%d' % ret['id'])
+                print('Bug filed as #%d' % ret.id)
                 print()
 
                 if r not in bug_db:
                     bug_db[r] = {}
-                bug_db[r][issue] = ret['id']
+                bug_db[r][issue] = ret.id
 
                 with open(bug_db_path + '.new', 'w') as f:
                     json.dump(bug_db, f)
                 os.rename(bug_db_path + '.new', bug_db_path)
         elif current_bugs: # update existing bugs
-            bug_ids = list(current_bugs.values()),
+            bug_ids = list(current_bugs.values())
             ret = bz.getbugs(bug_ids)
             for i, b in reversed(list(enumerate(ret))):
                 # skip bugs that were already resolved
@@ -344,7 +344,7 @@ Owner: %s
 
                 updateinfo = bz.build_update(**params)
 
-                print('Bugs: %s' % params['ids'])
+                print('Bugs: %s' % bug_ids)
                 print('Repository: %s' % r)
                 print('Status: %s/%s' % (params['status'], params['resolution']))
                 print()
