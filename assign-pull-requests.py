@@ -269,7 +269,7 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
                 body += '\n- %s' % m
 
     # scan for bugs now
-    bugs = []
+    bugs = set()
     for c in pr.get_commits():
         for l in c.commit.message.splitlines():
             if l.startswith('Bug:') or l.startswith('Closes:'):
@@ -279,13 +279,13 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
                 if m is None:
                     m = BUG_SHORT_URL_RE.match(url)
                 if m is not None:
-                    bugs.append(int(m.group(1)))
+                    bugs.add(int(m.group(1)))
 
     if bugs:
         body += '\n\nBugs linked: %s' % ', '.join([
                 '[%d](%s/%d)' % (x, BUGZILLA_URL, x) for x in bugs])
         updq = bz.build_update(see_also_add=[pr.html_url])
-        bz.update_bugs(bugs, updq)
+        bz.update_bugs(list(bugs), updq)
     else:
         body += '\n\nNo bug reference found in commit messages. If you would like to reference bugs in the pull request, please make sure to use [GLEP 66](https://www.gentoo.org/glep/glep-0066.html#commit-messages) tags in the commit message.'
 
