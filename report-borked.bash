@@ -225,13 +225,13 @@ ${wnew[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${wold:+Previous warnings still unfixed:
-${wold[*]/#/
+}${wfixed:+Warnings fixed since last run:
+${wfixed[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${wfixed:+Warnings fixed since last run:
-${wfixed[*]/#/
+}${wold:+Previous warnings still unfixed:
+${wold[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
