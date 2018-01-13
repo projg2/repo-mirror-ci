@@ -205,28 +205,13 @@ ${new[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${broken_commits:+Introduced by commits:
-${broken_commits[*]/#/
-${GENTOO_CI_GITWEB_COMMIT_URI}}
-
-
-}${old:+Previous issues still unfixed:
-${old[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
-
-
-}${fixed:+Packages fixed since last run:
-${fixed[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
-
-
 }${wnew:+New warnings:
 ${wnew[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${wold:+Previous warnings still unfixed:
-${wold[*]/#/
+}${fixed:+Issues fixed since last run:
+${fixed[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
@@ -235,10 +220,26 @@ ${wfixed[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
+}${broken_commits:+Introduced by commits:
+${broken_commits[*]/#/
+${GENTOO_CI_GITWEB_COMMIT_URI}}
+
+
 }Changes since last check:
 ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 
---
+
+${old:+Previous issues still unfixed:
+${old[*]/#/
+${uri_prefix}/${current_rev}/output.html#}
+
+
+}${wold:+Previous warnings still unfixed:
+${wold[*]/#/
+${uri_prefix}/${current_rev}/output.html#}
+
+
+}--
 Gentoo repository CI
 https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI"
 
