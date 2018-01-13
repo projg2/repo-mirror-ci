@@ -200,22 +200,22 @@ ${mail_cc[@]:+CC: ${cc_line// /, }
 
 ${mail}
 
-${new:+New issues:
+${new:+New issues (${#new[@]}):
 ${new[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${wnew:+New warnings:
+}${wnew:+New warnings (${#wnew[@]}):
 ${wnew[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${fixed:+Issues fixed since last run:
+}${fixed:+Issues fixed since last run (${#fixed[@]}):
 ${fixed[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${wfixed:+Warnings fixed since last run:
+}${wfixed:+Warnings fixed since last run (${#wfixed[@]}):
 ${wfixed[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
@@ -229,12 +229,12 @@ ${GENTOO_CI_GITWEB_COMMIT_URI}}
 ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 
 
-${old:+Previous issues still unfixed:
+${old:+Previous issues still unfixed (${#old[@]}):
 ${old[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
 
-}${wold:+Previous warnings still unfixed:
+}${wold:+Previous warnings still unfixed (${#wold[@]}):
 ${wold[*]/#/
 ${uri_prefix}/${current_rev}/output.html#}
 
