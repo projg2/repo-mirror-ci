@@ -298,6 +298,8 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
     if not_self_maintained and not bugs:
         body += '\n\n**If you do not receive any reply to this pull request, please open or link a bug to attract the attention of maintainers.**'
 
+    body += '\n\nIn order to force reassignment and/or bug reference scan, please append `[please reassign]` to the pull request title.'
+
     issue.create_comment(body)
 
     # check for old labels to remove
