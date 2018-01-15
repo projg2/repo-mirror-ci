@@ -119,14 +119,20 @@ def main(ref_repo_path):
 
 def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
         GITHUB_USERNAME, ref_repo_path, bz, BUGZILLA_URL):
-    # check if assigned already
-    if issue.assignee:
-        print('PR#%d: assignee found' % issue.number)
-        return
-    for l in issue.labels:
-        if l.name in ('assigned', 'need assignment', 'do not merge'):
-            print('PR#%d: %s label found' % (issue.number, l.name))
+    # check if we are to reassign
+    if '[please reassign]' in issue.title.lower():
+        print('PR#%d: [please reassign] found' % issue.number)
+        issue.edit(title=re.sub(r'\s*\[please reassign\]\s*', '', issue.title,
+                                flags=re.IGNORECASE))
+    else:
+        # check if assigned already
+        if issue.assignee:
+            print('PR#%d: assignee found' % issue.number)
             return
+        for l in issue.labels:
+            if l.name in ('assigned', 'need assignment', 'do not merge'):
+                print('PR#%d: %s label found' % (issue.number, l.name))
+                return
 
     pr = pr_getter()
 
@@ -293,6 +299,14 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
         body += '\n\n**If you do not receive any reply to this pull request, please open or link a bug to attract the attention of maintainers.**'
 
     issue.create_comment(body)
+
+    # check for old labels to remove
+    for l in issue.labels:
+        if l.name in ('assigned', 'need assignment', 'self-maintained',
+                      'maintainer-needed', 'new package',
+                      'bug linked', 'no bug found'):
+            issue.remove_from_labels(l.name)
+
     if maint_needed:
         issue.add_to_labels('maintainer-needed')
         # packages with m-needed are not self-maintained unless the user
