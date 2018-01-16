@@ -108,9 +108,10 @@ cc_line=()
 if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#wnew[@]} )) -lt 50 ]]; then
 	trap 'rm -rf "${BISECT_TMP}"' EXIT
 	export BISECT_TMP=$(mktemp -d)
+	mkdir -p "${BISECT_TMP}"/.config/pkgcore
 	sed -e "s^@path@^${SYNC_DIR}/gentoo^" \
 		"${TRAVIS_REPO_CHECKS_GIT}"/pkgcore.conf.in \
-		> "${BISECT_TMP}"/.pkgcore.conf
+		> "${BISECT_TMP}"/.config/pkgcore/pkgcore.conf
 
 	# check one commit extra to make sure the breakages were introduced
 	# in the commit set; this could happen e.g. when new checks
