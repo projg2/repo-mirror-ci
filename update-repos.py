@@ -288,6 +288,8 @@ def main():
     existing_repos = []
     for repo_el in sorted(repos_xml, key=lambda r: r.find('name').text):
         r = repo_el.find('name').text
+        if r not in remote_repos:
+            continue
 
         # construct data out of mixture of attributes and elements
         data = {}
