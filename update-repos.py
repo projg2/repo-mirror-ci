@@ -58,6 +58,8 @@ class State(object):
     BAD_CACHE = 'BAD_CACHE'
     # good
     GOOD = 'GOOD'
+    # signature verification failed
+    INVALID_SIGNATURE = 'INVALID_SIGNATURE'
 
 
 class SkipRepo(Exception):
@@ -76,6 +78,7 @@ class SourceMapping(object):
             'sync-uri': uri,
             'x-vcs-preference': 0,
             'x-timestamp-command': ('git', 'log', '--format=%ci', '-1'),
+            'x-openpgp-signature-command': ('git', 'show', '-q', '--pretty=format:%G?', 'HEAD')
         }
 
     def mercurial(self, uri, branch):
@@ -230,6 +233,7 @@ def main():
     REGEN_THREADS = os.environ['REGEN_THREADS']
 
     BANNED_REPOS = frozenset(os.environ['BANNED_REPOS'].split())
+    SIGNED_REPOS = frozenset(os.environ['SIGNED_REPOS'].split())
 
     log = Logger()
     states = {}
@@ -430,6 +434,7 @@ def main():
 
     # 6.5. gather some useful repo statistics
     # - last commit timestamp
+    # - OpenPGP signature status
     for r in sorted(local_repos):
         p = os.path.join(SYNC_DIR, r)
         ts = 'unknown'
@@ -445,6 +450,33 @@ def main():
                 ts, stderr = s.communicate()
         states[r]['x-timestamp'] = ts
 
+        try:
+            c = states[r].pop('x-openpgp-signature-command')
+        except KeyError:
+            pass
+        else:
+            log[r].command(c)
+            with log[r].open() as log_f:
+                s = subprocess.Popen(c, stdout=subprocess.PIPE,
+                        stderr=log_f, cwd=p)
+                sig_status, stderr = s.communicate()
+            states[r]['x-openpgp-signed'] = sig_status.strip()
+
+    # 6.8. check OpenPGP signatures
+    for r in sorted(SIGNED_REPOS):
+        if r not in local_repos:
+            continue
+        # G = good, U = untrusted [we assume keyring is secure]
+        if states[r]['x-openpgp-signed'] not in ('G', 'U'):
+            print('Sig verification failed for %s: %s' % (r, sig_status.strip()))
+            # since we're doing this for ::gentoo, everything is going
+            # to fall apart here, so just quit
+            raise SystemExit(1)
+
+            # (future logic?)
+            states[r]['x-state'] = State.INVALID_SIGNATURE
+            repos_conf.remove_section(r)
+
     # 7. check all added repos for invalid metadata:
     # - correct & matching repo_name (otherwise mischief will happen)
     # - correct masters= (otherwise pkgcore will fail)
@@ -454,6 +486,7 @@ def main():
     import pkgcore.config
 
     pkgcore_config = pkgcore.config.load_config()
+    local_repos = frozenset(repos_conf.sections())
     for r in sorted(local_repos):
         config_sect = pkgcore_config.collapse_named_section(r)
         repo_config = config_sect.config['repo_config'].instantiate()
