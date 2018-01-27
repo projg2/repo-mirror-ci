@@ -1,5 +1,20 @@
 #!/bin/bash
 
+every_hrs() {
+	hrs=${1}
+	shift
+
+	cmd=${*}
+	tag=${cmd//[ :.\/]/_}
+	now=$(date +%s)
+	last=$(<".git/last-${tag}") || last=0
+
+	if [[ $((now - last )) -ge $((hrs * 3600)) ]]; then
+		"${@}"
+		echo "${now}" > ".git/last-${tag}"
+	fi
+}
+
 merge_subrepo() {
 	url=${1}
 	path=${2}
@@ -22,11 +37,11 @@ fetch_file() {
 set -e -x
 
 cd "${1}"
-merge_subrepo git://anongit.gentoo.org/data/dtd.git metadata/dtd
+every_hrs 24 merge_subrepo git://anongit.gentoo.org/data/dtd.git metadata/dtd
 merge_subrepo git://anongit.gentoo.org/data/glsa.git metadata/glsa
-merge_subrepo git://anongit.gentoo.org/data/gentoo-news.git metadata/news
-merge_subrepo git://anongit.gentoo.org/data/xml-schema.git metadata/xml-schema
-fetch_file https://api.gentoo.org/metastructure/projects.xml metadata/
+every_hrs 6 merge_subrepo git://anongit.gentoo.org/data/gentoo-news.git metadata/news
+every_hrs 24 merge_subrepo git://anongit.gentoo.org/data/xml-schema.git metadata/xml-schema
+every_hrs 6 fetch_file https://api.gentoo.org/metastructure/projects.xml metadata/
 
 # set appropriate remotes if we're working off fresh clone
 if [[ -z $(git config --get remote.gentoo.url) ]]; then
