@@ -50,3 +50,8 @@ if [[ -z $(git config --get remote.gentoo.url) ]]; then
 	git config --add remote.origin.pushurl git@github.com:gentoo-mirror/gentoo
 	git config --add remote.origin.pushurl git@git.gentoo.org:repo/sync/gentoo.git
 fi
+
+# verify the OpenPGP signature again after smart-merge
+[[ $(git show -q --pretty=format:'%G?' orig/master) == [GU] ]]
+# and enable git commit signing
+git config commit.gpgsign 1
