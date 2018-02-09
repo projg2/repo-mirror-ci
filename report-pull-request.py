@@ -44,28 +44,21 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     c = r.get_commit(commit_hash)
 
     # delete old results
-    leave_comment = False
+    had_broken = False
     old_comments = []
+    # note: technically we could have multiple leftover comments
     for co in pr.get_issue_comments():
         if co.user.login == GITHUB_USERNAME:
             if 'All QA issues have been fixed' in co.body:
-                # avoid repeating 'issues fixed' message
-                if not (borked or pre_borked):
-                    leave_comment = False
+                had_broken = False
             elif 'The QA check for this pull request has found the following issues' in co.body:
-                # if we could have good followed by bad for some reason,
-                # make sure to re-report
-                leave_comment = True
+                had_broken = True
             else:
                 # skip comments that don't look like CI results
                 continue
             old_comments.append(co)
-    if old_comments:
-        if not leave_comment:
-            # leave last comment
-            del old_comments[-1]
-        for co in old_comments:
-            co.delete()
+    for co in old_comments:
+        co.delete()
 
     report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
     if borked or pre_borked:
@@ -82,8 +75,11 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
         if too_many_borked:
             body += '\nThere are too many broken packages to determine whether the breakages were added by the pull request. If in doubt, please rebase.'
         pr.create_issue_comment(body)
-    elif leave_comment:
+    elif had_broken:
         body = ':+1: All QA issues have been fixed!\n'
+        pr.create_issue_comment(body)
+    else:
+        body = 'CI scan has found no issues in this pull request\n'
         pr.create_issue_comment(body)
 
     if borked:
