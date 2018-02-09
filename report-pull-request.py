@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 import json
 import os
 import os.path
@@ -51,7 +52,15 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
         if co.user.login == GITHUB_USERNAME:
             if 'All QA issues have been fixed' in co.body:
                 had_broken = False
-            elif 'The QA check for this pull request has found the following issues' in co.body:
+            elif 'has found no issues' in co.body:
+                had_broken = False
+            elif 'No issues found' in co.body:
+                had_broken = False
+            elif 'New issues' in co.body:
+                had_broken = True
+            elif 'Issues already there' in co.body:
+                had_broken = True
+            elif 'Issues inherited from Gentoo' in co.body:
                 had_broken = True
             else:
                 # skip comments that don't look like CI results
@@ -61,10 +70,20 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
         co.delete()
 
     report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
+    body = '''Pull request CI report
+
+*Report generated at*: %s
+*Newest commit scanned*: %s
+*Status*: %s
+''' % (datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),
+       commit_hash,
+       ':x: **broken**' if borked else ':white_check_mark: good')
+
     if borked or pre_borked:
-        body = ':disappointed: The QA check for this pull request has found the following issues:\n'
         if borked:
-            if not too_many_borked:
+            if too_many_borked:
+                body += '\nThere are too many broken packages to determine whether the breakages were added by the pull request. If in doubt, please rebase.\n\nIssues:'
+            else:
                 body += '\nNew issues caused by PR:\n'
             for url in borked:
                 body += url
@@ -72,14 +91,12 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             body += '\nIssues already there before the PR (double-check them):\n'
             for url in pre_borked:
                 body += url
-        if too_many_borked:
-            body += '\nThere are too many broken packages to determine whether the breakages were added by the pull request. If in doubt, please rebase.'
         pr.create_issue_comment(body)
     elif had_broken:
-        body = ':+1: All QA issues have been fixed!\n'
+        body += '\nAll QA issues have been fixed!\n'
         pr.create_issue_comment(body)
     else:
-        body = 'CI scan has found no issues in this pull request\n'
+        body += '\nNo issues found\n'
         pr.create_issue_comment(body)
 
     if borked:
