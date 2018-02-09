@@ -69,7 +69,7 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             for url in borked:
                 body += url
         if pre_borked:
-            body += '\nIssues inherited from Gentoo (may be modified by PR):\n'
+            body += '\nIssues already there before the PR (double-check them):\n'
             for url in pre_borked:
                 body += url
         if too_many_borked:
