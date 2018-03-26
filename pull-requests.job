@@ -25,7 +25,7 @@ while read mtime iid; do
 		if [[ ${no} -eq 0 ]]; then
 			prid=${iid}
 		else
-			echo "${pull}: pending" >&2
+			echo "${iid}: pending" >&2
 			set -x
 			"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
 				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")"
