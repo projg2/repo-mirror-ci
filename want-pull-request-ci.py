@@ -20,6 +20,8 @@ def main(prid):
 
     if pr.state != 'open':
         return 1
+    if any(x.name == 'noci' for x in pr.labels):
+        return 1
 
     return 0
 
