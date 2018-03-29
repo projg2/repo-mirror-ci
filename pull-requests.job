@@ -23,6 +23,15 @@ while read mtime iid; do
 
 	if [[ ! -f ${pull}/${iid} || $(<"${pull}/${iid}") != ${hash} ]]; then
 		if [[ ${no} -eq 0 ]]; then
+			if ! "${SCRIPT_DIR}"/want-pull-request-ci.py "${iid}"; then
+				echo "${iid}: skipped" >&2
+				echo "${hash}" > "${pull}/${iid}"
+				touch "${pull}/${iid}.done"
+				"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" success \
+					"QA checks skipped."
+				continue
+			fi
+
 			prid=${iid}
 		else
 			echo "${iid}: pending" >&2
