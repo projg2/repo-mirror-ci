@@ -28,7 +28,7 @@ while read mtime iid; do
 			echo "${iid}: pending" >&2
 			set -x
 			"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
-				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")"
+				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")" &
 			set +x
 		fi
 
@@ -62,7 +62,7 @@ if [[ -n ${prid} ]]; then
 	rm -f "${prid}.done"
 	echo "${hash}" > "${prid}"
 	"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
-		"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")"
+		"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")" &
 	rm -rf tmp gentoo-ci
 
 	git clone -s --no-checkout "${mirror}" tmp
