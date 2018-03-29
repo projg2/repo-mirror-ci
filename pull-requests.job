@@ -26,10 +26,12 @@ while read mtime iid; do
 			prid=${iid}
 		else
 			echo "${iid}: pending" >&2
-			set -x
-			"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
-				"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")" &
-			set +x
+			if [[ ${no} -le 10 ]]; then
+				set -x
+				"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
+					"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")" &
+				set +x
+			fi
 		fi
 
 		: $(( no++ ))
