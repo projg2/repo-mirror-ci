@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+import io
 import json
 import os
 import os.path
@@ -79,6 +80,9 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
        commit_hash,
        ':x: **broken**' if borked else ':white_check_mark: good')
 
+    with io.open(os.path.join(os.path.dirname(__file__), 'footer.txt'), encoding='utf8') as f:
+        footer = '\n\n' + f.read()
+
     if borked or pre_borked:
         if borked:
             if too_many_borked:
@@ -91,13 +95,13 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             body += '\nIssues already there before the PR (double-check them):\n'
             for url in pre_borked:
                 body += url
-        pr.create_issue_comment(body)
     elif had_broken:
         body += '\nAll QA issues have been fixed!\n'
-        pr.create_issue_comment(body)
     else:
         body += '\nNo issues found\n'
-        pr.create_issue_comment(body)
+
+    body += footer
+    pr.create_issue_comment(body)
 
     if borked:
         c.create_status('failure', description='PR introduced new issues',

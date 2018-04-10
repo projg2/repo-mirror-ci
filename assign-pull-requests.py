@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import bugzilla
+import io
 import json
 import os
 import os.path
@@ -299,6 +300,9 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
         body += '\n\n**If you do not receive any reply to this pull request, please open or link a bug to attract the attention of maintainers.**'
 
     body += '\n\nIn order to force reassignment and/or bug reference scan, please append `[please reassign]` to the pull request title.'
+
+    with io.open(os.path.join(os.path.dirname(__file__), 'footer.txt'), encoding='utf8') as f:
+        body += '\n\n' + f.read()
 
     issue.create_comment(body)
 
