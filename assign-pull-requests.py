@@ -184,6 +184,7 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
     maint_needed = False
     cant_assign = False
     not_self_maintained = False
+    invalid_email = False
     unique_maints = set()
     totally_all_maints = set()
 
@@ -271,6 +272,7 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
     if totally_all_maints:
         invalid_mails = sorted(verify_emails(totally_all_maints, bz))
         if invalid_mails:
+            invalid_email = True
             body += '\n\n**WARNING**: The following maintainers do not match any Bugzilla accounts:'
             for m in invalid_mails:
                 body += '\n- %s' % m
@@ -310,7 +312,7 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
     for l in issue.labels:
         if l.name in ('assigned', 'need assignment', 'self-maintained',
                       'maintainer-needed', 'new package',
-                      'bug linked', 'no bug found'):
+                      'bug linked', 'no bug found', 'invalid email'):
             issue.remove_from_labels(l.name)
 
     if maint_needed:
@@ -330,6 +332,8 @@ def assign_one(pr_getter, issue, dev_mapping, proj_mapping, categories,
         issue.add_to_labels('bug linked')
     elif not_self_maintained:
         issue.add_to_labels('no bug found')
+    if invalid_email:
+        issue.add_to_labels('invalid email')
     print('PR#%d: assigned' % pr.number)
 
 

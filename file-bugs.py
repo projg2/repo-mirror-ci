@@ -289,8 +289,6 @@ def main(bug_db_path, summary_path):
                 try:
                     ret = bz.createbug(createinfo)
                 except Exception as e:
-                    raise e
-                    # TODO: update this
                     for o in owners:
                         if o in e.faultString:
                             print('Owner not on Bugzie, reassigning...')
