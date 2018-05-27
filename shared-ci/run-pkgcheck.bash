@@ -23,7 +23,7 @@ else
 
 	if [[ ${JOB} -eq $(( NO_JOBS - 1 )) ]]; then
 		# (ideally empty)
-		cats+=( $(sort profiles/categories | comm -23 - "$(dirname "${0}")"/cats.sorted) )
+		cats+=( $(sort profiles/categories | comm -23 - "$(dirname "${0}")"/cats/cats.sorted) )
 	fi
 	set -x
 
