@@ -2,6 +2,7 @@
 
 import os.path
 import sys
+import time
 
 import irc.client
 
@@ -27,8 +28,11 @@ class Croaker(irc.client.SimpleIRCClient):
         if len(self.commit_urls) > 4:
             message.append('(and %d more commits)' % (len(self.commit_urls) - 3))
 
+        time.sleep(3)
         for l in message:
             self.connection.privmsg(self.channel, l)
+            time.sleep(0.75)
+        time.sleep(5)
         self.connection.quit("[repo-mirror-ci croaker bot]")
 
     def on_disconnect(self, connection, event):
