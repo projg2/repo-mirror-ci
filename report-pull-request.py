@@ -80,9 +80,6 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
        commit_hash,
        ':x: **broken**' if borked else ':white_check_mark: good')
 
-    with io.open(os.path.join(os.path.dirname(__file__), 'footer.txt'), encoding='utf8') as f:
-        footer = '\n\n' + f.read()
-
     if borked or pre_borked:
         if borked:
             if too_many_borked:
