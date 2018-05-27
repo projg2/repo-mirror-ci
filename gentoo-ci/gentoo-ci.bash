@@ -1,9 +1,6 @@
-#!/home/mgorny/bin/run-cronjob.sh
-# vim:ft=sh
+#!/bin/bash
 
 set -e -x
-
-. "${VIRTUAL_ENV}"/bin/activate
 
 cd "${SYNC_DIR}"/gentoo
 touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk .git/timestamp

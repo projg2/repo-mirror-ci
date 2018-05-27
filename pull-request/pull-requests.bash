@@ -1,9 +1,6 @@
-#!/home/mgorny/bin/run-cronjob.sh
-# vim:ft=sh
+#!/bin/bash
 
 set -e -x
-
-. "${VIRTUAL_ENV}"/bin/activate
 
 sync=${SYNC_DIR}/gentoo
 mirror=${MIRROR_DIR}/gentoo

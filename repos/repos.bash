@@ -1,12 +1,9 @@
-#!/home/mgorny/bin/run-cronjob.sh
-# vim:ft=sh
+#!/bin/bash
 
 set -e -x
 ulimit -t 800
 
 date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
-
-. "${VIRTUAL_ENV}"/bin/activate
 
 cd "${REPORT_REPOS_GIT}"
 rm -f *
