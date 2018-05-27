@@ -112,7 +112,7 @@ if [[ -n ${prid} ]]; then
 	cd gentoo-ci
 	git checkout -b "pull-${prid}"
 	make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make clean
-	time timeout 15m make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make -j16 \
+	time timeout 20m make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make -j16 \
 		repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
 	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -w -e \
