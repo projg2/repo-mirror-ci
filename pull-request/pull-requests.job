@@ -104,7 +104,7 @@ if [[ -n ${prid} ]]; then
 		git push -f "${mirror}" "pull-${prid}"
 		cd "${mirror}"
 		git fetch --all
-		git push -f origin "pull-${prid}"
+		git push -f github "pull-${prid}"
 	) &
 
 	cd ..
