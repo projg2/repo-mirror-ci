@@ -97,7 +97,6 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
     else:
         body += '\nNo issues found\n'
 
-    body += footer
     pr.create_issue_comment(body)
 
     if borked:
