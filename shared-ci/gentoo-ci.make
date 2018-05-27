@@ -2,7 +2,7 @@
 jobs = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 global
 out_xml = $(patsubst %,%.xml,$(jobs))
 jobs_no = 16
-repo = $(REPOS_DIR)/gentoo
+repo = $(MIRROR_DIR)/gentoo
 checker = $(SCRIPT_DIR)/shared-ci/run-pkgcheck.bash
 
 HOME = $(GENTOO_CI_GIT)
