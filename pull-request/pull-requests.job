@@ -23,11 +23,11 @@ while read mtime iid; do
 
 	if [[ ! -f ${pull}/${iid} || $(<"${pull}/${iid}") != ${hash} ]]; then
 		if [[ ${no} -eq 0 ]]; then
-			if ! "${SCRIPT_DIR}"/want-pull-request-ci.py "${iid}"; then
+			if ! "${SCRIPT_DIR}"/pull-request/want-pull-request-ci.py "${iid}"; then
 				echo "${iid}: skipped" >&2
 				echo "${hash}" > "${pull}/${iid}"
 				touch "${pull}/${iid}.done"
-				"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" success \
+				"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" success \
 					"QA checks skipped."
 				continue
 			fi
@@ -37,7 +37,7 @@ while read mtime iid; do
 			echo "${iid}: pending" >&2
 			if [[ ${no} -le 10 ]]; then
 				set -x
-				"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
+				"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" pending \
 					"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")" &
 				set +x
 			fi
@@ -46,7 +46,7 @@ while read mtime iid; do
 		: $(( no++ ))
 	elif [[ ! -f ${pull}/${iid}.done ]]; then
 		set -x
-		"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" error \
+		"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" error \
 			"QA checks crashed. Please rebase and check profile changes for syntax errors."
 		sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
 			Subject: Pull request crash: ${iid}
@@ -72,7 +72,7 @@ if [[ -n ${prid} ]]; then
 	cd "${pull}"
 	rm -f "${prid}.done"
 	echo "${hash}" > "${prid}"
-	"${SCRIPT_DIR}"/set-pull-request-status.py "${hash}" pending \
+	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" pending \
 		"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")" &
 	rm -rf tmp gentoo-ci
 
@@ -160,7 +160,7 @@ if [[ -n ${prid} ]]; then
 		fi
 	fi
 
-	"${SCRIPT_DIR}"/report-pull-request.py "${prid}" "${pr_hash}" \
+	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${prid}" "${pr_hash}" \
 		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
 	touch "${pull}/${prid}.done"
