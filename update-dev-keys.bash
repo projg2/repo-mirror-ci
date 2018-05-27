@@ -2,7 +2,13 @@
 
 set -e -x
 
-remaining=( $(ssh dev.gentoo.org | sed -e 's/\r$//') )
+remaining=(
+	$(ldapsearch '(&(gentooAccess=git.gentoo.org/repo/gentoo.git)(gentooStatus=active))' \
+		-Z gpgfingerprint -LLL \
+		| sed -n -e '/^gpgfingerprint: /{s/^.*://;s/ //g;p}' \
+		| sort -u)
+)
+
 export GNUPGHOME=~/gnupg.tmp
 
 rm -f -r "${GNUPGHOME}"
