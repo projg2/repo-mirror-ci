@@ -4,21 +4,10 @@ set -e -x
 JOB=${1}
 NO_JOBS=${2}
 
-COMMON=(
-	-r gentoo --reporter XmlReporter
-	-p stable,dev
-)
-SKIPPED_CHECKS=(
-	-c=-ImlateReport,-UnstableOnlyReport,-DeprecatedEAPIReport,-DeprecatedEclassReport,-RedundantVersionReport
-)
-
-if [[ ! ${JOB} || ! ${NO_JOBS} ]]; then
-	# simple whole-repo run
-	exec pkgcheck scan "${COMMON[@]}" "${SKIPPED_CHECKS[@]}"
-elif [[ ${JOB} == global ]]; then
+if [[ ${JOB} == global ]]; then
 	# global check part of split run
-	exec pkgcheck scan "${COMMON[@]}" \
-		-C repo
+	exec pkgcheck scan -r gentoo --reporter XmlReporter \
+		${PKGCHECK_GLOBAL_SCAN_OPTIONS}
 else
 	# keep the category scan silent, it's too verbose
 	set +x
@@ -38,5 +27,6 @@ else
 	fi
 	set -x
 
-	exec pkgcheck scan "${COMMON[@]}" "${cats[@]}" -C non-repo "${SKIPPED_CHECKS[@]}"
+	exec pkgcheck scan -r gentoo --reporter XmlReporter \
+		${PKGCHECK_CAT_SCAN_OPTIONS} "${cats[@]}"
 fi
