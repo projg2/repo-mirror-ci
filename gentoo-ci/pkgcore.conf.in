@@ -1,0 +1,36 @@
+[gentoo]
+class=pkgcore.ebuild.repository.tree
+cache=cache:gentoo
+repo_config=raw:gentoo
+
+[cache:gentoo]
+class=pkgcore.cache.flat_hash.md5_cache
+location=@path@
+readonly=true
+
+[raw:gentoo]
+class=pkgcore.ebuild.repo_objs.RepoConfig
+default=true
+location=@path@
+
+[profile]
+class=pkgcore.ebuild.profiles.OnDiskProfile
+basepath=@path@/profiles
+profile=base
+
+[fetcher]
+class=pkgcore.fetch.custom.fetcher
+command=wget -t 3 -T 60 --passive-ftp -O "${DISTDIR}/${FILE}" "${URI}"
+distdir=/tmp
+resume_command=wget -c -t 3 -T 60 --passive-ftp -O "${DISTDIR}/${FILE}" "${URI}"
+
+[testsys]
+class=pkgcore.ebuild.domain.domain
+default=true
+repos=gentoo
+name=testsys
+vdb=vdb
+fetcher=fetcher
+profile=profile
+
+# vim:ft=dosini

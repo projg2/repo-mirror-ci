@@ -110,7 +110,7 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 	export BISECT_TMP=$(mktemp -d)
 	mkdir -p "${BISECT_TMP}"/.config/pkgcore
 	sed -e "s^@path@^${SYNC_DIR}/gentoo^" \
-		"${TRAVIS_REPO_CHECKS_GIT}"/pkgcore.conf.in \
+		"${SCRIPT_DIR}"/gentoo-ci/pkgcore.conf.in \
 		> "${BISECT_TMP}"/.config/pkgcore/pkgcore.conf
 
 	# check one commit extra to make sure the breakages were introduced
