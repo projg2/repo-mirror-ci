@@ -126,7 +126,7 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 			continue
 		fi
 
-		commit=$("${SCRIPT_DIR}"/bisect-borked.bash \
+		commit=$("${SCRIPT_DIR}"/gentoo-ci/bisect-borked.bash \
 			"${next_commit}" "${pre_previous_commit}" "${flag}" "${@}")
 		shift
 
@@ -248,7 +248,7 @@ sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
 cp "${warning_list}" "${warning_last}"
 if [[ -n ${new[@]} ]]; then
-	"${SCRIPT_DIR}"/report-borked-irc.py "${mail_cc[*]}" \
+	"${SCRIPT_DIR}"/gentoo-ci/report-borked-irc.py "${mail_cc[*]}" \
 		"${uri_prefix}/${current_rev}/output.html" \
 		"${broken_commits[*]/#/${GENTOO_CI_GITWEB_COMMIT_URI}}"
 fi
