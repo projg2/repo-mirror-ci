@@ -2,6 +2,9 @@
 
 set -e -x
 
+# SANITY!
+export TZ=UTC
+
 cd "${SYNC_DIR}"/gentoo
 touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk .git/timestamp
 CURRENT_COMMIT=$(git rev-parse --short HEAD)

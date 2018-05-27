@@ -2,6 +2,9 @@
 
 set -e -x
 
+# SANITY!
+export TZ=UTC
+
 sync=${SYNC_DIR}/gentoo
 mirror=${MIRROR_DIR}/gentoo
 gentooci=${GENTOO_CI_GIT}

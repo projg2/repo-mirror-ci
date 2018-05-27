@@ -2,9 +2,6 @@
 
 . "$(dirname "${0}")"/repo-mirror-ci.conf
 
-# SANITY!
-export TZ=UTC
-
 nolock=
 if [[ ${1} == --nolock ]]; then
        nolock=1

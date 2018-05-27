@@ -3,6 +3,9 @@
 set -e -x
 ulimit -t 800
 
+# SANITY!
+export TZ=UTC
+
 date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
 cd "${REPORT_REPOS_GIT}"
