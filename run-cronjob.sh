@@ -24,10 +24,7 @@ exec &> "${CRONJOB_STATE_DIR}/${basename}.log"
 
 start=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 echo "Start: ${start}"
-(
-	. "${VIRTUAL_ENV}"/bin/activate
-	. "${script}"
-)
+bash "${script}"
 ret=${?}
 stop=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 echo "Stop: ${stop} (exited with ${ret})"
