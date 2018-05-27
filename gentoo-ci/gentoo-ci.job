@@ -2,7 +2,6 @@
 # vim:ft=sh
 
 set -e -x
-ulimit -t 600 -v 2097152
 
 . "${VIRTUAL_ENV}"/bin/activate
 
