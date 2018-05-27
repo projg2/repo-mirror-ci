@@ -2,7 +2,7 @@
 # vim:ft=sh
 
 set -e -x
-ulimit -t 600 -v 6291456
+ulimit -t 800
 
 date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
