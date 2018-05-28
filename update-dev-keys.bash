@@ -3,6 +3,7 @@
 set -e -x
 
 remaining=(
+	${GPG_EXTRA_KEYS}
 	$(ldapsearch '(&(gentooAccess=git.gentoo.org/repo/gentoo.git)(gentooStatus=active))' \
 		-Z gpgfingerprint -LLL \
 		| sed -n -e '/^gpgfingerprint: /{s/^.*://;s/ //g;p}' \
