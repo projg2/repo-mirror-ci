@@ -11,6 +11,9 @@ flock -x -n "${lockfd}" || exit 0
 
 exec &> "${CRONJOB_STATE_DIR}/${basename}.log"
 
+# force python2.7 for now
+export EPYTHON=python2.7
+
 start=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 echo "Start: ${start}"
 bash "${script}"
