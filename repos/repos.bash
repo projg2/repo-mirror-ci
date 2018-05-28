@@ -12,7 +12,10 @@ mkdir -p "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
 	"${SYNC_DIR}" "${MIRROR_DIR}" "${REPOS_DIR}"
 for d in "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}"
 do
-	mkdir "${d}"/etc/portage
+	# populate with necessary files
+	mkdir -p "${d}"/etc/portage
+	cp -n -d /etc/portage/make.profile "${d}"/etc/portage
+	cp -n /etc/portage/make.conf "${d}"/etc/portage
 done
 
 cd "${REPORT_REPOS_GIT}"
