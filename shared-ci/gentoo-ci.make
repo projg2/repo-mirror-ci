@@ -1,7 +1,6 @@
 # vim:ft=make
 jobs = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 global
 out_xml = $(patsubst %,%.xml,$(jobs))
-jobs_no = 14
 repo = $(MIRROR_DIR)/gentoo
 checker = $(SCRIPT_DIR)/shared-ci/run-pkgcheck.bash
 
@@ -14,7 +13,7 @@ output.xml: $(out_xml)
 	rm -f $(out_xml)
 
 %.xml:
-	{ cd $(repo) && bash $(checker) $(patsubst %.xml,%,$@) $(jobs_no); } > $@
+	{ cd $(repo) && bash $(checker) $(patsubst %.xml,%,$@); } > $@
 
 clean:
 	rm -f *.xml

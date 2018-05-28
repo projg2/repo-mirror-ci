@@ -2,7 +2,6 @@
 set -e -x
 
 JOB=${1}
-NO_JOBS=${2}
 
 if [[ ${JOB} == global ]]; then
 	# global check part of split run
@@ -21,7 +20,7 @@ else
 		cats=( nonexist/nonexist )
 	fi
 
-	if [[ ${JOB} -eq $(( NO_JOBS - 1 )) ]]; then
+	if [[ ${JOB} -eq 0 ]]; then
 		# (ideally empty)
 		cats+=( $(sort profiles/categories | comm -23 - "$(dirname "${0}")"/cats/cats.sorted) )
 	fi
