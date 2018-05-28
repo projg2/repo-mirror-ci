@@ -234,6 +234,14 @@ def main():
     BANNED_REPOS = frozenset(os.environ['BANNED_REPOS'].split())
     SIGNED_REPOS = frozenset(os.environ['SIGNED_REPOS'].split())
 
+    for d in (CONFIG_ROOT, CONFIG_ROOT_MIRROR, CONFIG_ROOT_SYNC,
+            SYNC_DIR, MIRROR_DIR, REPOS_DIR):
+        try:
+            os.makedirs(d)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
     log = Logger()
     states = {}
 
