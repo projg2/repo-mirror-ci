@@ -9,7 +9,7 @@ rm -f -r "${GNUPGHOME}"
 mkdir "${GNUPGHOME}"
 
 while :; do
-	gpg --recv-keys "${remaining[@]}"
+	gpg --recv-keys "${remaining[@]}" || :
 	missing=()
 	for key in "${remaining[@]}"; do
 		gpg --list-public "${key}" &>/dev/null || missing+=( "${key}" )
