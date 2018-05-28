@@ -19,6 +19,7 @@ except ImportError:
 
 import datetime
 import email.utils
+import errno
 import json
 import os
 import os.path
