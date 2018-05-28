@@ -229,7 +229,6 @@ def main():
 
     MAX_SYNC_JOBS = int(os.environ['MAX_SYNC_JOBS'])
     MAX_REGEN_JOBS = int(os.environ['MAX_REGEN_JOBS'])
-    MAX_PCHECK_JOBS = int(os.environ['MAX_PCHECK_JOBS'])
     REGEN_THREADS = os.environ['REGEN_THREADS']
 
     BANNED_REPOS = frozenset(os.environ['BANNED_REPOS'].split())
@@ -592,26 +591,6 @@ def main():
     with open(os.path.join(CONFIG_ROOT_MIRROR, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
     os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_MIRROR
-    
-    # 10. run pkgcheck
-    # disabled because pkgcheck does not support masters currently
-    if False:
-        pkgcheckman = TaskManager(MAX_PCHECK_JOBS, log)
-        for r in sorted(local_repos):
-            pkgcheckman.add(r, ['pkgcheck', '-r', repos_conf.get(r, 'location'),
-                '--reporter=FancyReporter',
-                '--color=yes',
-                '--profile-disable-dev',
-                '--profile-disable-deprecated',
-                '--profile-disable-exp',
-                '*/*'])
-
-        for r, st in pkgcheckman.wait():
-            if st == 0:
-                log[r].status('pkgcheck ran successfully')
-            else:
-                # shouldn't happen really
-                log[r].status('pkgcheck failed with %d' % st)
 
 
 if __name__ == '__main__':
