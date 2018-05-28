@@ -14,6 +14,10 @@ for d in "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}"
 do
 	# populate with necessary files
 	mkdir -p "${d}"/etc/portage
+	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
+		rm -f "${d}"/etc/portage/make.profile
+		ln -s "$(readlink -f /etc/portage/make.profile)" "${d}"/etc/portage/make.profile
+	fi
 	cp -n -d /etc/portage/make.profile "${d}"/etc/portage
 	cp -n /etc/portage/make.conf "${d}"/etc/portage
 done
