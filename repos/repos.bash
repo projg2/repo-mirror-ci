@@ -8,6 +8,13 @@ export TZ=UTC
 
 date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
+mkdir -p "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
+	"${SYNC_DIR}" "${MIRROR_DIR}" "${REPOS_DIR}"
+for d in "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}"
+do
+	mkdir "${d}"/etc/portage
+done
+
 cd "${REPORT_REPOS_GIT}"
 rm -f *
 cp "${SCRIPT_DIR}"/repos/data/{log,repo-status}.css ./
