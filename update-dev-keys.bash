@@ -25,5 +25,4 @@ while :; do
 	remaining=( "${missing[@]}" )
 done
 
-gpg --import ~/repo-mirror-ci.key
 mv "${GNUPGHOME}"/pubring.kbx ~/.gnupg
