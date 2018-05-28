@@ -26,6 +26,7 @@ while :; do
 done
 
 mv "${GNUPGHOME}"/pubring.kbx ~/.gnupg
+rm -f -r "${GNUPGHOME}"
 
 unset GNUPGHOME
 gpg --update-trustdb
