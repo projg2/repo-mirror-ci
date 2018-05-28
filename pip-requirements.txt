@@ -1,6 +1,0 @@
-# pkgcore obviously
-git+https://github.com/pkgcore/snakeoil.git
-git+https://github.com/pkgcore/pkgcore.git
-
-# github manips in update-mirror.py
-pygithub
