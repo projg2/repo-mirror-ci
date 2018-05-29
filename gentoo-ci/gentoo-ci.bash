@@ -14,7 +14,14 @@ if [[ -f .last-commit ]]; then
 fi
 
 if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
-	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_MIRROR}
+	# prepare configroot
+	if [[ ! -d ${CONFIG_ROOT_GENTOO_CI} ]]; then
+		cp -r "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_GENTOO_CI}"
+		sed -i -n -e '/\[gentoo\]/,/^$/p' \
+			"${CONFIG_ROOT_GENTOO_CI}"/etc/portage/repos.conf
+	fi
+
+	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
 	make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make clean
 	time timeout 20m make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make -j16
 
