@@ -10,6 +10,9 @@ mirror=${MIRROR_DIR}/gentoo
 gentooci=${GENTOO_CI_GIT}
 pull=${PULL_REQUEST_DIR}
 
+cd "${mirror}"
+git pull
+
 cd "${sync}"
 git fetch -f "${PULL_REQUEST_REPO}" 'refs/pull/*/head:refs/pull/*'
 
