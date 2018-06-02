@@ -10,6 +10,17 @@ mirror=${MIRROR_DIR}/gentoo
 gentooci=${GENTOO_CI_GIT}
 pull=${PULL_REQUEST_DIR}
 
+for d in "${pull}"; do
+	# populate with necessary files
+	mkdir -p "${d}"/etc/portage
+	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
+		rm -f "${d}"/etc/portage/make.profile
+		ln -s "$(readlink -f /etc/portage/make.profile)" "${d}"/etc/portage/make.profile
+	fi
+	cp -n -d /etc/portage/make.profile "${d}"/etc/portage
+	cp -n /etc/portage/make.conf "${d}"/etc/portage
+done
+
 cd "${mirror}"
 git pull
 
