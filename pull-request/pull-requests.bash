@@ -14,7 +14,7 @@ cd "${mirror}"
 git pull
 
 cd "${sync}"
-git fetch -f "${PULL_REQUEST_REPO}" 'refs/pull/*/head:refs/pull/*'
+git fetch -f origin 'refs/pull/*/head:refs/pull/*'
 
 mkdir -p "${pull}"
 no=0
@@ -107,7 +107,7 @@ if [[ -n ${prid} ]]; then
 		git push -f "${mirror}" "pull-${prid}"
 		cd "${mirror}"
 		git fetch --all
-		git push -f github "pull-${prid}"
+		git push -f origin "pull-${prid}"
 	) &
 
 	cd ..
