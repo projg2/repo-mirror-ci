@@ -10,6 +10,24 @@ mirror=${MIRROR_DIR}/gentoo
 gentooci=${GENTOO_CI_GIT}
 pull=${PULL_REQUEST_DIR}
 
+if [[ -s ${pull}/current-pr ]]; then
+	iid=$(<"${pull}"/current-pr)
+	cd "${sync}"
+	hash=$(git rev-parse "refs/pull/${prid}")
+	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" error \
+		"QA checks crashed. Please rebase and check profile changes for syntax errors."
+	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
+		Subject: Pull request crash: ${iid}
+		To: <${CRONJOB_ADMIN_MAIL}>
+		Content-Type: text/plain; charset=utf8
+
+		It seems that pull request check for ${iid} crashed [1].
+
+		[1]:${PULL_REQUEST_REPO}/pull/${iid}
+	EOF
+	rm -f "${pull}"/current-pr
+fi
+
 for d in "${pull}"; do
 	# populate with necessary files
 	mkdir -p "${d}"/etc/portage
@@ -32,69 +50,20 @@ done
 cd "${mirror}"
 git pull
 
-cd "${sync}"
-git fetch -f origin 'refs/pull/*/head:refs/pull/*'
-
+# check if we have anything to process
 mkdir -p "${pull}"
-no=0
-prid=
-set +x
-while read mtime iid; do
-	hash=$(git rev-parse "refs/pull/${iid}")
-
-	if [[ ! -f ${pull}/${iid} || $(<"${pull}/${iid}") != ${hash} ]]; then
-		if [[ ${no} -eq 0 ]]; then
-			if ! "${SCRIPT_DIR}"/pull-request/want-pull-request-ci.py "${iid}"; then
-				echo "${iid}: skipped" >&2
-				echo "${hash}" > "${pull}/${iid}"
-				touch "${pull}/${iid}.done"
-				"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" success \
-					"QA checks skipped."
-				continue
-			fi
-
-			prid=${iid}
-		else
-			echo "${iid}: pending" >&2
-			if [[ ${no} -le 10 ]]; then
-				set -x
-				"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" pending \
-					"QA checks queued. Expected by $(date -u --date="+$(( no*20 + 10 ))min" "+%H:%MZ")" &
-				set +x
-			fi
-		fi
-
-		: $(( no++ ))
-	elif [[ ! -f ${pull}/${iid}.done ]]; then
-		set -x
-		"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" error \
-			"QA checks crashed. Please rebase and check profile changes for syntax errors."
-		sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
-			Subject: Pull request crash: ${iid}
-			To: <${CRONJOB_ADMIN_MAIL}>
-			Content-Type: text/plain; charset=utf8
-
-			It seems that pull request check for ${iid} crashed [1].
-
-			[1]:${PULL_REQUEST_REPO}/pull/${iid}
-		EOF
-		# avoid reporting indefinitely ;-)
-		touch "${pull}/${iid}.done"
-		set +x
-	fi
-done < <(find .git/refs/pull -type f -printf '%TY-%TM-%TdT%TT %P\n' | sort -k1)
+prid=$( "${SCRIPT_DIR}"/scan-pull-requests.py )
 
 if [[ -n ${prid} ]]; then
+	echo "${prid}" > current-pr
+
+	cd "${sync}"
 	ref=refs/pull/${prid}
+	git fetch -f origin "refs/pull/${prid}/head:${ref}"
+
 	hash=$(git rev-parse "${ref}")
 
-	echo "${prid}: in progress" >&2
-	set -x
 	cd "${pull}"
-	rm -f "${prid}.done"
-	echo "${hash}" > "${prid}"
-	"${SCRIPT_DIR}"/pull-request/set-pull-request-status.py "${hash}" pending \
-		"QA checks in progress. Results by $(date -u --date="+10min" "+%H:%MZ")" &
 	rm -rf tmp gentoo-ci
 
 	git clone -s --no-checkout "${mirror}" tmp
@@ -184,7 +153,7 @@ if [[ -n ${prid} ]]; then
 	"${SCRIPT_DIR}"/pull-request/report-pull-request.py "${prid}" "${pr_hash}" \
 		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
-	touch "${pull}/${prid}.done"
+	rm -f current-pr
 
 	# wait for mirror pushing job
 	wait
