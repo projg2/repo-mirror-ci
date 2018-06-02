@@ -19,6 +19,14 @@ for d in "${pull}"; do
 	fi
 	cp -n -d /etc/portage/make.profile "${d}"/etc/portage
 	cp -n /etc/portage/make.conf "${d}"/etc/portage
+
+	cat > "${d}"/etc/portage/repos.conf <<-EOF || die
+		[DEFAULT]
+		main-repo = gentoo
+
+		[gentoo]
+		location = ${pull}/tmp
+	EOF
 done
 
 cd "${mirror}"
