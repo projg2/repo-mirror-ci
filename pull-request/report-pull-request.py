@@ -101,13 +101,13 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
 
     if borked:
         c.create_status('failure', description='PR introduced new issues',
-                target_url=report_url)
+                target_url=report_url, context='gentoo-ci')
     elif pre_borked:
         c.create_status('success', description='No new issues found',
-                target_url=report_url)
+                target_url=report_url, context='gentoo-ci')
     else:
         c.create_status('success', description='All pkgcheck QA checks passed',
-                target_url=report_url)
+                target_url=report_url, context='gentoo-ci')
 
 
 if __name__ == '__main__':

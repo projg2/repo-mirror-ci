@@ -51,7 +51,7 @@ def main():
                     # if it's pending, mark it done
                     if status.state == 'pending':
                         commit.create_status(
-#                                context='gentoo-ci',
+                                context='gentoo-ci',
                                 state='success',
                                 description='Checks skipped due to [noci] label')
                     break
@@ -93,7 +93,7 @@ def main():
         else:
             desc = 'QA checks pending. Currently {}. in queue.'.format(i)
         commit.create_status(
-#                context='gentoo-ci',
+                context='gentoo-ci',
                 state='pending',
                 description=desc)
 

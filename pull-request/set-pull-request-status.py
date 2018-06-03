@@ -21,7 +21,7 @@ def main(commit_hash, stat, desc):
     r = g.get_repo(GITHUB_REPO)
     c = r.get_commit(commit_hash)
 
-    c.create_status(stat, description=desc)
+    c.create_status(stat, description=desc, context='gentoo-ci')
 
 
 if __name__ == '__main__':
