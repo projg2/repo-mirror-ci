@@ -39,6 +39,24 @@ def main():
         if any(x.name == 'noci' for x in pr.labels):
             print('{}: noci'.format(pr.number),
                   file=sys.stderr)
+
+            # if it made it to the cache, we probably need to wipe
+            # pending status
+            if pr.number in db:
+                commit = pr.get_commits().reversed[0]
+                for status in commit.get_statuses():
+                    # skip foreign statuses
+                    if status.creator.login != GITHUB_USERNAME:
+                        continue
+                    # if it's pending, mark it done
+                    if status.state == 'pending':
+                        commit.create_status(
+#                                context='gentoo-ci',
+                                state='success',
+                                description='Checks skipped due to [noci] label')
+                    break
+                del db[pr.number]
+
             continue
 
         # if it's not cached, get its status
