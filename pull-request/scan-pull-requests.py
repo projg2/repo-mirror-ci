@@ -25,7 +25,7 @@ def main():
     try:
         with open(PULL_REQUEST_DB, 'rb') as f:
             db = pickle.load(f)
-    except OSError as e:
+    except (IOError, OSError) as e:
         if e.errno != errno.ENOENT:
             raise
 
