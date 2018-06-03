@@ -52,7 +52,7 @@ git pull
 
 # check if we have anything to process
 mkdir -p "${pull}"
-prid=$( "${SCRIPT_DIR}"/scan-pull-requests.py )
+prid=$( "${SCRIPT_DIR}"/pull-request/scan-pull-requests.py )
 
 if [[ -n ${prid} ]]; then
 	echo "${prid}" > current-pr
