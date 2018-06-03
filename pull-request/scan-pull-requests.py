@@ -90,6 +90,7 @@ def main():
         commit = pr.get_commits().reversed[0]
         if i == 0:
             desc = 'QA checks in progress...'
+            db[pr.number] = commit.sha
         else:
             desc = 'QA checks pending. Currently {}. in queue.'.format(i)
         commit.create_status(
