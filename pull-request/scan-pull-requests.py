@@ -43,7 +43,7 @@ def main():
             # if it made it to the cache, we probably need to wipe
             # pending status
             if pr.number in db:
-                commit = pr.get_commits().reversed[0]
+                commit = r.get_commit(pr.head.sha)
                 for status in commit.get_statuses():
                     # skip foreign statuses
                     if status.creator.login != GITHUB_USERNAME:
@@ -62,7 +62,7 @@ def main():
         # if it's not cached, get its status
         if pr.number not in db:
             print('{}: updating status ...'.format(pr.number), file=sys.stderr)
-            commit = pr.get_commits().reversed[0]
+            commit = r.get_commit(pr.head.sha)
             for status in commit.get_statuses():
                 # skip foreign statuses
                 if status.creator.login != GITHUB_USERNAME:
@@ -87,7 +87,7 @@ def main():
 
     to_process = sorted(to_process, key=lambda x: x.updated_at)
     for i, pr in enumerate(to_process):
-        commit = pr.get_commits().reversed[0]
+        commit = r.get_commit(pr.head.sha)
         if i == 0:
             desc = 'QA checks in progress...'
             db[pr.number] = commit.sha
