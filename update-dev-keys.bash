@@ -22,11 +22,13 @@ while :; do
 		gpg --list-public "${key}" &>/dev/null || missing+=( "${key}" )
 	done
 
-	[[ ${#missing[@]} -ne 0 && ${#missing[@]} -ne ${#remaining[@]} ]] || break
+	[[ ${#missing[@]} -ne 0 ]] || break
+
+	# fail if we did not make progress
+	[[ ${#missing[@]} -ne ${#remaining[@]} ]]
+
 	remaining=( "${missing[@]}" )
 done
-
-[[ ! ${remaining[@]} ]]
 
 mv "${GNUPGHOME}"/pubring.kbx ~/.gnupg
 rm -f -r "${GNUPGHOME}"
