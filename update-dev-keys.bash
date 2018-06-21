@@ -26,6 +26,8 @@ while :; do
 	remaining=( "${missing[@]}" )
 done
 
+[[ ! ${remaining[@]} ]]
+
 mv "${GNUPGHOME}"/pubring.kbx ~/.gnupg
 rm -f -r "${GNUPGHOME}"
 
