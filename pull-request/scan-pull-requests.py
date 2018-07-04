@@ -85,7 +85,8 @@ def main():
         if db.get(pr.number, '') != pr.head.sha:
             to_process.append(pr)
 
-    to_process = sorted(to_process, key=lambda x: x.updated_at)
+    to_process = sorted(to_process,
+            key=lambda x: (not any(x.name == 'priority-ci' for x in x.labels), x.updated_at))
     for i, pr in enumerate(to_process):
         commit = r.get_commit(pr.head.sha)
         if i == 0:
