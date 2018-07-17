@@ -233,6 +233,7 @@ def main():
     REGEN_THREADS = os.environ['REGEN_THREADS']
 
     BANNED_REPOS = frozenset(os.environ['BANNED_REPOS'].split())
+    CRITICAL_REPOS = frozenset(os.environ['CRITICAL_REPOS'].split())
     SIGNED_REPOS = frozenset(os.environ['SIGNED_REPOS'].split())
 
     log = Logger()
@@ -477,6 +478,12 @@ def main():
             states[r]['x-state'] = State.INVALID_SIGNATURE
             repos_conf.remove_section(r)
 
+    # 6.9. verify that all critical repos have succeeded so far
+    for r in sorted(CRITICAL_REPOS):
+        if states[r]['x-state'] != State.GOOD:
+            print('Critical repo is not good: %s' % (r,))
+            raise SystemExit(1)
+
     # 7. check all added repos for invalid metadata:
     # - correct & matching repo_name (otherwise mischief will happen)
     # - correct masters= (otherwise pkgcore will fail)
@@ -542,6 +549,12 @@ def main():
         if states[r]['x-state'] not in (State.GOOD,):
             repos_conf.remove_section(r)
 
+    # 7.5. verify that all critical repos have succeeded again
+    for r in sorted(CRITICAL_REPOS):
+        if states[r]['x-state'] != State.GOOD:
+            print('Critical repo is not good: %s' % (r,))
+            raise SystemExit(1)
+
     # 8. moves repos from SYNC_DIR to REPOS_DIR
     s = subprocess.Popen(['rsync', '-rlpt', '--delete', '--exclude=.*/',
         '--exclude=*/metadata/md5-cache', '--exclude=*/profiles/use.local.desc',
@@ -576,6 +589,12 @@ def main():
 
     regen_finish = datetime.datetime.utcnow()
     sys.stderr.write('** total regen time: %s\n' % (regen_finish - regen_start))
+
+    # 9.25. critical repos again
+    for r in sorted(CRITICAL_REPOS):
+        if states[r]['x-state'] != State.GOOD:
+            print('Critical repo is not good: %s' % (r,))
+            raise SystemExit(1)
 
     # 9.5. gather some more useful repo statistics
     # - no of valid ebuilds
