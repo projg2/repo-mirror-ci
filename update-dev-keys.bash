@@ -1,36 +1,23 @@
 #!/bin/bash
 
 set -e -x
+cd
 
-remaining=(
-	${GPG_EXTRA_KEYS}
-	$(ldapsearch '(&(gentooAccess=git.gentoo.org/repo/gentoo.git)(gentooStatus=active))' \
-		-Z gpgfingerprint -LLL \
-		| sed -n -e '/^gpgfingerprint: /{s/^.*://;s/ //g;p}' \
-		| sort -u)
-)
+before=$(cksum committing-devs.gpg || :)
+wget -N https://qa-reports.gentoo.org/output/committing-devs.gpg
+after=$(cksum committing-devs.gpg || :)
+
+[[ ${before} == ${after} ]] && exit 0
 
 export GNUPGHOME=~/gnupg.tmp
 
 rm -f -r "${GNUPGHOME}"
 mkdir "${GNUPGHOME}"
+cp committing-devs.gpg "${GNUPGHOME}"/pubring.gpg
 
-while :; do
-	gpg --recv-keys "${remaining[@]}" || :
-	missing=()
-	for key in "${remaining[@]}"; do
-		gpg --list-public "${key}" &>/dev/null || missing+=( "${key}" )
-	done
+[[ ! ${GPG_EXTRA_KEYS} ]] || gpg --no-auto-check-trustdb --recv-keys ${GPG_EXTRA_KEYS}
 
-	[[ ${#missing[@]} -ne 0 ]] || break
-
-	# fail if we did not make progress
-	[[ ${#missing[@]} -ne ${#remaining[@]} ]]
-
-	remaining=( "${missing[@]}" )
-done
-
-mv "${GNUPGHOME}"/pubring.kbx ~/.gnupg
+mv "${GNUPGHOME}"/pubring.gpg ~/.gnupg
 rm -f -r "${GNUPGHOME}"
 
 unset GNUPGHOME
