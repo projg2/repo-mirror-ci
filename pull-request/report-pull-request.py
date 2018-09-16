@@ -71,7 +71,7 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
         co.delete()
 
     report_url = REPORT_URI_PREFIX + '/' + prhash + '/output.html'
-    body = '''Pull request CI report
+    body = '''## Pull request CI report
 
 *Report generated at*: %s
 *Newest commit scanned*: %s
