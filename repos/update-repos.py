@@ -83,6 +83,7 @@ class SourceMapping(object):
         }
 
     def mercurial(self, uri, branch):
+        raise SkipRepo('Mercurial is repeatedly causing hangs')
         if branch:
             raise SkipRepo('Branches are not supported')
         return {
