@@ -15,7 +15,7 @@ rm -f -r "${GNUPGHOME}"
 mkdir "${GNUPGHOME}"
 cp committing-devs.gpg "${GNUPGHOME}"/pubring.gpg
 
-[[ ! ${GPG_EXTRA_KEYS} ]] || gpg --no-auto-check-trustdb --recv-keys ${GPG_EXTRA_KEYS}
+[[ ! ${GPG_EXTRA_KEYS} ]] || gpg --no-auto-check-trustdb --keyserver hkp://keys.gentoo.org --recv-keys ${GPG_EXTRA_KEYS}
 
 mv "${GNUPGHOME}"/pubring.gpg ~/.gnupg
 rm -f -r "${GNUPGHOME}"
