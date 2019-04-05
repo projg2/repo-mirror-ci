@@ -29,6 +29,9 @@ class StateHandlers(object):
     def GOOD(self, repo, data):
         pass
 
+    def UNSUPPORTED(self, repo, data):
+        pass
+
     def BAD_CACHE(self, repo, data):
         summary = '[%s] Ebuild failures occuring in global scope' % repo
         msg = ('''
