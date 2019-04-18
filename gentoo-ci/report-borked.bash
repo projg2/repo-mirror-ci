@@ -134,7 +134,7 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 		[[ ${pre_previous_commit} != ${commit}* ]] || continue
 
 		# record the blame!
-		echo "${pkg} ${commit}" >> "${blamelist}.${flag}"
+		echo "${pkg} ${commit}" >> "${blame_list}.${flag}"
 
 		# skip duplicates
 		for c in "${broken_commits[@]}"; do
@@ -178,12 +178,12 @@ if [[ ${fixed[@]} || ${wfixed[@]} ]]; then
 					cc_line+=( "<${a}>" )
 				done
 
-				sed -i -e "\@^${pkg}@d" "${blamelist}.${flag}"
+				sed -i -e "\@^${pkg}@d" "${blame_list}.${flag}"
 
 				# we can't have more than one anyway
 				break
 			fi
-		done < <( cat "${blamelist}.${flag}" || : )
+		done < <( cat "${blame_list}.${flag}" || : )
 
 		shift
 	done
