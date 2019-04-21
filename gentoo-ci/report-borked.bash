@@ -128,6 +128,7 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 
 		commit=$("${SCRIPT_DIR}"/gentoo-ci/bisect-borked.bash \
 			"${next_commit}" "${pre_previous_commit}" "${flag}" "${@}")
+		pkg=${1}
 		shift
 
 		# skip breakages introduced before the commit set
