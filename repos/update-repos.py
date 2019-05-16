@@ -450,7 +450,7 @@ def main():
                 s = subprocess.Popen(c, stdout=subprocess.PIPE,
                         stderr=log_f, cwd=p)
                 ts, stderr = s.communicate()
-        states[r]['x-timestamp'] = ts
+        states[r]['x-timestamp'] = ts.decode()
 
         try:
             c = states[r].pop('x-openpgp-signature-command')
@@ -462,7 +462,7 @@ def main():
                 s = subprocess.Popen(c, stdout=subprocess.PIPE,
                         stderr=log_f, cwd=p)
                 sig_status, stderr = s.communicate()
-            states[r]['x-openpgp-signed'] = sig_status.strip()
+            states[r]['x-openpgp-signed'] = sig_status.decode().strip()
 
     # 6.8. check OpenPGP signatures
     for r in sorted(SIGNED_REPOS):
