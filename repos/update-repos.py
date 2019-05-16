@@ -470,7 +470,8 @@ def main():
             continue
         # G = good, U = untrusted [we assume keyring is secure]
         if states[r]['x-openpgp-signed'] not in ('G', 'U'):
-            print('Sig verification failed for %s: %s' % (r, sig_status.strip()))
+            print('Sig verification failed for %s: %s' % (r,
+                states[r]['x-openpgp-signed']))
             # since we're doing this for ::gentoo, everything is going
             # to fall apart here, so just quit
             raise SystemExit(1)
