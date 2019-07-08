@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.6
 #  vim:se fileencoding=utf8
 # (c) 2015 Michał Górny
 # note: 2.7 needed because of pkgcore, awesome
