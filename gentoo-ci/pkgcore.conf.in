@@ -16,7 +16,7 @@ location=@path@
 [profile]
 class=pkgcore.ebuild.profiles.OnDiskProfile
 basepath=@path@/profiles
-profile=base
+profile=default/linux/amd64/17.1
 
 [fetcher]
 class=pkgcore.fetch.custom.fetcher
