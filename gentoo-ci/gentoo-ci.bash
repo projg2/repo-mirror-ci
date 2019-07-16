@@ -23,7 +23,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 
 	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
 	make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make clean
-	time timeout 20m make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make -j16
+	time timeout "${CI_TIMEOUT}" make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make -j16
 
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -o borked.list *.xml
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -s -w -o warning.list *.xml
