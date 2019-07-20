@@ -139,7 +139,7 @@ if [[ -n ${prid} ]]; then
 
 			pkgcheck scan -r gentoo --reporter XmlReporter "*/*" \
 				${PKGCHECK_OPTIONS} \
-				-C repo-category \
+				-S repo,cat \
 				> .pre-merge-g.xml
 			outfiles+=( .pre-merge-g.xml )
 
