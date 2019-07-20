@@ -594,7 +594,7 @@ def main():
 
     # 9.25. critical repos again
     for r in sorted(CRITICAL_REPOS):
-        if states[r]['x-state'] != State.GOOD:
+        if states[r]['x-state'] not in (State.GOOD, State.BAD_CACHE):
             print('Critical repo is not good: %s' % (r,))
             raise SystemExit(1)
 
