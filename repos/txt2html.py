@@ -13,10 +13,7 @@ common_patterns = (
     ("!!! ERROR: .* failed.", 'err'),
     ("!!! The die message:", 'err'),
     ("caught exception", 'err'),
-    ("NonsolvableDeps", 'err'),
-    ("IUSEMetadataReport", 'err'),
-    ("LicenseMetadataReport", 'err'),
-    ("VisibilityReport", 'err'),
+    ("failed sourcing ebuild", 'err'),
 )
 
 
