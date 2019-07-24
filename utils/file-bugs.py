@@ -58,14 +58,7 @@ The error log for the repository can be found at:
 
   %s/%s.html
 
-In particular, please look for highlighted '!!! ERROR' and '!!! caught
-exception' lines. The former usually mean failures coming from eclasses
-and the ebuild itself, while exceptions usually mean malformed ebuilds
-or metadata.xml.
-
-Please note that due to technical limitations of pkgcore, the processing
-stops on the first error found. Once solved, please wait ~30 minutes
-for the report to refresh in case new errors may appear.
+In particular, please look for highlighted error messages.
 
 Please fix the issue ASAP, possibly via removing unmaintained, old
 ebuilds. We reserve the right to remove the repository from our list if
