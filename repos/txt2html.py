@@ -13,6 +13,7 @@ common_patterns = (
     ("!!! ERROR: .* failed.", 'err'),
     ("!!! The die message:", 'err'),
     ("caught exception", 'err'),
+    ("failed parsing", 'err'),
     ("failed sourcing ebuild", 'err'),
 )
 
