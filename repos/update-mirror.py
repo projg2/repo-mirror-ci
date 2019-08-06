@@ -145,7 +145,7 @@ def main(summary_path, repos_xml_path):
     with open(repos_xml_path, 'wb') as f:
         f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write(b'<!DOCTYPE repositories SYSTEM "http://www.gentoo.org/dtd/repositories.dtd">\n')
-        xml.write(f, 'UTF-8', False)
+        xml.write(f, encoding='utf-8', xml_declaration=False)
 
     print('DELETED_REPOS = %s' % ' '.join(r.name for r in to_remove))
     print('REPOS = %s' % ' '.join(r.name for r in to_update))
