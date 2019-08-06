@@ -4,7 +4,7 @@ import json
 import os
 import os.path
 import sys
-import xml.etree.ElementTree as et
+import lxml.etree as et
 
 import github
 

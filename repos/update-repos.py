@@ -29,7 +29,7 @@ import shutil
 import subprocess
 import sys
 import time
-import xml.etree.ElementTree
+import lxml.etree
 
 try:
     DEVNULL = subprocess.DEVNULL
@@ -270,7 +270,7 @@ def main():
         else:
             print('!!! Warning: fetch failed: %s' % e)
 
-    repos_xml = xml.etree.ElementTree.parse(REPOSITORIES_XML_CACHE).getroot()
+    repos_xml = lxml.etree.parse(REPOSITORIES_XML_CACHE).getroot()
 
     remote_repos = frozenset(
             r.find('name').text for r in repos_xml)
