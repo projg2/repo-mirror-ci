@@ -273,7 +273,7 @@ def main():
     repos_xml = lxml.etree.parse(REPOSITORIES_XML_CACHE).getroot()
 
     remote_repos = frozenset(
-            r.find('name').text for r in repos_xml)
+            r.findtext('name') for r in repos_xml.findall('repo'))
     remote_repos = remote_repos.difference(BANNED_REPOS)
 
     # collect local repository configuration
@@ -292,15 +292,16 @@ def main():
     # 2. update URIs for local repos, add new repos
     srcmap = SourceMapping()
     existing_repos = []
-    for repo_el in sorted(repos_xml, key=lambda r: r.find('name').text):
-        r = repo_el.find('name').text
+    for repo_el in sorted(repos_xml.findall('repo'),
+                          key=lambda r: r.find('name').text):
+        r = repo_el.findtext('name')
         if r not in remote_repos:
             continue
 
         # construct data out of mixture of attributes and elements
         data = {}
         data.update(repo_el.items())
-        for el in repo_el:
+        for el in repo_el.iter(lxml.etree.Element):
             if el.tag in ('description', 'longdescription'):
                 # multi-lingua
                 if el.tag not in data:
