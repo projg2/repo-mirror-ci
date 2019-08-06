@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import datetime
-import io
-import json
 import os
 import os.path
 import sys
-import xml.etree.ElementTree as et
 
 import github
 
