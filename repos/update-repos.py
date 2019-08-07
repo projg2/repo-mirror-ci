@@ -293,7 +293,7 @@ def main():
     srcmap = SourceMapping()
     existing_repos = []
     for repo_el in sorted(repos_xml.findall('repo'),
-                          key=lambda r: r.find('name').text):
+                          key=lambda r: r.findtext('name')):
         r = repo_el.findtext('name')
         if r not in remote_repos:
             continue
@@ -301,7 +301,7 @@ def main():
         # construct data out of mixture of attributes and elements
         data = {}
         data.update(repo_el.items())
-        for el in repo_el.iter(lxml.etree.Element):
+        for el in repo_el.iterchildren(lxml.etree.Element):
             if el.tag in ('description', 'longdescription'):
                 # multi-lingua
                 if el.tag not in data:
