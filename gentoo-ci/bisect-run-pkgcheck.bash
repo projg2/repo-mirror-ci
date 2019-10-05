@@ -34,7 +34,7 @@ git checkout -q "${current_commit}"
 
 pkgcheck scan -r gentoo --reporter XmlReporter "${@}" \
 	--glsa-dir "${MIRROR_DIR}"/gentoo/metadata/glsa \
-	${PKGCHECK_OPTIONS} \
+	${PKGCHECK_BISECT_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
 
 "${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
