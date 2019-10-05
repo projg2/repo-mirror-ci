@@ -22,8 +22,6 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	fi
 
 	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
-	make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make clean
-	time timeout "${CI_TIMEOUT}" make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make -j16
 	( cd "${MIRROR_DIR}"/gentoo &&
 		time timeout "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
 			--reporter XmlReporter ${PKGCHECK_OPTIONS}
