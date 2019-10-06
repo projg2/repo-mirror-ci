@@ -102,9 +102,12 @@ if [[ -n ${prid} ]]; then
 	git clone -s "${gentooci}" gentoo-ci
 	cd gentoo-ci
 	git checkout -b "pull-${prid}"
-	make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make clean
-	time timeout "${CI_TIMEOUT}" make -f "${SCRIPT_DIR}"/shared-ci/gentoo-ci.make -j16 \
-		repo="${pull}/tmp" HOME="${pull}/gentoo-ci"
+	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
+	( cd "${pull}"/tmp &&
+		HOME=${pull}/gentoo-ci \
+		time timeout "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
+			--reporter XmlReporter ${PKGCHECK_OPTIONS}
+	) > output.xml
 	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -w -e \
 		-o borked.list *.xml
