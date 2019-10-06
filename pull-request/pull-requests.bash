@@ -104,8 +104,8 @@ if [[ -n ${prid} ]]; then
 	git checkout -b "pull-${prid}"
 	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
 	( cd "${pull}"/tmp &&
-		HOME=${pull}/gentoo-ci \
-		time timeout "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
+		time HOME=${pull}/gentoo-ci \
+		timeout "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
 			--reporter XmlReporter ${PKGCHECK_OPTIONS}
 	) > output.xml
 	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
