@@ -102,7 +102,6 @@ if [[ -n ${prid} ]]; then
 	git clone -s "${gentooci}" gentoo-ci
 	cd gentoo-ci
 	git checkout -b "pull-${prid}"
-	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
 	( cd "${pull}"/tmp &&
 		time HOME=${pull}/gentoo-ci \
 		timeout "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
