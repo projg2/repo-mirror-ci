@@ -108,8 +108,9 @@ if [[ -n ${prid} ]]; then
 			--reporter XmlReporter ${PKGCHECK_OPTIONS}
 	) > output.xml
 	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
-	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -w -e \
-		-o borked.list *.xml
+	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
+		-w -e -o borked.list *.xml
 	git add *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 	pr_hash=$(git rev-parse --short HEAD)
@@ -146,6 +147,7 @@ if [[ -n ${prid} ]]; then
 			outfiles+=( .pre-merge-g.xml )
 
 			"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+				-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
 				-w -e -o .pre-merge.borked "${outfiles[@]}"
 		else
 			echo ETOOMANY > .pre-merge.borked

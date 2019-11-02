@@ -27,8 +27,12 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 			--reporter XmlReporter ${PKGCHECK_OPTIONS}
 	) > output.xml
 
-	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -o borked.list *.xml
-	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py -s -w -o warning.list *.xml
+	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
+		-o borked.list *.xml
+	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
+		-s -w -o warning.list *.xml
 	git add *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 	git push

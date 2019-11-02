@@ -38,10 +38,12 @@ pkgcheck scan -r gentoo --reporter XmlReporter "${@}" \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
 
 "${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+	-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
 	--output "${BISECT_TMP}/.bisect.tmp.borked" \
 	"${BISECT_TMP}/.bisect.tmp.xml"
 
 "${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
+	-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
 	-s -w --output "${BISECT_TMP}/.bisect.tmp.warning" \
 	"${BISECT_TMP}/.bisect.tmp.xml"
 
