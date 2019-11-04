@@ -130,7 +130,7 @@ if [[ -n ${prid} ]]; then
 		cd "${pull}"/tmp
 		git checkout -q pre-merge
 
-		if [[ ${#pkgs[@]} -le 30 ]]; then
+		if [[ ${#pkgs[@]} -le 100 ]]; then
 			outfiles=()
 
 			if [[ ${#pkgs[@]} -gt 0 ]]; then
