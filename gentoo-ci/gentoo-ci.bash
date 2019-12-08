@@ -23,7 +23,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 
 	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
 	( cd "${MIRROR_DIR}"/gentoo &&
-		time timeout "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
+		time timeout -k 30s "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
 			--reporter XmlReporter ${PKGCHECK_OPTIONS}
 	) > output.xml
 
