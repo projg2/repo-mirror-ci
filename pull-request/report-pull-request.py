@@ -86,9 +86,7 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
             for url in borked:
                 body += url
         if pre_borked:
-            body += '\nIssues already there before the PR (double-check them):\n'
-            for url in pre_borked:
-                body += url
+            body += '\nThere are existing issues already. Please look into the report to make sure none of them affect the packages in question:\n%s\n' % report_url
     elif had_broken:
         body += '\nAll QA issues have been fixed!\n'
     else:
