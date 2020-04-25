@@ -227,10 +227,13 @@ def main():
     MIRROR_DIR = os.environ['MIRROR_DIR']
     REPOS_DIR = os.environ['REPOS_DIR']
     REPOS_CONF = os.environ['REPOS_CONF']
+    CI_TIMEOUT = os.environ.get('CI_TIMEOUT', '30m')
 
-    MAX_SYNC_JOBS = int(os.environ['MAX_SYNC_JOBS'])
-    MAX_REGEN_JOBS = int(os.environ['MAX_REGEN_JOBS'])
-    REGEN_THREADS = os.environ['REGEN_THREADS']
+    MAX_SYNC_JOBS = int(os.environ.get('MAX_SYNC_JOBS', 1))
+    TIMEOUT_SYNC_JOB = str(os.environ.get('TIMEOUT_SYNC_JOB', CI_TIMEOUT))
+    MAX_REGEN_JOBS = int(os.environ.get('MAX_REGEN_JOBS', 1))
+    TIMEOUT_REGEN_JOB = str(os.environ.get('TIMEOUT_REGEN_JOB', CI_TIMEOUT))
+    REGEN_THREADS = int(os.environ.get('REGEN_THREADS', 1))
 
     BANNED_REPOS = frozenset(os.environ['BANNED_REPOS'].split())
     CRITICAL_REPOS = frozenset(os.environ['CRITICAL_REPOS'].split())
@@ -391,7 +394,9 @@ def main():
     jobs = []
     syncman = TaskManager(MAX_SYNC_JOBS, log)
     for r in sorted(local_repos):
-        syncman.add(r, ['pmaint', 'sync', r])
+        syncman.add(r, [
+            'timeout', TIMEOUT_SYNC_JOB,
+            'pmaint', 'sync', r])
 
     # 5. check for sync failures
     to_readd = []
@@ -415,7 +420,9 @@ def main():
 
     # 6. remove local checkouts and sync again
     for r in sorted(to_readd):
-        syncman.add(r, ['pmaint', 'sync', r])
+        syncman.add(r, [
+            'timeout', TIMEOUT_SYNC_JOB,
+            'pmaint', 'sync', r])
 
     for r, st in syncman.wait():
         if st == 0:
@@ -576,9 +583,11 @@ def main():
     regen_start = datetime.datetime.utcnow()
     regenman = TaskManager(MAX_REGEN_JOBS, log)
     for r in sorted(local_repos):
-        regenman.add(r, ['pmaint', 'regen',
+        regenman.add(r, [
+            'timeout', TIMEOUT_REGEN_JOB,
+            'pmaint', 'regen',
             '--use-local-desc', '--pkg-desc-index',
-            '-t', REGEN_THREADS, r])
+            '-t', str(REGEN_THREADS), r])
 
     for r, st in regenman.wait():
         if st == 0:
