@@ -90,14 +90,6 @@ if [[ -n ${prid} ]]; then
 	git add -A -f
 	git diff --cached --quiet --exit-code || git commit --quiet -m "Post-merge cache update"
 
-	# push to mirror
-	(
-		git push -f "${mirror}" "pull-${prid}"
-		cd "${mirror}"
-		git fetch --all
-		git push -f origin "pull-${prid}"
-	) &
-
 	cd ..
 	git clone -s "${gentooci}" gentoo-ci
 	cd gentoo-ci
@@ -159,9 +151,6 @@ if [[ -n ${prid} ]]; then
 		"${pull}"/gentoo-ci/borked.list .pre-merge.borked "${hash}"
 
 	rm -f current-pr
-
-	# wait for mirror pushing job
-	wait
 
 	rm -rf "${pull}"/tmp "${pull}"/gentoo-ci
 fi
