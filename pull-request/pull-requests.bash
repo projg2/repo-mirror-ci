@@ -75,20 +75,13 @@ if [[ -n ${prid} ]]; then
 	# copy existing md5-cache (TODO: try to find previous merge commit)
 	rsync -rlpt --delete "${mirror}"/metadata/{dtd,glsa,md5-cache,news,xml-schema} metadata
 
-	# update for pre-merge cache
-	export PORTAGE_CONFIGROOT="${pull}"
-	time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
-	git add -A -f
-	git diff --cached --quiet --exit-code || git commit --quiet -m "Pre-merge cache init"
-	git tag pre-merge
-
 	# merge the PR on top of cache
+	git tag pre-merge
 	git merge --quiet -m "Merge PR ${prid}" "${ref}"
 
-	# update cache post-merge
+	# update cache
+	export PORTAGE_CONFIGROOT="${pull}"
 	time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
-	git add -A -f
-	git diff --cached --quiet --exit-code || git commit --quiet -m "Post-merge cache update"
 
 	cd ..
 	git clone -s "${gentooci}" gentoo-ci
