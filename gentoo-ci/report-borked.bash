@@ -195,6 +195,10 @@ cc_line=${cc_line[*]}
 IFS='
 '
 
+# need to escape for the script
+mail_new=${new//\//:}
+mail_wnew=${wnew//\//:}
+
 mail="Subject: ${subject}
 To: <${mail_to}>
 ${mail_cc[@]:+CC: ${cc_line// /, }
@@ -203,23 +207,23 @@ ${mail_cc[@]:+CC: ${cc_line// /, }
 ${mail}
 
 ${new:+New issues (${#new[@]}):
-${new[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
+${mail_new[*]/#/
+${uri_prefix}/${current_rev}/output.html;pkg=}
 
 
 }${wnew:+New warnings (${#wnew[@]}):
-${wnew[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
+${mail_wnew[*]/#/
+${uri_prefix}/${current_rev}/output.html;pkg=}
 
 
 }${fixed:+Issues fixed since last run (${#fixed[@]}):
 ${fixed[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
+}
 
 
 }${wfixed:+Warnings fixed since last run (${#wfixed[@]}):
 ${wfixed[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
+}
 
 
 }${broken_commits:+Introduced by commits:
@@ -231,14 +235,12 @@ ${GENTOO_CI_GITWEB_COMMIT_URI}}
 ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 
 
-${old:+Previous issues still unfixed (${#old[@]}):
-${old[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
+${old:+Previous issues still unfixed: ${#old[@]}
+}${wold:+Previous warnings still unfixed: ${#wold[@]}
+}
 
-
-}${wold:+Previous warnings still unfixed (${#wold[@]}):
-${wold[*]/#/
-${uri_prefix}/${current_rev}/output.html#}
+Current report:
+${uri_prefix}
 
 
 }--
