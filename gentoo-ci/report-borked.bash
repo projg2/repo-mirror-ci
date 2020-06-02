@@ -206,23 +206,19 @@ ${mail_cc[@]:+CC: ${cc_line// /, }
 
 ${mail}
 
-${new:+New issues (${#new[@]}):
-${mail_new[*]/#/
+${new:+New issues (${#new[@]}):${mail_new[*]/#/
 ${uri_prefix}/${current_rev}/output.html;pkg=}
 
 
-}${wnew:+New warnings (${#wnew[@]}):
-${mail_wnew[*]/#/
+}${wnew:+New warnings (${#wnew[@]}):${mail_wnew[*]/#/
 ${uri_prefix}/${current_rev}/output.html;pkg=}
 
 
-}${fixed:+Issues fixed since last run (${#fixed[@]}):
-${fixed[*]/#/
+}${fixed:+Issues fixed since last run (${#fixed[@]}):${fixed[*]/#/
 }
 
 
-}${wfixed:+Warnings fixed since last run (${#wfixed[@]}):
-${wfixed[*]/#/
+}${wfixed:+Warnings fixed since last run (${#wfixed[@]}):${wfixed[*]/#/
 }
 
 
@@ -238,12 +234,11 @@ ${GENTOO_CI_GITWEB_URI}${previous_commit}..${next_commit}
 ${old:+Previous issues still unfixed: ${#old[@]}
 }${wold:+Previous warnings still unfixed: ${#wold[@]}
 }
-
 Current report:
 ${uri_prefix}
 
 
-}--
+--
 Gentoo repository CI
 https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI"
 
