@@ -196,8 +196,8 @@ IFS='
 '
 
 # need to escape for the script
-mail_new=${new//\//:}
-mail_wnew=${wnew//\//:}
+mail_new=( "${new[@]//\//:}" )
+mail_wnew=( "${wnew[@]//\//:}" )
 
 mail="Subject: ${subject}
 To: <${mail_to}>
