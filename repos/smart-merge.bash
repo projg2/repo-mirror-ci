@@ -28,6 +28,9 @@ if git merge-base "${branch}" "refs/orig/${branch}" > /dev/null; then
 					git rm --cached "${filename}"
 					conflicts=yes
 					;;
+				*)
+					conflicts=yes
+					;;
 			esac
 		done < <(git status --porcelain --untracked-files=no)
 		if [[ ${conflicts} == yes ]]; then
