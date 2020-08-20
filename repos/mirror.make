@@ -17,7 +17,8 @@ gitadd-%: $(MIRRORDIR)/% rsync-%
 	cd $< && git add -A -f
 
 update-%: $(MIRRORDIR)/% verify-%
-	cd $< && { git diff --cached --quiet --exit-code || { LANG=C date -u "+%a, %d %b %Y %H:%M:%S +0000" > metadata/timestamp.chk && git add -f metadata/timestamp.chk && git commit --quiet -m "$(shell date -u '+%F %T UTC')" && git fetch --all && git push; }; }
+	cd $< && { git diff --cached --quiet --exit-code || { LANG=C date -u "+%a, %d %b %Y %H:%M:%S +0000" > metadata/timestamp.chk && git add -f metadata/timestamp.chk && git commit --quiet -m "$(shell date -u '+%F %T UTC')" }
+	cd $< && [ -n "$$(git rev-list origin/master..master)" ] && git fetch --all && git push
 
 push-%: $(MIRRORDIR)/%
 	cd $< && git fetch --all && git push
