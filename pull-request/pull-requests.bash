@@ -89,7 +89,7 @@ if [[ -n ${prid} ]]; then
 	git checkout -b "pull-${prid}"
 	( cd "${pull}"/tmp &&
 		time HOME=${pull}/gentoo-ci \
-		timeout -k 30s "${CI_TIMEOUT}" pkgcheck scan -r gentoo \
+		timeout -k 30s "${CI_TIMEOUT}" pkgcheck scan \
 			--reporter XmlReporter ${PKGCHECK_PR_OPTIONS}
 	) > output.xml
 	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
@@ -119,14 +119,14 @@ if [[ -n ${prid} ]]; then
 			outfiles=()
 
 			if [[ ${#pkgs[@]} -gt 0 ]]; then
-				pkgcheck scan -r gentoo --reporter XmlReporter "${pkgs[@]}" \
+				pkgcheck scan --reporter XmlReporter "${pkgs[@]}" \
 					${PKGCHECK_PR_OPTIONS} \
 					-s pkg,ver \
 					> .pre-merge.xml
 				outfiles+=( .pre-merge.xml )
 			fi
 
-			pkgcheck scan -r gentoo --reporter XmlReporter "*/*" \
+			pkgcheck scan --reporter XmlReporter "*/*" \
 				${PKGCHECK_PR_OPTIONS} \
 				-s repo,cat \
 				> .pre-merge-g.xml
