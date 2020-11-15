@@ -14,54 +14,6 @@ mail_cc=()
 previous_commit=${1}
 next_commit=${2}
 
-subject=
-
-# first, determine the state wrt warnings
-if [[ ! -s ${warning_list} ]]; then
-	if [[ -s ${warning_last} ]]; then
-		subject="FIXED: all warnings have been fixed"
-		mail="No way! We're clean as a pin!"
-	fi
-else
-	if [[ ! -s ${warning_last} ]]; then
-		subject="WARNING: new warnings for the repo!"
-		mail="Looks like someone is doing nasty stuff!"
-	elif ! cmp -s "${warning_list}" "${warning_last}"; then
-		subject="WARNING: repository still has warnings!"
-		mail="Looks like the warning list has just changed!"
-	fi
-fi
-
-# then determine the state wrt errors (which are considered more
-# important and therefore overwrite warnings statuses)
-if [[ ! -s ${borked_list} ]]; then
-	if [[ -s ${borked_last} ]]; then
-		subject="FIXED: all failures have been fixed"
-		mail="Everything seems nice and cool now."
-	fi
-else
-	if [[ ! -s ${borked_last} ]]; then
-		subject="BROKEN: repository became broken!"
-		mail="Looks like someone just broke Gentoo!"
-	elif ! cmp -s "${borked_list}" "${borked_last}"; then
-		subject="BROKEN: repository is still broken!"
-		mail="Looks like the breakage list has just changed!"
-	elif [[ -n ${subject} ]]; then
-		# if we have changes in warning list
-		# if we have both warnings and errors but no changes in error
-		# list, keep the error subject but give the warning message
-
-		# the original message for FIXED doesn't fit when we have
-		# errors
-		if [[ ${subject} == FIXED* ]]; then
-			mail="We've gotten rid of the warnings! Now focus on the errors!"
-		fi
-		subject="BROKEN: repository is still broken!"
-	fi
-fi
-
-[[ ${subject} ]] || exit 0
-
 current_rev=$(cd "${repo}"; git rev-parse --short HEAD)
 
 fixed=()
@@ -101,6 +53,55 @@ done < <(diff -N \
 		--unchanged-line-format='old %L' \
 		--new-line-format='new %L' \
 		"${warning_last}" "${warning_list}")
+
+subject=
+
+# first, determine the state wrt warnings
+if [[ -n ${wnew[@]} ]]; then
+	subject="WARNING: new warnings for the repo!"
+	mail="Looks like someone is doing nasty stuff!"
+elif [[ -n ${wfixed[@]} ]]; then
+	if [[ -n ${wold[@]}] ]]; then
+		subject="WARNING: some warnings have been fixed"
+		mail="That's nice but more to go!"
+	else
+		subject="FIXED: all warnings have been fixed"
+		mail="No way! We're clean as a pin!"
+	fi
+fi
+
+# then determine the state wrt errors (which are considered more
+# important and therefore overwrite warnings statuses)
+if [[ -n ${new[@]} ]]; then
+	if [[ -n ${old[@]} ]]; then
+		subject="BROKEN: new breakage found"
+		mail="Nononononono!"
+	else
+		subject="BROKEN: repository became broken!"
+		mail="Looks like someone just broke Gentoo!"
+	fi
+elif [[ -n ${fixed[@]} ]]; then
+	if [[ -n ${old[@]} ]]; then
+		subject="BROKEN: repository is slightly less broken!"
+		mail="Looks like some of the breakage has been fixed but not all!"
+	else
+		subject="FIXED: all failures have been fixed"
+		mail="Everything seems nice and cool now."
+	fi
+elif [[ -n ${subject} && -n ${new[@]} ]]; then
+	# if we have changes in warning list
+	# if we have both warnings and errors but no changes in error
+	# list, keep the error subject but give the warning message
+
+	# the original message for FIXED doesn't fit when we have
+	# errors
+	if [[ ${subject} == FIXED* ]]; then
+		mail="We've gotten rid of the warnings! Now focus on the errors!"
+	fi
+	subject="BROKEN: repository is still broken!"
+fi
+
+[[ ${subject} ]] || exit 0
 
 broken_commits=()
 cc_line=()
