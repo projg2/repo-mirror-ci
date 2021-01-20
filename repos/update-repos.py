@@ -1,22 +1,8 @@
 #!/usr/bin/env python
 #  vim:se fileencoding=utf8
-# (c) 2015 Michał Górny
-# note: 2.7 needed because of pkgcore, awesome
+# (c) 2015-2011 Michał Górny
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-
-try:
-    import urllib.error
-    import urllib.request
-except ImportError:
-    import urllib2
-    class urllib:
-        error = urllib2
-        request = urllib2
-
+import configparser
 import datetime
 import email.utils
 import errno
@@ -29,12 +15,11 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
+
 import lxml.etree
 
-try:
-    DEVNULL = subprocess.DEVNULL
-except AttributeError:
-    DEVNULL = open('/dev/null', 'r')
 
 class State(object):
     # removed (no longer exists remotely)
@@ -162,7 +147,7 @@ class LazySubprocess(object):
         kwargs = self._kwargs
         self._log.command(self._args[0])
         with self._log.open() as f:
-            kwargs['stdin'] = DEVNULL
+            kwargs['stdin'] = subprocess.DEVNULL
             kwargs['stdout'] = f
             kwargs['stderr'] = subprocess.STDOUT
             self._s = subprocess.Popen(*self._args, **kwargs)
@@ -209,7 +194,7 @@ class TaskManager(object):
                 n, s = self._queue.pop(0)
                 s.start()
                 self._jobs[n] = s
-            
+
             time.sleep(0.25)
 
     def get_result(self, r):
