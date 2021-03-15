@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import cgi
+import html
 import os.path
 import re
 import sys
@@ -64,7 +64,7 @@ def main(*files):
                     else:
                         wtag = ''
                     outf.write('            <tr class="%s" id="l%d"><td><a href="#l%d"><span>%d</span></a></td><td><pre>%s</pre></td>%s</tr>\n'
-                            % (cl, n+1, n+1, n+1, cgi.escape(l), wtag))
+                            % (cl, n+1, n+1, n+1, html.escape(l), wtag))
 
                 outf.write('''
         </table>
