@@ -16,7 +16,7 @@ branch=$(git symbolic-ref -q --short HEAD)
 
 cd "${mirror}"
 git fetch "${repo}" "+${branch}:refs/orig/${branch}"
-if git merge-base "${branch}" "refs/orig/${branch}" > /dev/null; then
+if git merge-base "${m_branch}" "refs/orig/${branch}" > /dev/null; then
 	# regular update
 	if ! git merge -q -s recursive -X theirs -m "Merge updates from ${branch}" "refs/orig/${branch}"; then
 		# check for conflicts
