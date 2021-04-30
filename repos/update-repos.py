@@ -266,6 +266,11 @@ def main():
     repos_conf.read([os.path.join(CONFIG_ROOT_SYNC, REPOS_CONF)])
     local_repos = frozenset(repos_conf.sections())
 
+    # grab pmaint verion
+    pver, _ = subprocess.Popen(['pmaint', '--version'],
+                               stdout=subprocess.PIPE).communicate()
+    pver = pver.decode('utf8')
+
     # 1. remove repos that no longer exist
     to_remove = list(local_repos.difference(remote_repos))
     for r in sorted(to_remove):
@@ -316,6 +321,7 @@ def main():
         states[r] = data
         with log[r].open() as f:
             pprint.pprint(states[r], f)
+            print(pver, file=f)
 
         possible_configs = []
         for s in data['source']:
