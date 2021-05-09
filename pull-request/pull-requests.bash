@@ -80,8 +80,9 @@ if [[ -n ${prid} ]]; then
 	git merge --quiet -m "Merge PR ${prid}" "${ref}"
 
 	# update cache
-	export PORTAGE_CONFIGROOT="${pull}"
-	time pmaint regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
+	CONFIG_DIR=${pull}/etc/portage
+	time pmaint --config "${CONFIG_DIR}" \
+		regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
 
 	cd ..
 	git clone -s "${gentooci}" gentoo-ci
@@ -89,8 +90,8 @@ if [[ -n ${prid} ]]; then
 	git checkout -b "pull-${prid}"
 	( cd "${pull}"/tmp &&
 		time HOME=${pull}/gentoo-ci \
-		timeout -k 30s "${CI_TIMEOUT}" pkgcheck scan \
-			--reporter XmlReporter ${PKGCHECK_PR_OPTIONS}
+		timeout -k 30s "${CI_TIMEOUT}" pkgcheck --config "${CONFIG_DIR}" \
+			scan --reporter XmlReporter ${PKGCHECK_PR_OPTIONS}
 	) > output.xml
 	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
@@ -119,14 +120,16 @@ if [[ -n ${prid} ]]; then
 			outfiles=()
 
 			if [[ ${#pkgs[@]} -gt 0 ]]; then
-				pkgcheck scan --reporter XmlReporter "${pkgs[@]}" \
+				pkgcheck --config "${CONFIG_DIR}" \
+					scan --reporter XmlReporter "${pkgs[@]}" \
 					${PKGCHECK_PR_OPTIONS} \
 					-s pkg,ver \
 					> .pre-merge.xml
 				outfiles+=( .pre-merge.xml )
 			fi
 
-			pkgcheck scan --reporter XmlReporter "*/*" \
+			pkgcheck --config "${CONFIG_DIR}" \
+				scan --reporter XmlReporter "*/*" \
 				${PKGCHECK_PR_OPTIONS} \
 				-s repo,cat \
 				> .pre-merge-g.xml
