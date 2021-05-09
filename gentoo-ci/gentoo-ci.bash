@@ -21,9 +21,9 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 			"${CONFIG_ROOT_GENTOO_CI}"/etc/portage/repos.conf
 	fi
 
-	export PORTAGE_CONFIGROOT=${CONFIG_ROOT_GENTOO_CI}
+	export CONFIG_DIR=${CONFIG_ROOT_GENTOO_CI}/etc/portage
 	( cd "${MIRROR_DIR}"/gentoo &&
-		time timeout -k 30s "${CI_TIMEOUT}" pkgcheck scan \
+		time timeout -k 30s "${CI_TIMEOUT}" pkgcheck --config "${CONFIG_DIR}" scan \
 			--reporter XmlReporter ${PKGCHECK_OPTIONS}
 	) > output.xml
 

@@ -32,7 +32,7 @@ git checkout -q "${current_commit}"
 # re-checking the same commits in next bisect
 # however, we only return result for the first one
 
-pkgcheck scan --reporter XmlReporter "${@}" \
+pkgcheck --config "${CONFIG_DIR}" scan --reporter XmlReporter "${@}" \
 	--glsa-dir "${MIRROR_DIR}"/gentoo/metadata/glsa \
 	${PKGCHECK_BISECT_OPTIONS} \
 	> "${BISECT_TMP}/.bisect.tmp.xml"
