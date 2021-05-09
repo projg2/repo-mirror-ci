@@ -213,6 +213,9 @@ def main():
     REPOS_DIR = os.environ['REPOS_DIR']
     REPOS_CONF = os.environ['REPOS_CONF']
 
+    CONFIG_SYNC = os.path.join(CONFIG_ROOT_SYNC, 'etc', 'portage')
+    CONFIG_REPOS = os.path.join(CONFIG_ROOT, 'etc', 'portage')
+
     MAX_SYNC_JOBS = int(os.environ['MAX_SYNC_JOBS'])
     MAX_REGEN_JOBS = int(os.environ['MAX_REGEN_JOBS'])
     REGEN_THREADS = os.environ['REGEN_THREADS']
@@ -223,8 +226,6 @@ def main():
 
     log = Logger()
     states = {}
-
-    os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_SYNC
 
     # collect all local and remote repositories
     sys.stderr.write('* updating repository list\n')
@@ -382,7 +383,7 @@ def main():
     jobs = []
     syncman = TaskManager(MAX_SYNC_JOBS, log)
     for r in sorted(local_repos):
-        syncman.add(r, ['pmaint', 'sync', r])
+        syncman.add(r, ['pmaint', '--config', CONFIG_SYNC, 'sync', r])
 
     # 5. check for sync failures
     to_readd = []
@@ -406,7 +407,7 @@ def main():
 
     # 6. remove local checkouts and sync again
     for r in sorted(to_readd):
-        syncman.add(r, ['pmaint', 'sync', r])
+        syncman.add(r, ['pmaint', '--config', CONFIG_SYNC, 'sync', r])
 
     for r, st in syncman.wait():
         if st == 0:
@@ -485,7 +486,7 @@ def main():
 
     import pkgcore.config
 
-    pkgcore_config = pkgcore.config.load_config()
+    pkgcore_config = pkgcore.config.load_config(location=CONFIG_SYNC)
     local_repos = frozenset(repos_conf.sections())
     for r in sorted(local_repos):
         config_sect = pkgcore_config.collapse_named_section(r)
@@ -559,15 +560,13 @@ def main():
         repos_conf.set(r, 'location', os.path.join(REPOS_DIR, r))
     with open(os.path.join(CONFIG_ROOT, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
-    os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT
-    #pkgcore_config = pkgcore.config.load_config()
 
     # 9. regen caches for all repos
     sys.stderr.write('* regenerating cache\n')
     regen_start = datetime.datetime.utcnow()
     regenman = TaskManager(MAX_REGEN_JOBS, log)
     for r in sorted(local_repos):
-        regenman.add(r, ['pmaint', 'regen',
+        regenman.add(r, ['pmaint', '--config', CONFIG_REPOS, 'regen',
             '--use-local-desc', '--pkg-desc-index',
             '-t', REGEN_THREADS, r])
 
@@ -603,7 +602,6 @@ def main():
         repos_conf.set(r, 'location', os.path.join(MIRROR_DIR, r))
     with open(os.path.join(CONFIG_ROOT_MIRROR, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
-    os.environ['PORTAGE_CONFIGROOT'] = CONFIG_ROOT_MIRROR
 
 
 if __name__ == '__main__':
