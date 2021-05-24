@@ -246,7 +246,18 @@ sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
 cp "${warning_list}" "${warning_last}"
 if [[ -n ${new[@]} ]]; then
-	"${SCRIPT_DIR}"/gentoo-ci/report-borked-irc.py "${mail_cc[*]}" \
-		"${uri_prefix}/${current_rev}/output.html" \
-		"${broken_commits[*]/#/${GENTOO_CI_GITWEB_COMMIT_URI}}"
+	irk "${IRC_TO}" "Oh no! Gentoo is broooken!"
+	if [[ -n ${mail_cc[@]} ]]; then
+		mail_cc_s=${mail_cc[*]}
+		irk "${IRC_TO}" "${mail_cc_s// /, }, you broke it!"
+	fi
+	irk "${IRC_TO}" "Report: ${uri_prefix}/${current_rev}/output.html"
+	for x in "${broken_commits[@]::3}"; do
+		irk "${IRC_TO}" "${GENTOO_CI_GITWEB_COMMIT_URI}${x}"
+	done
+	if [[ ${#broken_commits[@]} -gt 4 ]]; then
+		irk "${IRC_TO}" "(and $(( ${#broken_commits[@]} - 3 )) more)"
+	elif [[ ${#broken_commits[@]} -gt 3 ]]; then
+		irk "${IRC_TO}" "${GENTOO_CI_GITWEB_COMMIT_URI}${broken_commits[3]}"
+	fi
 fi

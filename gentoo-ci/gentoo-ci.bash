@@ -14,6 +14,10 @@ if [[ -f .last-commit ]]; then
 fi
 
 if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
+	# connect early to avoid problems due to init delays
+	# note: irk doesn't send empty messages, so we need to fake something
+	irk "${IRC_TO}" - <<<$'\0'
+
 	# prepare configroot
 	if [[ ! -d ${CONFIG_ROOT_GENTOO_CI} ]]; then
 		cp -r "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_GENTOO_CI}"
