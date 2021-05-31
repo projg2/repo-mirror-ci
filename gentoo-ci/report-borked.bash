@@ -248,7 +248,7 @@ cp "${warning_list}" "${warning_last}"
 if [[ -n ${new[@]} ]]; then
 	irk "${IRC_TO}" "Oh no! Gentoo is broooken!"
 	if [[ -n ${mail_cc[@]} ]]; then
-		mail_cc_s=${mail_cc[*]}
+		mail_cc_s=${mail_cc[*]%%@*}
 		irk "${IRC_TO}" "${mail_cc_s// /, }, you broke it!"
 	fi
 	irk "${IRC_TO}" "Report: ${uri_prefix}/${current_rev}/output.html"
