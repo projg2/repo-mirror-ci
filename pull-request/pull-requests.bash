@@ -104,6 +104,7 @@ if [[ -n ${prid} ]]; then
 
 	cd "${gentooci}"
 	git push -f origin "pull-${prid}"
+	curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?gentoo-ci" || :
 
 	# if we have any breakages...
 	if [[ -s ${pull}/gentoo-ci/borked.list ]]; then

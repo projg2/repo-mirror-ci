@@ -35,6 +35,7 @@ cp "${SCRIPT_DIR}"/repos/data/{log,repo-status}.css ./
 git add *
 git commit -a -m "${date}"
 git push
+curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?repos" || :
 
 make -f "${SCRIPT_DIR}"/repos/mirror.make -C "${MIRROR_DIR}" clean
 make -f "${SCRIPT_DIR}"/repos/mirror.make -j16 -k -C "${MIRROR_DIR}"
