@@ -38,4 +38,4 @@ git push
 curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?repos" || :
 
 make -f "${SCRIPT_DIR}"/repos/mirror.make -C "${MIRROR_DIR}" clean
-make -f "${SCRIPT_DIR}"/repos/mirror.make -j16 -k -C "${MIRROR_DIR}"
+make -f "${SCRIPT_DIR}"/repos/mirror.make -j16 -O -k -C "${MIRROR_DIR}"
