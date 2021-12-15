@@ -260,4 +260,11 @@ if [[ -n ${new[@]} ]]; then
 	elif [[ ${#broken_commits[@]} -gt 3 ]]; then
 		irk "${IRC_TO}" "${GENTOO_CI_GITWEB_COMMIT_URI}${broken_commits[3]}"
 	fi
+elif [[ -n ${fixed[@]} ]]; then
+	if [[ -n ${old[@]} ]]; then
+		irk "${IRC_TO}" "Gentoo ankoraŭ estas rompita! Riparu ĝin plie."
+		irk "${IRC_TO}" "Raporto: ${uri_prefix}/${current_rev}/output.html"
+	else
+		irk "${IRC_TO}" "Gentoo estas fiksita. Dankon!"
+	fi
 fi
