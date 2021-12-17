@@ -265,6 +265,6 @@ elif [[ -n ${fixed[@]} ]]; then
 		irk "${IRC_TO}" "Gentoo ankoraŭ estas rompita! Riparu ĝin plie."
 		irk "${IRC_TO}" "Raporto: ${uri_prefix}/${current_rev}/output.html"
 	else
-		irk "${IRC_TO}" "Gentoo estas fiksita. Dankon!"
+		irk "${IRC_TO}" "Gentoo estis riparita. Dankon!"
 	fi
 fi
