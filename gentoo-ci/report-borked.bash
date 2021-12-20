@@ -262,9 +262,9 @@ if [[ -n ${new[@]} ]]; then
 	fi
 elif [[ -n ${fixed[@]} ]]; then
 	if [[ -n ${old[@]} ]]; then
-		irk "${IRC_TO}" "Gentoo ankoraŭ estas rompita! Riparu ĝin plie."
+		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo ankoraŭ estas rompita! Riparu ĝin plie."
 		irk "${IRC_TO}" "Raporto: ${uri_prefix}/${current_rev}/output.html"
 	else
-		irk "${IRC_TO}" "Gentoo estis riparita. Dankon!"
+		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo estis riparita. Dankon!"
 	fi
 fi
