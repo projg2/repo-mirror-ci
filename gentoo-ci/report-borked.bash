@@ -245,10 +245,10 @@ https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI"
 sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
 cp "${warning_list}" "${warning_last}"
+mail_cc_s=${mail_cc[*]%%@*}
 if [[ -n ${new[@]} ]]; then
 	irk "${IRC_TO}" "Ho ne! Gentoo estas rompita!"
 	if [[ -n ${mail_cc[@]} ]]; then
-		mail_cc_s=${mail_cc[*]%%@*}
 		irk "${IRC_TO}" "${mail_cc_s// /, }, vi rompis ĝin!"
 	fi
 	irk "${IRC_TO}" "Raporto: ${uri_prefix}/${current_rev}/output.html"
