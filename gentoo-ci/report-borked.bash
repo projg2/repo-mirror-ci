@@ -247,24 +247,24 @@ cp "${borked_list}" "${borked_last}"
 cp "${warning_list}" "${warning_last}"
 mail_cc_s=${mail_cc[*]%%@*}
 if [[ -n ${new[@]} ]]; then
-	irk "${IRC_TO}" "Ho ne! Gentoo estas rompita!"
+	irk "${IRC_TO}" "Oh my! Gentoo has reached a state of disarray!"
 	if [[ -n ${mail_cc[@]} ]]; then
-		irk "${IRC_TO}" "${mail_cc_s// /, }, vi rompis ĝin!"
+		irk "${IRC_TO}" "${mail_cc_s// /, }, you seem to have caused quite a distress!"
 	fi
-	irk "${IRC_TO}" "Raporto: ${uri_prefix}/${current_rev}/output.html"
+	irk "${IRC_TO}" "The report: ${uri_prefix}/${current_rev}/output.html"
 	for x in "${broken_commits[@]::3}"; do
 		irk "${IRC_TO}" "${GENTOO_CI_GITWEB_COMMIT_URI}${x}"
 	done
 	if [[ ${#broken_commits[@]} -gt 4 ]]; then
-		irk "${IRC_TO}" "(kaj $(( ${#broken_commits[@]} - 3 )) ceteraj enmetoj)"
+		irk "${IRC_TO}" "(and $(( ${#broken_commits[@]} - 3 )) more)"
 	elif [[ ${#broken_commits[@]} -gt 3 ]]; then
 		irk "${IRC_TO}" "${GENTOO_CI_GITWEB_COMMIT_URI}${broken_commits[3]}"
 	fi
 elif [[ -n ${fixed[@]} ]]; then
 	if [[ -n ${old[@]} ]]; then
-		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo ankoraŭ estas rompita! Riparu ĝin plie."
-		irk "${IRC_TO}" "Raporto: ${uri_prefix}/${current_rev}/output.html"
+		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo is still sore. Rub it some more.."
+		irk "${IRC_TO}" "The report: ${uri_prefix}/${current_rev}/output.html"
 	else
-		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo estis riparita. Dankon!"
+		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo suffers no more. Thank you!"
 	fi
 fi
