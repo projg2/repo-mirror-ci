@@ -81,7 +81,7 @@ if [[ -n ${prid} ]]; then
 
 	# update cache
 	CONFIG_DIR=${pull}/etc/portage
-	time pmaint --config "${CONFIG_DIR}" \
+	time timeout -k 30s "${PMAINT_TIMEOUT}" pmaint --config "${CONFIG_DIR}" \
 		regen --use-local-desc --pkg-desc-index -t 16 gentoo || :
 
 	cd ..
