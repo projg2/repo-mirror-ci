@@ -242,6 +242,8 @@ ${uri_prefix}
 Gentoo repository CI
 https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI"
 
+IFS=' '
+
 sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
 cp "${borked_list}" "${borked_last}"
 cp "${warning_list}" "${warning_last}"
