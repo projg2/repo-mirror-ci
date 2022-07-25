@@ -64,12 +64,13 @@ def main(summary_path, repos_xml_path):
         data['x-should-remove'] = data['x-state'] in ('REMOVED', 'UNSUPPORTED')
 
     # 0. scan all repos
-    to_remove = []
+    to_archive = []
     to_update = []
     for i, r in enumerate(gu.get_repos()):
         sys.stderr.write('\r@ scanning [%-3d/%-3d]' % (i+1, gu.public_repos))
         if r.name not in repos or repos[r.name]['x-should-remove']:
-            to_remove.append(r)
+            if not r.description.startswith("[ARCHIVED] "):
+                to_archive.append(r)
         else:
             gh_repos.add(r.name)
             if repos[r.name]['x-can-update']:
@@ -77,10 +78,24 @@ def main(summary_path, repos_xml_path):
             repos[r.name]['x-mirror-sources'] = gh_sources(r)
     sys.stderr.write('\n')
 
-    # 1. delete stale repos
-    for r in to_remove:
-        sys.stderr.write('* removing %s\n' % r.name)
-        r.delete()
+    # 1. archive stale repos
+    for r in to_archive:
+        sys.stderr.write('* archiving %s\n' % r.name)
+        r.edit(description="[ARCHIVED] " + r.description)
+
+    # 1a. update repo metadata
+    for r, data in sorted(repos.items()):
+        if r in to_update:
+            meta_changes = {
+                "description": ' '.join(data.get('description', {}).get('en', "").split()),
+                "homepage": data.get('homepage', ""),
+            }
+            if meta_changes["description"] == r.description:
+                del meta_changes["description"]
+            if meta_changes["homepage"] == r.homepage:
+                del meta_changes["homepage"]
+            if meta_changes:
+                r.edit(**meta_changes)
 
     # 2. now create new repos :)
     for r, data in sorted(repos.items()):
@@ -147,7 +162,7 @@ def main(summary_path, repos_xml_path):
         f.write(b'<!DOCTYPE repositories SYSTEM "http://www.gentoo.org/dtd/repositories.dtd">\n')
         xml.write(f, encoding='utf-8', xml_declaration=False)
 
-    print('DELETED_REPOS = %s' % ' '.join(r.name for r in to_remove))
+    print('DELETED_REPOS = %s' % ' '.join(r.name for r in to_archive))
     print('REPOS = %s' % ' '.join(r.name for r in to_update))
 
 
