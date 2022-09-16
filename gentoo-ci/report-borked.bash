@@ -249,6 +249,7 @@ cp "${borked_list}" "${borked_last}"
 cp "${warning_list}" "${warning_last}"
 mail_cc_s=${mail_cc[*]%%@*}
 if [[ -n ${new[@]} ]]; then
+	irk "${IRC_TO}" "I am croaker, the herald of doom! ( https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI#Croaker_Q.26A )"
 	irk "${IRC_TO}" "Oh my! Gentoo has reached a state of disarray!"
 	if [[ -n ${mail_cc[@]} ]]; then
 		irk "${IRC_TO}" "${mail_cc_s// /, }, you seem to have caused quite a distress!"
@@ -263,6 +264,7 @@ if [[ -n ${new[@]} ]]; then
 		irk "${IRC_TO}" "${GENTOO_CI_GITWEB_COMMIT_URI}${broken_commits[3]}"
 	fi
 elif [[ -n ${fixed[@]} ]]; then
+	irk "${IRC_TO}" "I am croaker, the herald of doom! ( https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI#Croaker_Q.26A )"
 	if [[ -n ${old[@]} ]]; then
 		irk "${IRC_TO}" "${mail_cc_s// /, }, Gentoo is still sore. Rub it some more.."
 		irk "${IRC_TO}" "The report: ${uri_prefix}/${current_rev}/output.html"
