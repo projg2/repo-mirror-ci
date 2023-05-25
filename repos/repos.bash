@@ -16,9 +16,11 @@ do
 	mkdir -p "${d}"/etc/portage
 	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
 		rm -f "${d}"/etc/portage/make.profile
-		cp -n -d /etc/portage/make.profile "${d}"/etc/portage
+		cp -d /etc/portage/make.profile "${d}"/etc/portage
 	fi
-	cp -n /etc/portage/make.conf "${d}"/etc/portage
+	if [[ ! -e ${d}/etc/portage/make.conf ]]; then
+		cp /etc/portage/make.conf "${d}"/etc/portage
+	fi
 done
 
 cd "${REPORT_REPOS_GIT}"
