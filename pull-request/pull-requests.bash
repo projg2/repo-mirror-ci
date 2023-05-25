@@ -33,9 +33,8 @@ for d in "${pull}"; do
 	mkdir -p "${d}"/etc/portage
 	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
 		rm -f "${d}"/etc/portage/make.profile
-		ln -s "$(readlink -f /etc/portage/make.profile)" "${d}"/etc/portage/make.profile
+		cp -n -d /etc/portage/make.profile "${d}"/etc/portage
 	fi
-	cp -n -d /etc/portage/make.profile "${d}"/etc/portage
 	cp -n /etc/portage/make.conf "${d}"/etc/portage
 
 	cat > "${d}"/etc/portage/repos.conf <<-EOF || die
