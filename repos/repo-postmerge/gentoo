@@ -40,7 +40,7 @@ cd "${1}"
 export EDITOR=cat
 every_hrs 24 merge_subrepo git@git.gentoo.org:data/dtd.git metadata/dtd
 merge_subrepo git@git.gentoo.org:data/glsa.git metadata/glsa
-every_hrs 6 merge_subrepo git@git.gentoo.org:data/gentoo-news.git metadata/news
+every_hrs 1 merge_subrepo git@git.gentoo.org:data/gentoo-news.git metadata/news
 every_hrs 24 merge_subrepo git@git.gentoo.org:data/xml-schema.git metadata/xml-schema
 every_hrs 6 fetch_file https://api.gentoo.org/metastructure/projects.xml metadata/
 
