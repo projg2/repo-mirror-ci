@@ -58,6 +58,9 @@ class SourceMapping(object):
     def git(self, uri, branch):
         if branch:
             raise SkipRepo('Branches are not supported')
+        # hack to workaround infra problems
+        if uri == 'https://anongit.gentoo.org/git/repo/gentoo.git':
+            uri = 'https://github.com/gentoo/gentoo.git'
         return {
             'sync-type': 'git',
             'sync-depth': '0',
