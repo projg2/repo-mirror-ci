@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e -x
+
+cd "${1}"
+export EDITOR=cat
+
+# set appropriate remotes if we're working off fresh clone
+if [[ -z $(git config --get remote.gentoo.url) ]]; then
+	git remote add gentoo git@git.gentoo.org:repo/sync/guru.git
+	git remote add github git@github.com:gentoo-mirror/guru
+	git config --add remote.origin.pushurl git@github.com:gentoo-mirror/guru
+	git config --add remote.origin.pushurl git@git.gentoo.org:repo/sync/guru.git
+fi
