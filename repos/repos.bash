@@ -24,7 +24,7 @@ do
 done
 
 cd "${REPORT_REPOS_GIT}"
-rm -f *
+rm -f *.txt *.css *.json *.html
 cp "${SCRIPT_DIR}"/repos/data/{log,repo-status}.css ./
 "${SCRIPT_DIR}"/repos/update-repos.py
 
