@@ -29,7 +29,8 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	( cd "${MIRROR_DIR}"/gentoo &&
 		time timeout -k 30s "${CI_TIMEOUT}" pkgcheck --config "${CONFIG_DIR}" scan \
 			--reporter XmlReporter ${PKGCHECK_OPTIONS}
-	) > output.xml
+	) | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
+	# ^^ Sort XML for better Git delta compression
 
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
@@ -37,6 +38,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
 		-s -w -o warning.list *.xml
+
 	git add *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 	git push

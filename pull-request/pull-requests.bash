@@ -93,11 +93,13 @@ if [[ -n ${prid} ]]; then
 		time HOME=${pull}/gentoo-ci \
 		timeout -k 30s "${CI_TIMEOUT}" pkgcheck --config "${CONFIG_DIR}" \
 			scan --reporter XmlReporter ${PKGCHECK_PR_OPTIONS}
-	) > output.xml
+	) | xsltproc "${SCRIPT_DIR}"/sort-output.xsl - > output.xml
+	# ^^ Sort XML for better Git delta compression
 	ts=$(cd "${pull}"/tmp; git log --pretty='%ct' -1)
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
 		-w -e -o borked.list *.xml
+
 	git add *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 	pr_hash=$(git rev-parse --short HEAD)
