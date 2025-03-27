@@ -64,6 +64,8 @@ class SourceMapping(object):
             pref += 1000000
         if uri.startswith("https://anongit.gentoo.org/git/repo/sync/"):
             pref += 1000000
+        if uri.startswith("git://anongit.gentoo.org/repo/sync/"):
+            pref += 1000000
         # skip ssh
         if uri.startswith("git+ssh://"):
             pref += 1000000
