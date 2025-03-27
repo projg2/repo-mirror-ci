@@ -58,6 +58,12 @@ class SourceMapping(object):
     def git(self, uri, branch):
         if branch:
             raise SkipRepo('Branches are not supported')
+        pref = 0
+        # skip sync mirrors
+        if uri.startswith("https://github.com/gentoo-mirror/"):
+            pref += 1000000
+        if uri.startswith("https://anongit.gentoo.org/git/repo/sync/"):
+            pref += 1000000
         # hack to workaround infra problems
         if uri == 'https://anongit.gentoo.org/git/repo/gentoo.git':
             uri = 'https://github.com/gentoo/gentoo.git'
@@ -65,7 +71,7 @@ class SourceMapping(object):
             'sync-type': 'git',
             'sync-depth': '0',
             'sync-uri': uri,
-            'x-vcs-preference': 0,
+            'x-vcs-preference': pref,
             'x-timestamp-command': ('git', 'log', '--format=%ci', '-1'),
             'x-openpgp-signature-command': ('git', 'show', '-q', '--pretty=format:%G?', 'HEAD')
         }
