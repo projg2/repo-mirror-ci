@@ -4,9 +4,6 @@ set -e -x
 
 # SANITY!
 export TZ=UTC
-# Be able to refer back to the script
-selfpath=$(readlink -f "${0}")
-selfdir=$(dirname "${selfpath}")
 
 cd "${SYNC_DIR}"/gentoo
 touch -r "${MIRROR_DIR}"/gentoo/metadata/timestamp.chk .git/timestamp
@@ -40,9 +37,6 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
 		-s -w -o warning.list *.xml
-
-	# Sort XML for better Git delta compression
-	xsltproc "${selfdir}/../sort-output.xsl" output.xml | sponge output.xml
 	git add *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 	git push

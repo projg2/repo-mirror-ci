@@ -5,9 +5,6 @@ set -e -x
 # SANITY!
 export TZ=UTC
 
-# Be able to refer back to the script
-selfpath=$(readlink -f "${0}")
-selfdir=$(dirname "${selfpath}")
 sync=${SYNC_DIR}/gentoo
 mirror=${MIRROR_DIR}/gentoo
 gentooci=${GENTOO_CI_GIT}
@@ -101,9 +98,6 @@ if [[ -n ${prid} ]]; then
 	"${PKGCHECK_RESULT_PARSER_GIT}"/pkgcheck2borked.py \
 		-x "${PKGCHECK_RESULT_PARSER_GIT}"/excludes.json \
 		-w -e -o borked.list *.xml
-
-	# Sort XML for better Git delta compression
-	xsltproc "${selfdir}/../sort-output.xsl" output.xml | sponge output.xml
 	git add *.xml
 	git diff --cached --quiet --exit-code || git commit -a -m "PR ${prid} @ $(date -u --date="@${ts}" "+%Y-%m-%d %H:%M:%S UTC")"
 	pr_hash=$(git rev-parse --short HEAD)
