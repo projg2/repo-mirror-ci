@@ -14,14 +14,14 @@ clean: $(patsubst %,clean-%,$(DELETED_REPOS))
 force-push: $(patsubst %,push-%,$(REPOS))
 
 gitadd-%: $(MIRRORDIR)/% rsync-%
-	cd $< && git add -A -f
+	cd -- $< && git add -A -f
 
 update-%: $(MIRRORDIR)/% verify-%
-	cd $< && { git diff --cached --quiet --exit-code || { LANG=C date -u "+%a, %d %b %Y %H:%M:%S +0000" > metadata/timestamp.chk && git add -f metadata/timestamp.chk && git commit --quiet -m "$(shell date -u '+%F %T UTC')"; }; }
-	cd $< && { out=$$(git rev-list origin/master..master); ret=$$?; [ -z "$${out}" -a "$${ret}" -eq 0 ] || { git fetch --all && git push; }; }
+	cd -- $< && { git diff --cached --quiet --exit-code || { LANG=C date -u "+%a, %d %b %Y %H:%M:%S +0000" > metadata/timestamp.chk && git add -f metadata/timestamp.chk && git commit --quiet -m "$(shell date -u '+%F %T UTC')"; }; }
+	cd -- $< && { out=$$(git rev-list origin/master..master); ret=$$?; [ -z "$${out}" -a "$${ret}" -eq 0 ] || { git fetch --all && git push; }; }
 
 push-%: $(MIRRORDIR)/%
-	cd $< && git fetch --all && git push
+	cd -- $< && git fetch --all && git push
 
 merge-%: $(SYNCDIR)/% $(MIRRORDIR)/%
 	$(BINDIR)/smart-merge.bash $< $(MIRRORDIR)/$(subst merge-,,$@) master
@@ -45,9 +45,9 @@ $(MIRRORDIR)/%: create-%
 	:
 
 create-%:
-	cd $(MIRRORDIR) && git clone $(GITHUB_PREFIX)/$(subst create-,,$@) && cd $(subst create-,,$@) && { if git rev-parse HEAD 2>/dev/null; then git checkout master; fi; }
+	cd -- $(MIRRORDIR) && git clone $(GITHUB_PREFIX)/$(subst create-,,$@) && cd -- $(subst create-,,$@) && { if git rev-parse HEAD 2>/dev/null; then git checkout master; fi; }
 
 clean-%:
-	cd $(MIRRORDIR) && rm -rf $(subst clean-,,$@)
+	cd -- $(MIRRORDIR) && rm -rf -- $(subst clean-,,$@)
 
 .PHONY: update clean
