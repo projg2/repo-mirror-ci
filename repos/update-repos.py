@@ -70,8 +70,8 @@ class SourceMapping(object):
         if uri.startswith("git+ssh://"):
             pref += 1000000
         # hack to workaround infra problems
-        if uri == 'https://anongit.gentoo.org/git/repo/gentoo.git':
-            uri = 'https://github.com/gentoo/gentoo.git'
+        #if uri == 'https://anongit.gentoo.org/git/repo/gentoo.git':
+        #    uri = 'https://github.com/gentoo/gentoo.git'
         return {
             'sync-type': 'git',
             'sync-depth': '0',
