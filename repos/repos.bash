@@ -25,8 +25,8 @@ done
 
 cd -- "${REPORT_REPOS_GIT}"
 rm -f -- *.txt *.css *.json *.html
-cp "${SCRIPT_DIR}"/repos/data/{log,repo-status}.css \
-	./"${SCRIPT_DIR}"/repos/update-repos.py
+cp "${SCRIPT_DIR}"/repos/data/{log,repo-status}.css ./
+"${SCRIPT_DIR}"/repos/update-repos.py
 
 "${SCRIPT_DIR}"/repos/update-mirror.py summary.json \
 	> "${MIRROR_DIR}"/Makefile.repos
