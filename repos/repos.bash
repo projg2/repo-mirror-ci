@@ -13,9 +13,9 @@ mkdir -p "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
 for d in "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}"
 do
 	# populate with necessary files
-	mkdir -p "${d}"/etc/portage
+	mkdir -p -- "${d}"/etc/portage
 	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
-		rm -f "${d}"/etc/portage/make.profile
+		rm -f -- "${d}"/etc/portage/make.profile
 		cp -d /etc/portage/make.profile "${d}"/etc/portage
 	fi
 	if [[ ! -e ${d}/etc/portage/make.conf ]]; then
@@ -23,8 +23,8 @@ do
 	fi
 done
 
-cd "${REPORT_REPOS_GIT}"
-rm -f *.txt *.css *.json *.html
+cd -- "${REPORT_REPOS_GIT}"
+rm -f -- *.txt *.css *.json *.html
 cp "${SCRIPT_DIR}"/repos/data/{log,repo-status}.css ./
 "${SCRIPT_DIR}"/repos/update-repos.py
 
@@ -33,7 +33,7 @@ cp "${SCRIPT_DIR}"/repos/data/{log,repo-status}.css ./
 
 "${SCRIPT_DIR}"/repos/txt2html.py *.txt
 "${SCRIPT_DIR}"/repos/summary2html.py summary.json
-git add *
+git add -- *
 git commit -a -m "${date}"
 git push
 curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?repos" || :
