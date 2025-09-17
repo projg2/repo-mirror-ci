@@ -31,7 +31,12 @@ postmerge-%: $(MIRRORDIR)/% merge-%
 
 # TODO: projects.xml can come out of repo too
 rsync-%: $(REPOSDIR)/% $(MIRRORDIR)/% merge-% postmerge-%
-	rsync -rlpt --delete --exclude=metadata/timestamp.chk --exclude='.*/' --exclude=metadata/dtd --exclude=metadata/herds.xml --exclude=metadata/projects.xml --exclude=metadata/glsa --exclude=metadata/news --exclude=metadata/xml-schema $< $(MIRRORDIR)/
+	rsync -rlpt --delete \
+		--exclude=metadata/timestamp.chk --exclude='.*/' \
+		--exclude=metadata/dtd --exclude=metadata/herds.xml \
+		--exclude=metadata/projects.xml --exclude=metadata/glsa \
+		--exclude=metadata/news --exclude=metadata/xml-schema \
+		$< $(MIRRORDIR)/
 
 verify-%: $(SYNCDIR)/% $(MIRRORDIR)/% gitadd-%
 	$(BINDIR)/verify-merge.bash $< $(MIRRORDIR)/$(subst verify-,,$@) master
