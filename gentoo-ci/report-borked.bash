@@ -14,7 +14,7 @@ mail_cc=()
 previous_commit=${1}
 next_commit=${2}
 
-current_rev=$(cd "${repo}"; git rev-parse --short HEAD)
+current_rev=$(cd -- "${repo}"; git rev-parse --short HEAD)
 
 fixed=()
 old=()
@@ -109,7 +109,7 @@ cc_line=()
 if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#wnew[@]} )) -lt 50 ]]; then
 	trap 'rm -rf "${BISECT_TMP}"' EXIT
 	export BISECT_TMP=$(mktemp -d)
-	mkdir -p "${BISECT_TMP}"/.config/pkgcore
+	mkdir -p -- "${BISECT_TMP}"/.config/pkgcore
 	sed -e "s^@path@^${SYNC_DIR}/gentoo^" \
 		"${SCRIPT_DIR}"/gentoo-ci/pkgcore.conf.in \
 		> "${BISECT_TMP}"/.config/pkgcore/pkgcore.conf
@@ -117,7 +117,7 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 	# check one commit extra to make sure the breakages were introduced
 	# in the commit set; this could happen e.g. when new checks
 	# are added on top of already-broken repo
-	pre_previous_commit=$(cd "${SYNC_DIR}"/gentoo; git rev-parse "${previous_commit}^")
+	pre_previous_commit=$(cd -- "${SYNC_DIR}"/gentoo; git rev-parse -- "${previous_commit}^")
 	flag=e
 	set -- "${new[@]##*#}" -WARN- "${wnew[@]##*#}"
 	while [[ ${@} ]]; do
@@ -144,7 +144,7 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 		done
 		broken_commits+=( "${commit}" )
 
-		for a in $(cd "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
+		for a in $(cd -- "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
 		do
 			for o in "${mail_cc[@]}"; do
 				[[ ${o} != ${a} ]] || continue 2
@@ -171,7 +171,7 @@ if [[ ${fixed[@]} || ${wfixed[@]} ]]; then
 
 		while read pkg commit; do
 			if [[ ${pkg} == ${1} ]]; then
-				for a in $(cd "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
+				for a in $(cd -- "${SYNC_DIR}"/gentoo; git log --pretty='%ae %ce' "${commit}" -1)
 				do
 					for o in "${mail_cc[@]}"; do
 						[[ ${o} != ${a} ]] || continue 2
@@ -245,8 +245,8 @@ https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI"
 IFS=' '
 
 sendmail "${mail_to}" "${mail_cc[@]}" <<<"${mail}"
-cp "${borked_list}" "${borked_last}"
-cp "${warning_list}" "${warning_last}"
+cp -- "${borked_list}" "${borked_last}"
+cp -- "${warning_list}" "${warning_last}"
 mail_cc_s=${mail_cc[*]%%@*}
 if [[ -n ${new[@]} ]]; then
 	irk "${IRC_TO}" "I am croaker, the herald of doom! ( https://wiki.gentoo.org/wiki/Project:Repository_mirror_and_CI#Croaker_Q.26A )"

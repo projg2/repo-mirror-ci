@@ -26,7 +26,7 @@ if [[ -s ${BISECT_TMP}/.bisect.cache.${flag} ]]; then
 	done <"${BISECT_TMP}/.bisect.cache.${flag}"
 fi
 
-git checkout -q "${current_commit}"
+git checkout -q -- "${current_commit}"
 
 # we always check multiple packages and cache the result to avoid
 # re-checking the same commits in next bisect
