@@ -185,6 +185,10 @@ class LazySubprocess(object):
         assert(self._running)
         return self._s.terminate()
 
+    def kill(self):
+        assert(self._running)
+        return self._s.kill()
+
 
 class TaskManager(object):
     def __init__(self, max_jobs, log, timeout=0):
@@ -212,8 +216,11 @@ class TaskManager(object):
                     self._results[n] = ret
                     yield (n, ret)
                     to_del.append(n)
+                elif self._timeout > 0 and (datetime.datetime.now(datetime.UTC) - s.started_time).seconds > (2 * self._timeout):
+                    s.kill()
                 elif self._timeout > 0 and (datetime.datetime.now(datetime.UTC) - s.started_time).seconds > self._timeout:
                     s.terminate()
+
             for n in to_del:
                 del self._jobs[n]
 
