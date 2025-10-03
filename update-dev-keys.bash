@@ -12,13 +12,13 @@ after=$(cksum committing-devs.gpg || :)
 export GNUPGHOME=~/gnupg.tmp
 
 rm -f -r "${GNUPGHOME}"
-mkdir "${GNUPGHOME}"
-cp committing-devs.gpg "${GNUPGHOME}"/pubring.gpg
+mkdir -- "${GNUPGHOME}"
+cp -- committing-devs.gpg "${GNUPGHOME}"/pubring.gpg
 
 [[ ! ${GPG_EXTRA_KEYS} ]] || gpg --no-auto-check-trustdb --keyserver hkps://keys.gentoo.org --recv-keys ${GPG_EXTRA_KEYS}
 
 mv "${GNUPGHOME}"/pubring.gpg ~/.gnupg
-rm -f -r "${GNUPGHOME}"
+rm -f -r -- "${GNUPGHOME}"
 
 unset GNUPGHOME
 gpg --update-trustdb
