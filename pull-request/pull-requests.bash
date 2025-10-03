@@ -72,7 +72,7 @@ if [[ -n ${prid} ]]; then
 	git fetch -- "${sync}" "${ref}:${ref}"
 	# start on top of last common commit, like fast-forward would do
 	git branch -- "pull-${prid}" "$(git merge-base "${ref}" master)"
-	git checkout -q -- "pull-${prid}"
+	git checkout -q "pull-${prid}"
 	# copy existing md5-cache (TODO: try to find previous merge commit)
 	rsync -rlpt --delete "${mirror}"/metadata/{dtd,glsa,md5-cache,news,xml-schema} metadata
 
@@ -88,7 +88,7 @@ if [[ -n ${prid} ]]; then
 	cd ..
 	git clone -s -- "${gentooci}" gentoo-ci
 	cd -- gentoo-ci
-	git checkout -b -- "pull-${prid}"
+	git checkout -b "pull-${prid}"
 	( cd -- "${pull}"/tmp &&
 		time HOME=${pull}/gentoo-ci \
 		timeout -k 30s "${CI_TIMEOUT}" pkgcheck --config "${CONFIG_DIR}" \
