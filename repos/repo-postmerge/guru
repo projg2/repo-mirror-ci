@@ -2,7 +2,7 @@
 
 set -e -x
 
-cd "${1}"
+cd -- "${1}"
 export EDITOR=cat
 
 # set appropriate remotes if we're working off fresh clone

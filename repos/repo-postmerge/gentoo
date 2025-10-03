@@ -21,9 +21,9 @@ merge_subrepo() {
 	branch=${3:-master}
 
 	if [[ ! -d ${path} ]]; then
-		git subtree add --prefix="${path}" "${url}" "${branch}"
+		git subtree add --prefix="${path}" -- "${url}" "${branch}"
 	else
-		git subtree pull --prefix="${path}" "${url}" "${branch}"
+		git subtree pull --prefix="${path}" -- "${url}" "${branch}"
 	fi
 }
 
@@ -36,7 +36,7 @@ fetch_file() {
 
 set -e -x
 
-cd "${1}"
+cd -- "${1}"
 export EDITOR=cat
 every_hrs 24 merge_subrepo git@git.gentoo.org:data/dtd.git metadata/dtd
 merge_subrepo git@git.gentoo.org:data/glsa.git metadata/glsa
