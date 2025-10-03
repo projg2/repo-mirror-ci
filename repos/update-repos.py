@@ -156,6 +156,7 @@ class LazySubprocess(object):
         self._kwargs = kwargs
         self._s = None
         self._running = False
+        self._started_time = 0
 
     def start(self):
         kwargs = self._kwargs
@@ -166,14 +167,23 @@ class LazySubprocess(object):
             kwargs['stderr'] = subprocess.STDOUT
             self._s = subprocess.Popen(*self._args, **kwargs)
         self._running = True
+        self._started_time = datetime.datetime.utcnow()
 
     @property
     def running(self):
         return self._running
 
+    @property
+    def started_time(self):
+        return self._started_time
+
     def poll(self):
         assert(self._running)
         return self._s.poll()
+
+    def kill(self):
+        assert(self._running)
+        return self._s.kill()
 
 
 class TaskManager(object):
@@ -201,6 +211,8 @@ class TaskManager(object):
                     self._results[n] = ret
                     yield (n, ret)
                     to_del.append(n)
+                elif (datetime.datetime.utcnow() - s.started_time).seconds > 360:
+                    s.kill()
             for n in to_del:
                 del self._jobs[n]
 
