@@ -73,7 +73,7 @@ def main(prid, prhash, borked_path, pre_borked_path, commit_hash):
 *Report generated at*: %s
 *Newest commit scanned*: %s
 *Status*: %s
-''' % (datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),
+''' % (datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M UTC'),
        commit_hash,
        ':x: **broken**' if borked else ':white_check_mark: good')
 
