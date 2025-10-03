@@ -187,12 +187,13 @@ class LazySubprocess(object):
 
 
 class TaskManager(object):
-    def __init__(self, max_jobs, log):
+    def __init__(self, max_jobs, log, timeout=0):
         self._max_jobs = max_jobs
         self._jobs = {}
         self._queue = []
         self._results = {}
         self._log = log
+        self._timeout = timeout
 
     def add(self, name, *args, **kwargs):
         subp = LazySubprocess(self._log[name], *args, **kwargs)
@@ -211,8 +212,7 @@ class TaskManager(object):
                     self._results[n] = ret
                     yield (n, ret)
                     to_del.append(n)
-                elif (datetime.datetime.now(datetime.UTC) - s.started_time).seconds > 180:
-                    # 3 minutes should be enough, we want to avoid hanging git clones
+                elif self._timeout > 0 and (datetime.datetime.now(datetime.UTC) - s.started_time).seconds > self._timeout:
                     s.kill()
             for n in to_del:
                 del self._jobs[n]
@@ -408,7 +408,9 @@ def main():
     sys.stderr.write('* syncing repositories\n')
     sync_start = datetime.datetime.now(datetime.UTC)
     jobs = []
-    syncman = TaskManager(MAX_SYNC_JOBS, log)
+    # 3 minutes should be enough, we want to avoid hanging git clones
+    syncman = TaskManager(MAX_SYNC_JOBS, log, 3*60)
+
     for r in sorted(local_repos):
         syncman.add(r, ['pmaint', '--config', CONFIG_SYNC, 'sync', r])
 
