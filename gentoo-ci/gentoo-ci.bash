@@ -40,7 +40,7 @@ if [[ ${PREV_COMMIT} != ${CURRENT_COMMIT} ]]; then
 		-s -w -o warning.list *.xml
 
 	git add -- *.xml
-	git diff --cached --quiet --exit-code || git commit -a -m "$(date -u --date="@$(cd "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
+	git diff --cached --quiet --exit-code || git commit -a -m "$(date -u --date="@$(cd -- "${SYNC_DIR}"/gentoo; git log --pretty="%ct" -1)" "+%Y-%m-%d %H:%M:%S UTC")"
 	git push
 	curl "https://qa-reports-cdn-origin.gentoo.org/cgi-bin/trigger-pull.cgi?gentoo-ci" || :
 	"${SCRIPT_DIR}"/gentoo-ci/report-borked.bash "${PREV_COMMIT}" "${CURRENT_COMMIT}"
