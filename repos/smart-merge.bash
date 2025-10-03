@@ -48,7 +48,7 @@ else
 	git checkout -q -- "refs/orig/${branch}"
 	git merge -q -s ours --allow-unrelated-histories \
 		-m "Merge/replace with the new version of ${branch} (reversed 'ours' strategy)" \
-		"${m_branch}"
-	git branch -f "${m_branch}" HEAD
-	git checkout "${m_branch}"
+		-- "${m_branch}"
+	git branch -f -- "${m_branch}" HEAD
+	git checkout -- "${m_branch}"
 fi

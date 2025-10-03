@@ -8,7 +8,7 @@ export TZ=UTC
 
 date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
-mkdir -p "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
+mkdir -p -- "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}" \
 	"${SYNC_DIR}" "${MIRROR_DIR}" "${REPOS_DIR}"
 for d in "${CONFIG_ROOT}" "${CONFIG_ROOT_MIRROR}" "${CONFIG_ROOT_SYNC}"
 do
@@ -16,10 +16,10 @@ do
 	mkdir -p -- "${d}"/etc/portage
 	if [[ ! -e ${d}/etc/portage/make.profile ]]; then
 		rm -f -- "${d}"/etc/portage/make.profile
-		cp -d /etc/portage/make.profile "${d}"/etc/portage
+		cp -d -- /etc/portage/make.profile "${d}"/etc/portage
 	fi
 	if [[ ! -e ${d}/etc/portage/make.conf ]]; then
-		cp /etc/portage/make.conf "${d}"/etc/portage
+		cp -- /etc/portage/make.conf "${d}"/etc/portage
 	fi
 done
 
