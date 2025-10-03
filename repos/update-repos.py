@@ -167,7 +167,7 @@ class LazySubprocess(object):
             kwargs['stderr'] = subprocess.STDOUT
             self._s = subprocess.Popen(*self._args, **kwargs)
         self._running = True
-        self._started_time = datetime.datetime.utcnow()
+        self._started_time = datetime.datetime.now(datetime.UTC)
 
     @property
     def running(self):
@@ -211,7 +211,7 @@ class TaskManager(object):
                     self._results[n] = ret
                     yield (n, ret)
                     to_del.append(n)
-                elif (datetime.datetime.utcnow() - s.started_time).seconds > 360:
+                elif (datetime.datetime.now(datetime.UTC) - s.started_time).seconds > 360:
                     s.kill()
             for n in to_del:
                 del self._jobs[n]
@@ -405,7 +405,7 @@ def main():
 
     # 4. sync all repos
     sys.stderr.write('* syncing repositories\n')
-    sync_start = datetime.datetime.utcnow()
+    sync_start = datetime.datetime.now(datetime.UTC)
     jobs = []
     syncman = TaskManager(MAX_SYNC_JOBS, log)
     for r in sorted(local_repos):
@@ -428,7 +428,7 @@ def main():
                 states[r]['x-state'] = State.SYNC_FAIL
                 repos_conf.remove_section(r)
 
-    sync_finish = datetime.datetime.utcnow()
+    sync_finish = datetime.datetime.now(datetime.UTC)
     sys.stderr.write('** total syncing time: %s\n' % (sync_finish - sync_start))
 
     # 6. remove local checkouts and sync again
@@ -589,7 +589,7 @@ def main():
 
     # 9. regen caches for all repos
     sys.stderr.write('* regenerating cache\n')
-    regen_start = datetime.datetime.utcnow()
+    regen_start = datetime.datetime.now(datetime.UTC)
     regenman = TaskManager(MAX_REGEN_JOBS, log)
     for r in sorted(local_repos):
         regenman.add(r, ['pmaint', '--config', CONFIG_REPOS, 'regen',
@@ -605,7 +605,7 @@ def main():
             if states[r]['x-state'] == State.GOOD:
                 states[r]['x-state'] = State.BAD_CACHE
 
-    regen_finish = datetime.datetime.utcnow()
+    regen_finish = datetime.datetime.now(datetime.UTC)
     sys.stderr.write('** total regen time: %s\n' % (regen_finish - regen_start))
 
     # 9.25. critical repos again
