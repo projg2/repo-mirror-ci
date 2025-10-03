@@ -7,7 +7,7 @@ basename=${1##*/}
 basename=${basename%.*}
 
 exec {lockfd}>> "${CRONJOB_STATE_DIR}/${basename}.lock"
-flock -x -n "${lockfd}" || exit 0
+flock -x -n -- "${lockfd}" || exit 0
 
 exec &> "${CRONJOB_STATE_DIR}/${basename}.log"
 
@@ -25,7 +25,7 @@ if [[ ${ret} -ne 0 ]]; then
 	exec &>/dev/null
 
 	# store a local copy of the log in case mail failed
-	cp "${CRONJOB_STATE_DIR}/${basename}.log" \
+	cp -- "${CRONJOB_STATE_DIR}/${basename}.log" \
 	       "${CRONJOB_STATE_DIR}/${basename}.log.${start}"
 
 	sendmail "${CRONJOB_ADMIN_MAIL}" <<-EOF
