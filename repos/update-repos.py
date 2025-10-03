@@ -211,7 +211,8 @@ class TaskManager(object):
                     self._results[n] = ret
                     yield (n, ret)
                     to_del.append(n)
-                elif (datetime.datetime.now(datetime.UTC) - s.started_time).seconds > 360:
+                elif (datetime.datetime.now(datetime.UTC) - s.started_time).seconds > 180:
+                    # 3 minutes should be enough, we want to avoid hanging git clones
                     s.kill()
             for n in to_del:
                 del self._jobs[n]
