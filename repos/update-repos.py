@@ -389,14 +389,7 @@ def main():
         repos_conf.set(r, 'location', repo_path)
 
         if os.path.exists(repo_path):
-            # check whether sync params changed
-            for k, v in vals.items():
-                if not repos_conf.has_option(r, k) or repos_conf.get(r, k) != v:
-                    log[r].status('Resetting, sync parameters changed')
-                    to_remove.append(r)
-                    break
-            else:
-                existing_repos.append(r)
+            existing_repos.append(r)
 
         for k, v in vals.items():
             repos_conf.set(r, k, v)
