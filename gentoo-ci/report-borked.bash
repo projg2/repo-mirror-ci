@@ -117,7 +117,7 @@ if [[ ( ${new[@]} || ${wnew[@]} ) && ${previous_commit} && $(( ${#new[@]} + ${#w
 	# check one commit extra to make sure the breakages were introduced
 	# in the commit set; this could happen e.g. when new checks
 	# are added on top of already-broken repo
-	pre_previous_commit=$(cd -- "${SYNC_DIR}"/gentoo; git rev-parse -- "${previous_commit}^")
+	pre_previous_commit=$(cd -- "${SYNC_DIR}"/gentoo; git rev-parse "${previous_commit}^")
 	flag=e
 	set -- "${new[@]##*#}" -WARN- "${wnew[@]##*#}"
 	while [[ ${@} ]]; do
