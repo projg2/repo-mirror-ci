@@ -415,41 +415,17 @@ def main():
         syncman.add(r, ['pmaint', '--config', CONFIG_SYNC, 'sync', r])
 
     # 5. check for sync failures
-    to_readd = []
     for r, st in syncman.wait():
         if st == 0:
             log[r].status('Sync succeeded')
             states[r]['x-state'] = State.GOOD
         else:
             log[r].status('Sync failed with %d' % st)
-            if r in existing_repos:
-                log[r].status('Will try to re-create')
-                if os.path.exists(os.path.join(SYNC_DIR, r)):
-                    shutil.rmtree(os.path.join(SYNC_DIR, r))
-                to_readd.append(r)
-            else:
-                states[r]['x-state'] = State.SYNC_FAIL
-                repos_conf.remove_section(r)
+            states[r]['x-state'] = State.SYNC_FAIL
+            repos_conf.remove_section(r)
 
     sync_finish = datetime.datetime.now(datetime.UTC)
     sys.stderr.write('** total syncing time: %s\n' % (sync_finish - sync_start))
-
-    # 6. remove local checkouts and sync again
-    for r in sorted(to_readd):
-        syncman.add(r, ['pmaint', '--config', CONFIG_SYNC, 'sync', r])
-
-    for r, st in syncman.wait():
-        if st == 0:
-            log[r].status('Sync succeeded after re-adding')
-            states[r]['x-state'] = State.GOOD
-        else:
-            log[r].status('Sync failed again with %d, removing' % st)
-            states[r]['x-state'] = State.SYNC_FAIL
-            if os.path.exists(os.path.join(SYNC_DIR, r)):
-                shutil.rmtree(os.path.join(SYNC_DIR, r))
-            if os.path.exists(os.path.join(REPOS_DIR, r)):
-                shutil.rmtree(os.path.join(REPOS_DIR, r))
-            repos_conf.remove_section(r)
 
     with open(os.path.join(CONFIG_ROOT_SYNC, REPOS_CONF), 'w') as f:
         repos_conf.write(f)
