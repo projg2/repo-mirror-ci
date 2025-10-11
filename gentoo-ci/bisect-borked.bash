@@ -17,8 +17,7 @@ for p; do
 done
 
 cd -- "${SYNC_DIR}/gentoo"
-initial_commit=$(git rev-parse HEAD)
-trap "git bisect reset; [[ \$(git rev-parse HEAD) == '${initial_commit}' ]] || git checkout -q '${initial_commit}'" EXIT
+trap "git bisect reset; git checkout -q master" EXIT
 
 git bisect start --no-checkout "${bad}" "${good}^"
 git bisect run "${SCRIPT_DIR}"/gentoo-ci/bisect-run-pkgcheck.bash "${flag}" "${pkgs[@]}"
