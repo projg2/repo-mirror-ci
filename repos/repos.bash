@@ -90,12 +90,12 @@ for r in ${REPOS}; do
 
 	rsync -rlpt --delete \
 		'--exclude=.*/' \
-		'--exclude=*/metadata/timestamp.chk' \
-		'--exclude=*/metadata/dtd' \
-		'--exclude=*/metadata/glsa' \
-		'--exclude=*/metadata/news' \
-		'--exclude=*/metadata/projects.xml' \
-		'--exclude=*/metadata/xml-schema' \
+		'--exclude=metadata/timestamp.chk' \
+		'--exclude=metadata/dtd' \
+		'--exclude=metadata/glsa' \
+		'--exclude=metadata/news' \
+		'--exclude=metadata/projects.xml' \
+		'--exclude=metadata/xml-schema' \
 		"${REPOS_DIR}/${name}/." "${MIRROR_DIR}/${name}/"
 
 	(
